@@ -1,49 +1,57 @@
-/* Custom Hexagon Cursor */
+/* --- CURSOR STYLES --- */
 html {
-    /* The SVG is encoded and used as a cursor. It's a white hexagon outline. */
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 15L22 7l-10-5z"/></svg>') 12 12, auto;
+    /* Smaller, 20x20px hexagon outline cursor. Re-encoded for better compatibility. */
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
 }
 
+/* On hover over gallery items, the cursor becomes a filled hexagon */
+.gallery-item:hover {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
+}
+
+
+/* --- GENERAL BODY AND HEADER STYLES --- */
 body {
-    background-color: #1a1a1a; /* Darker Anthracite */
+    background-color: #1a1a1a;
     color: #ffffff;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 40px;
-    text-align: left; /* Default text alignment to the left */
+    padding: 50px;
+    text-align: left;
 }
 
 header {
-    margin-bottom: 50px;
+    margin-bottom: 60px;
 }
 
 h1 {
-    font-size: 5em; /* Much larger title */
+    font-size: 7em; /* Made title much larger */
     font-weight: 700;
     margin: 0;
-    padding-bottom: 15px;
-    /* This border creates the separating line */
+    padding-bottom: 20px;
     border-bottom: 1px solid #444;
 }
 
 h2 {
-    font-size: 1.2em;
+    font-size: 1.3em;
     font-weight: 300;
-    margin-top: 15px;
-    max-width: 600px; /* Constrains the width for better readability */
+    margin-top: 20px;
+    max-width: 700px;
 }
 
+
+/* --- GALLERY STYLES --- */
 .gallery {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start; /* Aligns items to the left */
-    gap: 20px;
+    justify-content: flex-start;
+    gap: 30px; /* Increased gap for larger items */
 }
 
 .gallery-item {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 350px;  /* Made images much larger */
+    height: 350px; /* Made images much larger */
     overflow: hidden;
 }
 
@@ -70,7 +78,7 @@ h2 {
 
 .text {
     color: white;
-    font-size: 1.8em;
+    font-size: 2em;
     font-weight: bold;
     opacity: 0;
     transform: translateY(20px);
@@ -82,7 +90,7 @@ h2 {
 }
 
 .gallery-item:hover .overlay {
-    background-color: rgba(0, 0, 0, 0.4); /* Darkens the image slightly on hover */
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .gallery-item:hover .text {
@@ -90,15 +98,49 @@ h2 {
     transform: translateY(0);
 }
 
-/* Styles for the click animation hexagons */
+
+/* --- CLICK ANIMATION STYLES --- */
+.click-effect-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+}
+
 .click-hexagon {
-    position: absolute;
+    position: absolute; /* Positioned relative to the container */
     width: 30px;
     height: 34px;
-    pointer-events: none; /* Allows clicks to pass through the element */
     transform-origin: center;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="34" viewBox="0 0 30 34" fill="none" stroke="white" stroke-width="2"><path d="M15 1.73L28.99 9.5v15L15 32.23L1.01 24.5v-15L15 1.73z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
-    z-index: 9999;
+}
+
+/* --- SUB-PAGE HEADER STYLES --- */
+.sub-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    margin-bottom: 50px;
+}
+
+.sub-page-header h1 {
+    font-size: 4em; /* Slightly smaller than main page title */
+    border-bottom: none; /* The line is on the container now */
+    padding-bottom: 0;
+}
+
+.sub-page-header a {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: 300;
+    transition: color 0.3s ease;
+}
+
+.sub-page-header a:hover {
+    color: white;
 }
