@@ -1,6 +1,6 @@
 /* --- CURSOR STYLES --- */
-html {
-    /* Hides the default browser cursor completely */
+/* Force hides the default browser cursor on all elements, especially links */
+html, body, a {
     cursor: none;
 }
 
