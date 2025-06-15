@@ -1,14 +1,13 @@
 /* --- CURSOR STYLES --- */
 html {
-    /* Smaller, 20x20px hexagon outline cursor. Re-encoded for better compatibility. */
+    /* Base cursor: 20x20px white hexagon outline */
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
 }
 
-/* On hover over gallery items, the cursor becomes a filled hexagon */
-.gallery-item:hover {
+/* Hover cursor: Filled white hexagon for clickable items */
+.gallery-item:hover, .sub-page-header a:hover {
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
 }
-
 
 /* --- GENERAL BODY AND HEADER STYLES --- */
 body {
@@ -16,7 +15,7 @@ body {
     color: #ffffff;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 50px;
+    padding: 40px; /* Reduced padding to give more space */
     text-align: left;
 }
 
@@ -25,7 +24,7 @@ header {
 }
 
 h1 {
-    font-size: 7em; /* Made title much larger */
+    font-size: 7em;
     font-weight: 700;
     margin: 0;
     padding-bottom: 20px;
@@ -36,22 +35,22 @@ h2 {
     font-size: 1.3em;
     font-weight: 300;
     margin-top: 20px;
-    max-width: 700px;
+    max-width: 100%;
+    white-space: nowrap; /* Ensures subtitle is on one line */
 }
-
 
 /* --- GALLERY STYLES --- */
 .gallery {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    gap: 30px; /* Increased gap for larger items */
+    gap: 30px;
 }
 
 .gallery-item {
     position: relative;
-    width: 350px;  /* Made images much larger */
-    height: 350px; /* Made images much larger */
+    width: 420px;  /* Images are now much larger */
+    height: 420px;
     overflow: hidden;
 }
 
@@ -78,7 +77,7 @@ h2 {
 
 .text {
     color: white;
-    font-size: 2em;
+    font-size: 2.2em;
     font-weight: bold;
     opacity: 0;
     transform: translateY(20px);
@@ -98,7 +97,6 @@ h2 {
     transform: translateY(0);
 }
 
-
 /* --- CLICK ANIMATION STYLES --- */
 .click-effect-container {
     position: fixed;
@@ -109,11 +107,12 @@ h2 {
 }
 
 .click-hexagon {
-    position: absolute; /* Positioned relative to the container */
-    width: 30px;
-    height: 34px;
+    position: absolute;
+    /* Sized to match the 20px base cursor */
+    width: 20px;
+    height: 23px; /* Maintains hexagon aspect ratio */
     transform-origin: center;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="34" viewBox="0 0 30 34" fill="none" stroke="white" stroke-width="2"><path d="M15 1.73L28.99 9.5v15L15 32.23L1.01 24.5v-15L15 1.73z"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none" stroke="white" stroke-width="1.5"><path d="M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -128,8 +127,8 @@ h2 {
 }
 
 .sub-page-header h1 {
-    font-size: 4em; /* Slightly smaller than main page title */
-    border-bottom: none; /* The line is on the container now */
+    font-size: 4em;
+    border-bottom: none;
     padding-bottom: 0;
 }
 
