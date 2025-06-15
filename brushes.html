@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brushes - Basic Informatics</title>
+    <!-- Stile generale del sito -->
     <link rel="stylesheet" href="style.css">
+    <!-- Librerie p5.js caricate da CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
 </head>
 <body>
 
@@ -12,10 +16,66 @@
         <h1>Brushes</h1>
         <a href="index.html">Back to home</a>
     </header>
-    
-    <main>
-        </main>
 
+    <!-- Contenitore principale per l'applicazione di disegno -->
+    <div id="sketch-container">
+        
+        <!-- Wrapper per la tela di p5.js -->
+        <div id="canvas-wrapper">
+            <!-- Il canvas verrà inserito qui da p5.js -->
+        </div>
+
+        <!-- Pannello dei controlli e della legenda -->
+        <div id="controls-panel">
+            
+            <div class="control-group">
+                <h3>Settings</h3>
+                <!-- I selettori di colore verranno inseriti qui -->
+                <div id="color-pickers">
+                    <div class="picker-wrapper">
+                        <label for="color-picker">Brush</label>
+                        <div id="color-picker-container"></div>
+                    </div>
+                    <div class="picker-wrapper">
+                        <label for="bg-color-picker">Background</label>
+                        <div id="bg-color-picker-container"></div>
+                    </div>
+                </div>
+                 <!-- Gli slider verranno inseriti qui -->
+                <div id="sliders">
+                    <div class="slider-wrapper">
+                        <label>Size</label>
+                        <div id="size-slider-container"></div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Opacity</label>
+                        <div id="opacity-slider-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3 id="current-brush-label">Current: Random Circles</h3>
+            </div>
+
+            <div id="legend" class="control-group">
+                <h3>Shortcuts</h3>
+                <p><span>[1-8]</span> &rarr; Select Brush</p>
+                <p><span>[9]</span> &rarr; Soft Eraser</p>
+                <p><span>[0]</span> &rarr; Hard Eraser</p>
+                <p><span>[SPACE]</span> &rarr; Clear Canvas</p>
+                <p><span>[S]</span> &rarr; Save Image</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Il nostro cursore personalizzato -->
+    <div class="custom-cursor"></div>
+
+    <!-- Script generali del sito -->
     <script src="script.js"></script>
+    <!-- NUOVO: Script specifico per questa pagina -->
+    <script src="brushes-sketch.js"></script>
 </body>
 </html>
