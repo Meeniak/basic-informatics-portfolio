@@ -1,13 +1,25 @@
 /* --- CURSOR STYLES --- */
 html {
-    /* Base cursor: 20x20px white hexagon outline */
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
+    /* Hides the default browser cursor completely */
+    cursor: none;
 }
 
-/* Hover cursor is a BLACK outline */
-.gallery-item:hover, .sub-page-header a:hover {
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
+/* Style for our new custom cursor, controlled by JavaScript */
+.custom-cursor {
+    position: fixed; /* Stays in the viewport */
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 23px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    /* This prevents the cursor from blocking clicks on elements underneath it */
+    pointer-events: none;
+    /* This transform will be updated by JS to position the cursor's center */
+    transform: translate(-50%, -50%);
+    z-index: 9999;
 }
+
 
 /* --- GENERAL BODY AND HEADER STYLES --- */
 body {
@@ -25,7 +37,7 @@ header {
 
 h1 {
     font-size: 8.5em;
-    font-weight: 400;       /* CHANGED: Title is now 'Regular' weight (a bit bolder) */
+    font-weight: 400;
     margin: 0;
     padding-bottom: 20px;
     border-bottom: 1px solid #444;
@@ -98,30 +110,12 @@ h2 {
     transform: translateY(0);
 }
 
-/* --- CLICK ANIMATION STYLES --- */
-.click-effect-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-.click-hexagon {
-    position: absolute;
-    width: 20px;
-    height: 23px;
-    transform-origin: center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    /* The SVG is now set by JavaScript */
-}
 
 /* --- SUB-PAGE HEADER STYLES --- */
 .sub-page-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;  /* CHANGED: Aligns text to the baseline, fixing the 'Back to home' position */
+    align-items: baseline;
     border-bottom: 1px solid #444;
     margin-bottom: 50px;
 }
