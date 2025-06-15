@@ -9,14 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MOUSE DOWN: START THE EFFECT ---
     document.body.addEventListener('mousedown', (e) => {
+        // Do not trigger the animation if a link was clicked
+        if (e.target.closest('a')) {
+            return;
+        }
+
         isMouseDown = true;
         document.body.style.cursor = 'none'; // Hide the default cursor
 
-        // Clear any old hexagons
         effectContainer.innerHTML = '';
         hexagons = [];
 
-        // Create three hexagons and add them to the container
+        // Create three hexagons
         for (let i = 0; i < 3; i++) {
             const hex = document.createElement('div');
             hex.className = 'click-hexagon';
@@ -24,29 +28,27 @@ document.addEventListener('DOMContentLoaded', () => {
             effectContainer.appendChild(hex);
         }
 
-        // Move hexagons to initial click position
         moveHexagons(e.clientX, e.clientY);
         
         const startTime = performance.now();
         
-        // Start the animation loop
+        // --- ANIMATION LOOP ---
         function animate(currentTime) {
-            if (!isMouseDown) return; // Stop if mouse is released
+            if (!isMouseDown) return;
 
             const elapsedTime = currentTime - startTime;
 
-            // --- Alternating Scaling Logic ---
-            // scaleFactor oscillates between 0 and 1 using Math.sin
-            const scaleFactor = (Math.sin(elapsedTime * 0.004) + 1) / 2; // Range [0, 1]
-
-            const scaleHeight = scaleFactor;
-            const scaleWidth = 1 - scaleFactor; // Inversely related to height
-
-            // Hexagon 0: Static
+            // --- Corrected Alternating Scaling Logic ---
+            // These functions oscillate between 0 and 1, but out of phase.
+            // When one is at its max (1), the other is at its min (0).
+            const scaleHeight = Math.abs(Math.cos(elapsedTime * 0.003));
+            const scaleWidth = Math.abs(Math.sin(elapsedTime * 0.003));
+            
+            // Hexagon 0: Static (no transformation)
             hexagons[0].style.transform = `translate(-50%, -50%)`;
-            // Hexagon 1: Animates height (scaleY)
+            // Hexagon 1: "Shrinks" and "expands" its height
             hexagons[1].style.transform = `translate(-50%, -50%) scaleY(${scaleHeight})`;
-            // Hexagon 2: Animates width (scaleX)
+            // Hexagon 2: "Shrinks" and "expands" its width
             hexagons[2].style.transform = `translate(-50%, -50%) scaleX(${scaleWidth})`;
 
             animationFrameId = requestAnimationFrame(animate);
@@ -57,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MOUSE MOVE: UPDATE POSITION WHILE CLICKING ---
     document.body.addEventListener('mousemove', (e) => {
-        // Only move the animation if the mouse button is held down
         if (isMouseDown) {
             moveHexagons(e.clientX, e.clientY);
         }
@@ -65,13 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MOUSE UP: STOP THE EFFECT ---
     document.body.addEventListener('mouseup', () => {
-        isMouseDown = false;
-        document.body.style.cursor = 'auto'; // Restore default cursor
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
+        if (isMouseDown) {
+            isMouseDown = false;
+            document.body.style.cursor = 'auto'; // Restore default cursor
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            effectContainer.innerHTML = '';
         }
-        effectContainer.innerHTML = ''; // Clear the hexagons
     });
 
     // Helper function to position all hexagons at the cursor
