@@ -1,87 +1,69 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let animationFrameId = null;
     let isMouseDown = false;
+    let animationFrameId = null;
 
-    // Create a single container for the animated hexagons
-    const effectContainer = document.createElement('div');
-    effectContainer.className = 'click-effect-container';
-    document.body.appendChild(effectContainer);
-    
-    // Define the two SVG versions for the hexagons
+    // --- Create the custom cursor element ---
+    const cursor = document.createElement('div');
+    cursor.className = 'custom-cursor';
+    document.body.appendChild(cursor);
+
+    // --- Define the SVG for the hexagon's appearance ---
     const hexagonSVG_white = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"23\" viewBox=\"0 0 20 23\" fill=\"none\" stroke=\"white\" stroke-width=\"1.5\"><path d=\"M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z\"/></svg>')";
     const hexagonSVG_black = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"23\" viewBox=\"0 0 20 23\" fill=\"none\" stroke=\"black\" stroke-width=\"1.5\"><path d=\"M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z\"/></svg>')";
 
-    let animatedHexagons = [];
+    let scale = 1;
+    let x = 0;
+    let y = 0;
 
-    // --- MOUSE DOWN: Start the animation ---
-    document.body.addEventListener('mousedown', (e) => {
-        isMouseDown = true;
-
-        // Create two new hexagons for the animation
-        animatedHexagons = [document.createElement('div'), document.createElement('div')];
+    // --- MOUSE MOVE: Update cursor position and color ---
+    window.addEventListener('mousemove', (e) => {
+        // Update position variables
+        x = e.clientX;
+        y = e.clientY;
         
-        // Check if the cursor is over a clickable element to set the initial color
+        // Check if the cursor is over a clickable element
         const isOverClickable = e.target.closest('.gallery-item, .sub-page-header a');
-        const initialSVG = isOverClickable ? hexagonSVG_black : hexagonSVG_white;
+        cursor.style.backgroundImage = isOverClickable ? hexagonSVG_black : hexagonSVG_white;
+    });
 
-        animatedHexagons.forEach(hex => {
-            hex.className = 'click-hexagon';
-            hex.style.backgroundImage = initialSVG; // Set color
-            effectContainer.appendChild(hex);
-        });
+    // --- MOUSE DOWN: Start the shrink animation ---
+    window.addEventListener('mousedown', () => {
+        isMouseDown = true;
+        // Start the animation loop if it's not already running
+        if (!animationFrameId) {
+            animate();
+        }
+    });
 
-        moveHexagons(e.clientX, e.clientY);
+    // --- MOUSE UP: Stop the shrink animation ---
+    window.addEventListener('mouseup', () => {
+        isMouseDown = false;
+    });
+
+    // --- Main Animation Loop ---
+    const animate = (timestamp) => {
+        if (isMouseDown) {
+            // While mouse is down, shrink the cursor with a dynamic pulse
+            const pulse = 0.85 + Math.sin(timestamp * 0.01) * 0.15; // Oscillates between 0.7 and 1.0
+            scale = pulse;
+        } else {
+            // When mouse is up, smoothly grow back to normal size
+            scale += (1 - scale) * 0.2; // Easing effect
+        }
+
+        // Apply the position and scale transformations
+        cursor.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${scale})`;
         
-        const startTime = performance.now();
-        
-        function animate(currentTime) {
-            if (!isMouseDown) return; // Stop loop if mouse is released
-
-            const elapsedTime = currentTime - startTime;
-
-            // This function creates a smooth oscillation between 1 and 0
-            const scale = Math.abs(Math.cos(elapsedTime * 0.003));
-            
-            // Apply simultaneous scaling
-            animatedHexagons[0].style.transform = `translate(-50%, -50%) scaleY(${scale})`; // Shrinks height
-            animatedHexagons[1].style.transform = `translate(-50%, -50%) scaleX(${scale})`; // Shrinks width
-
+        // If the animation should stop, cancel the frame
+        if (!isMouseDown && Math.abs(1 - scale) < 0.01) {
+            scale = 1; // Snap to final size
+            animationFrameId = null;
+        } else {
+            // Otherwise, continue the loop
             animationFrameId = requestAnimationFrame(animate);
         }
-        requestAnimationFrame(animate);
-    });
-
-    // --- MOUSE MOVE: Update position and color ---
-    document.body.addEventListener('mousemove', (e) => {
-        if (isMouseDown) {
-            moveHexagons(e.clientX, e.clientY);
-
-            // Dynamically check color while moving
-            const isOverClickable = e.target.closest('.gallery-item, .sub-page-header a');
-            const currentSVG = isOverClickable ? hexagonSVG_black : hexagonSVG_white;
-            animatedHexagons.forEach(hex => {
-                hex.style.backgroundImage = currentSVG;
-            });
-        }
-    });
-
-    // --- MOUSE UP: Stop the animation ---
-    document.body.addEventListener('mouseup', () => {
-        if (isMouseDown) {
-            isMouseDown = false;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-            // Clear the animated hexagons from the container
-            effectContainer.innerHTML = '';
-        }
-    });
-
-    function moveHexagons(x, y) {
-        animatedHexagons.forEach(hex => {
-            hex.style.left = `${x}px`;
-            hex.style.top = `${y}px`;
-        });
-    }
+    };
+    
+    // Initial call to position the cursor correctly
+    requestAnimationFrame(animate);
 });
