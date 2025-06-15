@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let isMouseDown = false;
-    let animationFrameId = null;
-
     // --- Create the custom cursor element ---
     const cursor = document.createElement('div');
     cursor.className = 'custom-cursor';
@@ -11,59 +8,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const hexagonSVG_white = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"23\" viewBox=\"0 0 20 23\" fill=\"none\" stroke=\"white\" stroke-width=\"1.5\"><path d=\"M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z\"/></svg>')";
     const hexagonSVG_black = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"23\" viewBox=\"0 0 20 23\" fill=\"none\" stroke=\"black\" stroke-width=\"1.5\"><path d=\"M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z\"/></svg>')";
 
-    let scale = 1;
-    let x = 0;
-    let y = 0;
+    // --- State Variables ---
+    // Target position (follows the real mouse pointer)
+    let mouseX = 0;
+    let mouseY = 0;
+    // Current cursor position (moves smoothly towards the target)
+    let cursorX = 0;
+    let cursorY = 0;
+    // Current and target scale for the shrink effect
+    let currentScale = 1;
+    let targetScale = 1;
+    // Easing factor for smooth movement
+    const easing = 0.2;
 
-    // --- MOUSE MOVE: Update cursor position and color ---
+    // --- MOUSE MOVE: Update target position and color ---
     window.addEventListener('mousemove', (e) => {
-        // Update position variables
-        x = e.clientX;
-        y = e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
         
-        // Check if the cursor is over a clickable element
+        // Check if the cursor is over a clickable element to set the color
         const isOverClickable = e.target.closest('.gallery-item, .sub-page-header a');
         cursor.style.backgroundImage = isOverClickable ? hexagonSVG_black : hexagonSVG_white;
     });
 
-    // --- MOUSE DOWN: Start the shrink animation ---
+    // --- MOUSE DOWN: Set target scale to shrink ---
     window.addEventListener('mousedown', () => {
-        isMouseDown = true;
-        // Start the animation loop if it's not already running
-        if (!animationFrameId) {
-            animate();
-        }
+        targetScale = 0.7; // The cursor will shrink to 70% of its size
     });
 
-    // --- MOUSE UP: Stop the shrink animation ---
+    // --- MOUSE UP: Set target scale to normal ---
     window.addEventListener('mouseup', () => {
-        isMouseDown = false;
+        targetScale = 1; // The cursor will grow back to its normal size
     });
 
-    // --- Main Animation Loop ---
-    const animate = (timestamp) => {
-        if (isMouseDown) {
-            // While mouse is down, shrink the cursor with a dynamic pulse
-            const pulse = 0.85 + Math.sin(timestamp * 0.01) * 0.15; // Oscillates between 0.7 and 1.0
-            scale = pulse;
-        } else {
-            // When mouse is up, smoothly grow back to normal size
-            scale += (1 - scale) * 0.2; // Easing effect
-        }
+    // --- Permanent Animation Loop ---
+    const animate = () => {
+        // Move the cursor's current position closer to the target (real mouse) position
+        // This creates a smooth, slightly delayed following effect.
+        cursorX += (mouseX - cursorX) * easing;
+        cursorY += (mouseY - cursorY) * easing;
 
-        // Apply the position and scale transformations
-        cursor.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${scale})`;
+        // Move the cursor's current scale closer to the target scale
+        // This creates a smooth shrink and grow animation.
+        currentScale += (targetScale - currentScale) * easing;
+
+        // Apply the final transformations for position and scale
+        cursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%) scale(${currentScale})`;
         
-        // If the animation should stop, cancel the frame
-        if (!isMouseDown && Math.abs(1 - scale) < 0.01) {
-            scale = 1; // Snap to final size
-            animationFrameId = null;
-        } else {
-            // Otherwise, continue the loop
-            animationFrameId = requestAnimationFrame(animate);
-        }
+        // Continue the loop on the next frame
+        requestAnimationFrame(animate);
     };
-    
-    // Initial call to position the cursor correctly
-    requestAnimationFrame(animate);
+
+    // Start the animation loop
+    animate();
 });
