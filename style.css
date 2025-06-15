@@ -36,13 +36,36 @@ header {
     margin-bottom: 60px;
 }
 
+/* --- MODIFICHE AL TITOLO H1 --- */
 h1 {
     font-size: 8.5em;
     font-weight: 400;
     margin: 0;
+    /* Spaziatura interna per le linee */
+    padding-top: 20px;
     padding-bottom: 20px;
+    padding-right: 40px; /* Spazio per la linea verticale */
+    /* Linee orizzontali */
+    border-top: 1px solid #444;
     border-bottom: 1px solid #444;
+    /* Impostazioni per il posizionamento della linea verticale */
+    position: relative;
+    display: inline-block; /* Restringe l'elemento alla larghezza del testo */
 }
+
+/* --- NUOVA REGOLA PER LA LINEA VERTICALE --- */
+h1::after {
+    content: ''; /* Obbligatorio per i pseudo-elementi */
+    position: absolute;
+    background-color: #444;
+    width: 1px;
+    /* Posizionamento verticale */
+    top: -15px;      /* Sporge di 15px sopra */
+    bottom: -15px;   /* Sporge di 15px sotto */
+    /* Posizionamento orizzontale */
+    right: 0;
+}
+
 
 h2 {
     font-size: 1.3em;
@@ -123,23 +146,18 @@ h2 {
 
 .sub-page-header h1 {
     font-size: 4em;
-    border-bottom: none;
-    padding-bottom: 0;
+    border-bottom: none; /* Rimuoviamo il bordo qui perché ora è gestito a livello globale */
+    border-top: none;
+    padding: 0;
 }
 
-.sub-page-header a {
-    color: #ccc;
-    text-decoration: none;
-    font-size: 1.1em;
-    font-weight: 300;
-    transition: color 0.3s ease;
+/* Rimuoviamo il pseudo-elemento per i titoli delle sub-pagine */
+.sub-page-header h1::after {
+    display: none;
 }
 
-.sub-page-header a:hover {
-    color: white;
-}
 
-/* --- NUOVA REGOLA PER L'ALLINEAMENTO DELLA HOME PAGE --- */
+/* --- REGOLA PER L'ALLINEAMENTO DELLA HOME PAGE --- */
 body.home {
     /* Imposta un'altezza minima pari a quella dello schermo */
     min-height: 100vh;
