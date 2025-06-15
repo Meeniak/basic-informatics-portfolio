@@ -4,9 +4,9 @@ html {
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
 }
 
-/* Hover cursor: Filled white hexagon for clickable items */
+/* CHANGED: Hover cursor is now a BLACK outline, inverting the color */
 .gallery-item:hover, .sub-page-header a:hover {
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 2 L22 7 L22 17 L 12 22 L 2 17 L 2 7 Z"/></svg>') 10 10, auto;
 }
 
 /* --- GENERAL BODY AND HEADER STYLES --- */
@@ -15,7 +15,7 @@ body {
     color: #ffffff;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 40px; /* Reduced padding to give more space */
+    padding: 40px;
     text-align: left;
 }
 
@@ -24,8 +24,8 @@ header {
 }
 
 h1 {
-    font-size: 7em;
-    font-weight: 700;
+    font-size: 8.5em;       /* CHANGED: Title is even larger */
+    font-weight: 300;       /* CHANGED: Font is now 'Light' (less bold, more regular) */
     margin: 0;
     padding-bottom: 20px;
     border-bottom: 1px solid #444;
@@ -36,20 +36,20 @@ h2 {
     font-weight: 300;
     margin-top: 20px;
     max-width: 100%;
-    white-space: nowrap; /* Ensures subtitle is on one line */
+    white-space: nowrap;
 }
 
 /* --- GALLERY STYLES --- */
 .gallery {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: space-evenly; /* CHANGED: This creates equal spacing between images and from the page edges */
     gap: 30px;
 }
 
 .gallery-item {
     position: relative;
-    width: 420px;  /* Images are now much larger */
+    width: 420px;
     height: 420px;
     overflow: hidden;
 }
@@ -58,7 +58,7 @@ h2 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: filter 0.4s ease;
+    transition: filter 0.4s ease, transform 0.3s ease; /* Added transform transition */
     filter: blur(5px);
 }
 
@@ -86,6 +86,7 @@ h2 {
 
 .gallery-item:hover img {
     filter: blur(0);
+    transform: scale(1.05); /* Added a subtle zoom effect on hover */
 }
 
 .gallery-item:hover .overlay {
@@ -108,9 +109,8 @@ h2 {
 
 .click-hexagon {
     position: absolute;
-    /* Sized to match the 20px base cursor */
     width: 20px;
-    height: 23px; /* Maintains hexagon aspect ratio */
+    height: 23px;
     transform-origin: center;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="23" viewBox="0 0 20 23" fill="none" stroke="white" stroke-width="1.5"><path d="M10 0.866L19.5 5.75v9.742L10 20.358L0.5 15.492V5.75L10 0.866z"/></svg>');
     background-size: contain;
