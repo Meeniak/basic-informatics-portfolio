@@ -2,53 +2,57 @@
     let currentMask = 1;
     let mic, fft;
     let smoothedVolume = 0;
-    let easing = 0.1;
+    let sensitivitySlider;
     let maskLabel;
 
     const maskNames = {
-        1: 'Dragon', // Tua creazione
-        2: 'Robot',  // Tua creazione
-        3: 'Skull',    // Tua creazione
+        1: 'Dragon',
+        2: 'Robot',
+        3: 'Skull',
         4: 'Agitated Orb',
         5: 'Forest Spirit'
     };
 
     // --- Variabili specifiche per le tue maschere ---
-    // Per Dragon (maschera 1)
     let n_dragon = 1;
     let increment_dragon = 1;
-    // Per Skull (maschera 3)
     let particles_skull = [];
     let rageFlash_skull = 0;
-    let rageHasTriggered_skull = false;
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
         const canvas = createCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
         canvas.parent(canvasWrapper);
         
-        // Setup audio input per tutte le maschere
         mic = new p5.AudioIn();
         mic.start();
 
-        // Setup FFT per la maschera Robot
         fft = new p5.FFT(0.8, 128);
         fft.setInput(mic);
 
         maskLabel = select('#current-mask-label');
         maskLabel.html(`Current: ${maskNames[currentMask]}`);
         
+        // --- NUOVO: Slider per la sensibilità ---
+        sensitivitySlider = createSlider(1, 10, 4, 0.1); // min, max, default, step
+        sensitivitySlider.parent('sensitivity-slider-container');
+        sensitivitySlider.style('width', '100%');
+        
         rectMode(CENTER);
         strokeCap(ROUND);
         strokeJoin(ROUND);
-        angleMode(DEGREES); // Per la tua maschera Drago
+        angleMode(DEGREES);
+        textAlign(CENTER, CENTER);
     }
 
     window.draw = function() {
         background(24, 24, 24);
         
-        let rawVolume = mic.getLevel();
-        smoothedVolume = lerp(smoothedVolume, rawVolume, easing);
+        let sensitivity = sensitivitySlider.value();
+        let rawVolume = mic.getLevel() * sensitivity;
+        // Usa constrain per evitare che il volume superi una soglia sicura
+        let constrainedVolume = constrain(rawVolume, 0, 1.0); 
+        smoothedVolume = lerp(smoothedVolume, constrainedVolume, 0.1);
 
         translate(width / 2, height / 2);
         
@@ -61,27 +65,27 @@
         }
     }
 
-    // --- TUE MASCHERE INTEGRATE ---
+    // --- TUE MASCHERE INTEGRATE E CORRETTE ---
 
     function drawUserDragon(vol) {
-        let anger = map(vol, 0, 0.4, 20, 100, true);
+        let anger = map(vol, 0, 0.8, 20, 100, true);
         
         n_dragon += increment_dragon;
         if (n_dragon >= 30 || n_dragon <= 0) {
             increment_dragon *= -1;
         }
 
-        push();
-        if (anger > 80) { // Sputa fuoco solo a volume alto
+        if (anger > 80) {
+            push();
             stroke(255, n_dragon * 5, 0);
             strokeWeight(n_dragon);
             noFill();
             line(-120, 35, -300 - n_dragon * 5, 35);
+            pop();
         }
-        pop();
 
-        let pp = map(vol, 0, 0.3, 40, 5, true);
-        let arc1 = map(vol, 0, 0.3, -90, 80, true);
+        let pp = map(vol, 0, 0.5, 40, 5, true);
+        let arc1 = map(vol, 0, 0.5, -90, 80, true);
 
         fill(0);
         stroke(255);
@@ -89,42 +93,36 @@
 
         rect(-150, -20, 180, 50);
         arc(-100, 25, 100, 100, 0, 180);
-        push();
-        fill(255, 0, 0);
-        ellipse(-100, 25, 70, 70);
-        pop();
+        push(); fill(255, 0, 0); ellipse(-100, 25, 70, 70); pop();
         ellipse(-100, 25, pp, pp);
-        push();
-        fill(255);
-        ellipse(-115, 10, 10, 10);
-        ellipse(10, -5, (5 + vol * 80) % 25, (5 + vol * 80) % 25);
-        pop();
+        push(); fill(255); ellipse(-115, 10, 10, 10); pop();
+        
         arc(-100, 25, 80, 80, 240, arc1, CHORD);
         triangle(-150, -45, -150, -20, -120, -20);
         if (anger > 50) triangle(-120, -45, -120, -20, -90, -20);
         if (anger > 80) triangle(-90, -45, -90, -20, -60, -20);
-        triangle(30, 25, 10, 40, 10, 25);
-
+        
         push();
         translate(-100, 35);
-        if (anger > 20) rotate(vol * 80);
+        if (anger > 20) rotate(vol * 50);
         rect(0, 40, 80, 49);
         triangle(50, 40, 50, 25, 30, 40);
         pop();
     }
     
     function drawUserRobot(vol) {
-        let eyeHeight = map(vol, 0, 0.25, 4, 60, true);
-        let visorScaleX = map(vol, 0, 0.25, 1, 1.2, true);
+        let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
+        let visorScaleX = map(vol, 0, 0.5, 1, 1.2, true);
         let visorWidth = 280 * visorScaleX;
         let visorInfo = { y: -80, width: visorWidth, height: eyeHeight };
 
         noStroke();
         fill(255);
         rect(0, visorInfo.y, visorInfo.width, visorInfo.height, 3);
+
         if (eyeHeight > 10) {
             let pupilSize = 60;
-            let pupilXOffset = map(vol, 0.05, 0.25, 0, visor.width / 2 - 40, true);
+            let pupilXOffset = map(vol, 0.1, 0.5, 0, visor.width / 2 - 40, true);
             fill(0);
             ellipse(-pupilXOffset, visor.y, pupilSize, pupilSize);
             ellipse(pupilXOffset, visor.y, pupilSize, pupilSize);
@@ -156,19 +154,22 @@
     }
     
     function drawUserSkull(vol) {
-        let angerLevel = map(vol, 0.04, 0.35, 0, 1, true);
+        let angerLevel = map(vol, 0.1, 0.7, 0, 1, true);
 
-        if (angerLevel > 0.98 && !rageHasTriggered_skull) {
+        if (angerLevel > 0.95 && rageFlash_skull <= 0) {
             rageFlash_skull = 15;
-            rageHasTriggered_skull = true;
         }
-        if (angerLevel < 0.9) rageHasTriggered_skull = false;
         
-        let shakeAmount = map(angerLevel, 0.7, 1, 0, 60, true);
+        let shakeAmount = map(angerLevel, 0.7, 1, 0, 40, true);
         translate(random(-shakeAmount, shakeAmount), random(-shakeAmount, shakeAmount));
-        if (rageFlash_skull > 0) { filter(INVERT); rageFlash_skull--; }
-        if (angerLevel > 0.8) {
-            let particleCount = map(angerLevel, 0.8, 1, 1, 15);
+        
+        if (rageFlash_skull > 0) {
+            filter(INVERT);
+            rageFlash_skull--;
+        }
+
+        if (angerLevel > 0.6) {
+            let particleCount = map(angerLevel, 0.6, 1, 0, 5, true);
             for (let i = 0; i < particleCount; i++) {
                 particles_skull.push(new FlameParticle(-60, -20));
                 particles_skull.push(new FlameParticle(60, -20));
@@ -180,15 +181,14 @@
         particles_skull = particles_skull.filter(p => !p.isFinished());
     }
 
-    // --- MIE MASCHERE ---
-
+    // --- MIE MASCHERE (REATTIVITÀ CORRETTA) ---
     function drawAgitatedOrb(vol) {
-        let agitation = map(vol, 0, 0.2, 0, 80, true);
+        let agitation = map(vol, 0, 1, 0, 150, true);
         stroke(255); strokeWeight(2); noFill();
         for(let i=1; i < 10; i++) {
             beginShape();
             for(let a = 0; a < TWO_PI; a += 0.1) {
-                let r = (i * 25) + noise(a * 5, frameCount * 0.01 + i) * agitation;
+                let r = (i * 20) + noise(a * 5, frameCount * 0.01 + i) * agitation;
                 vertex(cos(a) * r, sin(a) * r);
             }
             endShape(CLOSE);
@@ -196,11 +196,11 @@
     }
     
     function drawForestSpirit(vol) {
-        let headTilt = map(vol, 0, 0.2, 0, PI / 12, true);
-        let leafGrow = map(vol, 0, 0.2, 0, 60, true);
+        let headTilt = map(vol, 0, 1, 0, PI / 8, true);
+        let leafGrow = map(vol, 0, 1, 0, 80, true);
         stroke(255); strokeWeight(4); fill(24, 24, 24);
         push();
-        rotate(sin(frameCount*0.02)*0.1 + headTilt);
+        rotate(sin(frameCount*0.02)*0.1 - headTilt);
         ellipse(0, 0, 200, 250);
         fill(255);
         ellipse(-50, -30, 50, 70);
@@ -211,81 +211,71 @@
         pop();
     }
 
-    // --- FUNZIONI HELPER PER LA TUA MASCHERA SKULL ---
-
+    // --- FUNZIONI HELPER (per la maschera teschio) ---
     function drawAngrySkull(angerLevel) {
         fill(255); noStroke();
         let jawDrop = map(angerLevel, 0, 1, 0, 140);
         let eyeSlant = map(angerLevel, 0, 1, 0, 40);
-        let browDrop = map(angerLevel, 0, 1, 0, 30);
-        let noseFlare = map(angerLevel, 0, 1, 0, 15);
         let cheekFlareX = map(angerLevel, 0, 1, 0, 30);
         let crownSpike = map(angerLevel, 0, 1, 0, 40);
-        let eyePinch = map(angerLevel, 0.5, 1, 0, 20, true);
 
         beginShape();
         vertex(0, -165 - crownSpike);
-        bezierVertex(-80, -170 - crownSpike, -130, -120, -140 - cheekFlareX, -60);
-        bezierVertex(-150 - cheekFlareX, 0, -100, 80, -70, 110);
+        bezierVertex(-80, -170-crownSpike, -130, -120, -140-cheekFlareX, -60);
+        bezierVertex(-150-cheekFlareX, 0, -100, 80, -70, 110);
         vertex(70, 110);
-        bezierVertex(100, 80, 150 + cheekFlareX, 0, 140 + cheekFlareX, -60);
-        bezierVertex(130, -120, 80, -170 - crownSpike, 0, -165 - crownSpike);
+        bezierVertex(100, 80, 150+cheekFlareX, 0, 140+cheekFlareX, -60);
+        bezierVertex(130, -120, 80, -170-crownSpike, 0, -165-crownSpike);
         endShape(CLOSE);
         
         drawLowerJaw(jawDrop, angerLevel);
 
-        fill(24,24,24); // Carve
-        beginShape(); vertex(-40,-80+browDrop); bezierVertex(-80,-70-eyeSlant,-95-cheekFlareX,-20+eyePinch,-75,10+eyePinch); bezierVertex(-60,15+eyePinch,-45,0,-40,-20); endShape(CLOSE);
-        beginShape(); vertex(40,-80+browDrop); bezierVertex(80,-70-eyeSlant,95+cheekFlareX,-20+eyePinch,75,10+eyePinch); bezierVertex(60,15+eyePinch,45,0,40,-20); endShape(CLOSE);
-        beginShape(); vertex(0,40); vertex(-12-noseFlare,75); vertex(12+noseFlare,75); endShape(CLOSE);
+        fill(24,24,24);
+        let eyePinch = map(angerLevel, 0.5, 1, 0, 20, true);
+        beginShape(); vertex(-40,-80); bezierVertex(-80,-70-eyeSlant,-95-cheekFlareX,-20+eyePinch,-75,10+eyePinch); bezierVertex(-60,15+eyePinch,-45,0,-40,-20); endShape(CLOSE);
+        beginShape(); vertex(40,-80); bezierVertex(80,-70-eyeSlant,95+cheekFlareX,-20+eyePinch,75,10+eyePinch); bezierVertex(60,15+eyePinch,45,0,40,-20); endShape(CLOSE);
+        
         if (angerLevel > 0.6) {
             let baseSize = map(angerLevel, 0.6, 1, 10, 45, true);
-            noStroke();
             for (let i = 5; i > 0; i--) { fill(255, map(i/5, 1, 0, 10, 80)); ellipse(-60, -20, baseSize*i/5); ellipse(60, -20, baseSize*i/5); }
         }
     }
 
     function drawLowerJaw(yOffset, angerLevel) {
         push();
-        if (angerLevel < 0.98) {
-            translate(0, yOffset); rotate(map(yOffset, 0, 140, 0, 0.05));
+        if (angerLevel < 0.95) {
+            translate(0, yOffset);
         } else {
-            let orbitRadius = 180 + sin(frameCount*0.05)*10;
+            let orbitRadius = 180 + sin(frameCount * 0.05) * 10;
             translate(cos(frameCount*0.1)*orbitRadius, sin(frameCount*0.1)*orbitRadius);
             rotate(frameCount*0.3);
         }
-        let cheekFlareX = map(angerLevel, 0, 1, 0, 15);
         fill(255); noStroke();
         beginShape();
-        vertex(-75-cheekFlareX, 100); bezierVertex(-85-cheekFlareX, 105, -105-cheekFlareX, 140, -90, 190);
-        bezierVertex(-60, 205, 60, 205, 90, 190); bezierVertex(105+cheekFlareX, 140, 85+cheekFlareX, 105, 75+cheekFlareX, 100);
-        vertex(70, 100); vertex(-70, 100);
+        vertex(-75, 100); bezierVertex(-85, 105, -105, 140, -90, 190);
+        bezierVertex(-60, 205, 60, 205, 90, 190);
+        bezierVertex(105, 140, 85, 105, 75, 100);
         endShape(CLOSE);
         pop();
     }
     
     class FlameParticle {
-        constructor(emitterX, emitterY) {
-            this.pos = createVector(emitterX + random(-15, 15), emitterY + random(-15, 15));
-            this.vel = createVector(random(-2, 2), random(-5, -12));
-            this.lifespan = 1.0; this.decay = random(0.015, 0.04); this.size = random(10, 25);
-        }
+        constructor(x, y) { this.pos = createVector(x, y); this.vel = p5.Vector.random2D().mult(random(2, 5)); this.lifespan = 255; }
         isFinished() { return this.lifespan <= 0; }
-        update() { this.pos.add(this.vel); this.vel.y *= 0.98; this.lifespan -= this.decay; this.size -= 0.3; }
-        show() { noStroke(); fill(255, this.lifespan * 220); ellipse(this.pos.x, this.pos.y, max(0, this.size)); }
+        update() { this.pos.add(this.vel); this.lifespan -= 5; }
+        show() { noStroke(); fill(255, this.lifespan); ellipse(this.pos.x, this.pos.y, 8); }
     }
-
-
-    // --- KEYPRESS HANDLER ---
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') {
             currentMask = parseInt(key);
             maskLabel.html(`Current: ${maskNames[currentMask]}`);
         }
-        
-        if (key.toLowerCase() === 's') {
-            saveCanvas('my-mask', 'png');
-        }
+        if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
+    }
+    
+    window.windowResized = function() {
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        resizeCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
     }
 })();
