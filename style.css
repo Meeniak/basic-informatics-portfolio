@@ -1,12 +1,12 @@
 /* --- CURSOR STYLES --- */
-/* Force hides the default browser cursor on all elements, especially links */
-html, body, a {
+/* FIX: Aggiunto 'input' per nascondere il cursore di sistema anche su slider e color picker */
+html, body, a, input {
     cursor: none;
 }
 
 /* Style for our new custom cursor, controlled by JavaScript */
 .custom-cursor {
-    position: fixed; /* Stays in the viewport */
+    position: fixed;
     top: 0;
     left: 0;
     width: 20px;
@@ -16,7 +16,6 @@ html, body, a {
     pointer-events: none;
     transform: translate(-50%, -50%);
     z-index: 9999;
-    /* Add transition for smooth fading */
     transition: opacity 0.2s ease-in-out;
 }
 
@@ -194,7 +193,6 @@ body.home {
     width: 100% !important;
     height: 100% !important;
     display: block;
-    cursor: none;
 }
 
 #controls-panel {
@@ -202,15 +200,18 @@ body.home {
     flex-shrink: 0;
     background-color: #1f1f1f;
     border: 1px solid #444;
-    padding: 20px;
+    padding: 15px 20px; /* Reduced vertical padding */
     box-sizing: border-box;
     color: #ccc;
+    /* FIX: Imposta l'altezza uguale alla tela e gestisce lo scorrimento interno */
+    height: 75vh;
+    overflow-y: auto;
 }
 
 .control-group {
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* Reduced margin */
     border-bottom: 1px solid #333;
-    padding-bottom: 20px;
+    padding-bottom: 15px; /* Reduced padding */
 }
 .control-group:last-child {
     border-bottom: none;
@@ -219,17 +220,17 @@ body.home {
 }
 
 #controls-panel h3 {
-    font-size: 1.5em;
+    font-size: 1.4em; /* Reduced font size */
     font-weight: 400;
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Reduced margin */
     color: #fff;
 }
 
 #color-pickers, #sliders {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Reduced gap */
 }
 
 .picker-wrapper {
