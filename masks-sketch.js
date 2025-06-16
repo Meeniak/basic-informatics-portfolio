@@ -13,7 +13,7 @@
         5: 'Forest Spirit'
     };
 
-    // --- Variabili specifiche per le tue maschere ---
+    // --- Variabili specifiche ---
     let n_dragon = 1;
     let increment_dragon = 1;
     let particles_skull = [];
@@ -21,7 +21,8 @@
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        const canvas = createCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
+        // FIX: Usa una dimensione fissa per il canvas per rispettare le coordinate originali
+        const canvas = createCanvas(1000, 800); 
         canvas.parent(canvasWrapper);
         
         mic = new p5.AudioIn();
@@ -33,8 +34,7 @@
         maskLabel = select('#current-mask-label');
         maskLabel.html(`Current: ${maskNames[currentMask]}`);
         
-        // --- NUOVO: Slider per la sensibilità ---
-        sensitivitySlider = createSlider(1, 10, 4, 0.1); // min, max, default, step
+        sensitivitySlider = createSlider(1, 10, 4, 0.1);
         sensitivitySlider.parent('sensitivity-slider-container');
         sensitivitySlider.style('width', '100%');
         
@@ -50,11 +50,10 @@
         
         let sensitivity = sensitivitySlider.value();
         let rawVolume = mic.getLevel() * sensitivity;
-        // Usa constrain per evitare che il volume superi una soglia sicura
         let constrainedVolume = constrain(rawVolume, 0, 1.0); 
         smoothedVolume = lerp(smoothedVolume, constrainedVolume, 0.1);
 
-        translate(width / 2, height / 2);
+        translate(width / 2, height / 2); // Centra tutto il disegno
         
         switch (currentMask) {
             case 1: drawUserDragon(smoothedVolume); break;
@@ -68,6 +67,9 @@
     // --- TUE MASCHERE INTEGRATE E CORRETTE ---
 
     function drawUserDragon(vol) {
+        // FIX: Ricalibrato per un canvas 1000x800 e centrato
+        push();
+        
         let anger = map(vol, 0, 0.8, 20, 100, true);
         
         n_dragon += increment_dragon;
@@ -76,12 +78,10 @@
         }
 
         if (anger > 80) {
-            push();
             stroke(255, n_dragon * 5, 0);
             strokeWeight(n_dragon);
             noFill();
-            line(-120, 35, -300 - n_dragon * 5, 35);
-            pop();
+            line(-60, 55, -200 - n_dragon * 5, 55);
         }
 
         let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -91,26 +91,30 @@
         stroke(255);
         strokeWeight(4);
 
-        rect(-150, -20, 180, 50);
-        arc(-100, 25, 100, 100, 0, 180);
-        push(); fill(255, 0, 0); ellipse(-100, 25, 70, 70); pop();
-        ellipse(-100, 25, pp, pp);
-        push(); fill(255); ellipse(-115, 10, 10, 10); pop();
-        
-        arc(-100, 25, 80, 80, 240, arc1, CHORD);
-        triangle(-150, -45, -150, -20, -120, -20);
-        if (anger > 50) triangle(-120, -45, -120, -20, -90, -20);
-        if (anger > 80) triangle(-90, -45, -90, -20, -60, -20);
+        rect(-170, 0, 180, 50);
+        arc(-220, 45, 100, 100, 0, 180);
+        push(); fill(255, 0, 0); ellipse(-220, 45, 70, 70); pop();
+        ellipse(-220, 45, pp, pp);
+        push(); fill(255); ellipse(-235, 30, 10, 10); ellipse(-70, -15, (5 + vol * 80), (5 + vol * 80)); pop();
+        arc(-220, 45, 80, 80, 240, arc1, CHORD);
+        triangle(-170, -25, -170, 0, -140, 0);
+        if (anger > 50) triangle(-140, -25, -140, 0, -110, 0);
+        if (anger > 80) triangle(-110, -25, -110, 0, -80, 0);
         
         push();
-        translate(-100, 35);
+        translate(-220, 45);
         if (anger > 20) rotate(vol * 50);
         rect(0, 40, 80, 49);
         triangle(50, 40, 50, 25, 30, 40);
         pop();
+
+        pop();
     }
     
     function drawUserRobot(vol) {
+        // FIX: Ricalibrato per essere sempre centrato
+        push();
+        
         let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
         let visorScaleX = map(vol, 0, 0.5, 1, 1.2, true);
         let visorWidth = 280 * visorScaleX;
@@ -141,19 +145,28 @@
         stroke(255);
         strokeWeight(6);
         rect(0, 0, mouthWidth, mouthHeight, 10);
+        
+        // --- FIX: Aggiunto controllo di sicurezza per prevenire il crash ---
         let spectrum = fft.analyze();
-        noStroke();
-        fill(255);
-        let barWidth = mouthWidth / spectrum.length;
-        for (let i = 0; i < spectrum.length; i++) {
-            let x = map(i, 0, spectrum.length, -mouthWidth / 2, mouthWidth / 2);
-            let barHeight = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
-            rect(x + barWidth / 2, mouthHeight/2 - barHeight/2, barWidth * 0.8, barHeight);
+        if (spectrum) {
+            noStroke();
+            fill(255);
+            let barWidth = mouthWidth / spectrum.length;
+            for (let i = 0; i < spectrum.length; i++) {
+                let x = map(i, 0, spectrum.length, -mouthWidth / 2, mouthWidth / 2);
+                let barHeight = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
+                rect(x + barWidth / 2, mouthHeight/2 - barHeight/2, barWidth * 0.8, barHeight);
+            }
         }
+        pop();
+
         pop();
     }
     
     function drawUserSkull(vol) {
+        // Questa maschera era già centrata e funzionante, ho solo aggiustato la reattività
+        push();
+        
         let angerLevel = map(vol, 0.1, 0.7, 0, 1, true);
 
         if (angerLevel > 0.95 && rageFlash_skull <= 0) {
@@ -179,6 +192,8 @@
         drawAngrySkull(angerLevel);
         for (let p of particles_skull) { p.update(); p.show(); }
         particles_skull = particles_skull.filter(p => !p.isFinished());
+        
+        pop();
     }
 
     // --- MIE MASCHERE (REATTIVITÀ CORRETTA) ---
@@ -274,8 +289,7 @@
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
     
-    window.windowResized = function() {
-        const canvasWrapper = document.getElementById('canvas-wrapper');
-        resizeCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
-    }
+    // Rimuovo la funzione windowResized perché ora usiamo un canvas a dimensione fissa
+    // e lasciamo che sia il CSS a gestirne la visualizzazione responsive.
 })();
+
