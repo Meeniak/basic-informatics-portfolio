@@ -1,10 +1,8 @@
 /* --- CURSOR STYLES --- */
-/* FIX: Aggiunto 'input' per nascondere il cursore di sistema anche su slider e color picker */
 html, body, a, input {
     cursor: none;
 }
 
-/* Style for our new custom cursor, controlled by JavaScript */
 .custom-cursor {
     position: fixed;
     top: 0;
@@ -200,18 +198,16 @@ body.home {
     flex-shrink: 0;
     background-color: #1f1f1f;
     border: 1px solid #444;
-    padding: 15px 20px; /* Reduced vertical padding */
+    padding: 15px 20px;
     box-sizing: border-box;
     color: #ccc;
-    /* FIX: Imposta l'altezza uguale alla tela e gestisce lo scorrimento interno */
-    height: 75vh;
-    overflow-y: auto;
+    /* FIX: Rimosso height e overflow per evitare lo scorrimento interno */
 }
 
 .control-group {
-    margin-bottom: 20px; /* Reduced margin */
+    margin-bottom: 15px; /* Spazio ridotto */
     border-bottom: 1px solid #333;
-    padding-bottom: 15px; /* Reduced padding */
+    padding-bottom: 15px; /* Spazio ridotto */
 }
 .control-group:last-child {
     border-bottom: none;
@@ -220,17 +216,17 @@ body.home {
 }
 
 #controls-panel h3 {
-    font-size: 1.4em; /* Reduced font size */
+    font-size: 1.3em; /* Dimensione ridotta */
     font-weight: 400;
     margin-top: 0;
-    margin-bottom: 15px; /* Reduced margin */
+    margin-bottom: 15px;
     color: #fff;
 }
 
 #color-pickers, #sliders {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Reduced gap */
+    gap: 15px; /* Spazio ridotto */
 }
 
 .picker-wrapper {
