@@ -16,6 +16,8 @@ html, body, a {
     pointer-events: none;
     transform: translate(-50%, -50%);
     z-index: 9999;
+    /* Add transition for smooth fading */
+    transition: opacity 0.2s ease-in-out;
 }
 
 
@@ -30,7 +32,6 @@ body {
     box-sizing: border-box; 
 }
 
-/* FIX: Ensure all links, including visited ones, are white by default */
 a, a:visited {
     color: #ffffff;
     text-decoration: none;
@@ -152,7 +153,6 @@ h2 {
     display: none;
 }
 
-/* FIX: Ensure sub-page links are gray, even when visited */
 .sub-page-header a, .sub-page-header a:visited {
     color: #ccc;
     text-decoration: none;
@@ -194,7 +194,7 @@ body.home {
     width: 100% !important;
     height: 100% !important;
     display: block;
-    cursor: none; /* Hide OS cursor over canvas */
+    cursor: none;
 }
 
 #controls-panel {
@@ -232,7 +232,13 @@ body.home {
     gap: 20px;
 }
 
-.picker-wrapper, .slider-wrapper {
+.picker-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.slider-wrapper {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -242,19 +248,30 @@ body.home {
 #controls-panel label {
     font-size: 1em;
     font-weight: 300;
+    display: flex; 
+    align-items: center;
+}
+
+.color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 1px solid #555;
+    flex-shrink: 0; 
 }
 
 input[type="color"] {
     border: 1px solid #555;
     border-radius: 4px;
-    width: 100%;
+    width: 60px; 
     height: 35px;
     padding: 2px;
     box-sizing: border-box;
     background: none;
 }
 
-/* NEW: Custom Slider Styles */
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -275,14 +292,12 @@ input[type="range"]::-webkit-slider-thumb {
     height: 16px;
     background: #fff;
     border-radius: 50%;
-    border: 1px solid #333;
 }
 input[type="range"]::-moz-range-thumb {
     width: 15px;
     height: 15px;
     background: #fff;
     border-radius: 50%;
-    border: 1px solid #333;
 }
 
 #legend p {
