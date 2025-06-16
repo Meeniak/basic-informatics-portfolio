@@ -14,9 +14,16 @@
     let puntiPrecedenti = [];
 
     const nomiPennelli = {
-        1: 'Bubbles', 2: 'Random Letters', 3: 'Organic (Volume)', 4: 'Orbiting Dots',
-        5: 'Spray Paint', 6: 'Swellings', 7: 'Web', 8: 'Crystallize',
-        9: 'Soft Eraser', 0: 'Shape Eraser'
+        1: 'Bubbles',
+        2: 'Random Letters',
+        3: 'Organic (sounds reactive)',
+        4: 'Orbiting Dots',
+        5: 'Spray Paint',
+        6: 'Swellings',
+        7: 'Web',
+        8: 'Crystallize',
+        9: 'Soft Eraser',
+        0: 'Shape Eraser'
     };
 
     window.setup = function() {
@@ -98,15 +105,45 @@
         layerAnteprima.noFill();
         layerAnteprima.stroke(255, 100);
         layerAnteprima.strokeWeight(1);
+
         switch(tipoPennello) {
-            case 1: for(let i=0; i<5; i++) layerAnteprima.ellipse(random(-dimensione/3, dimensione/3), random(-dimensione/3, dimensione/3), random(dimensione*0.2, dimensione*0.5)); break;
-            case 2: layerAnteprima.textSize(dimensione); layerAnteprima.textAlign(CENTER, CENTER); layerAnteprima.text('A', 0, 0); break;
-            case 3: layerAnteprima.beginShape(); for (let a = 0; a < TWO_PI; a += 0.5) { let r = dimensione / 2 + noise(a * 10, millis() * 0.001) * (volume * 200); layerAnteprima.vertex(cos(a) * r, sin(a) * r); } layerAnteprima.endShape(CLOSE); break;
-            case 4: for (let i = 0; i < 3; i++) layerAnteprima.ellipse(cos(TWO_PI*(i/3)+millis()*0.002) * dimensione/1.5, sin(TWO_PI*(i/3)+millis()*0.002) * dimensione/1.5, dimensione/5); break;
-            case 8: for(let i=0; i<5; i++) layerAnteprima.line(0,0, random(-dimensione, dimensione), random(-dimensione, dimensione)); break;
-            case 9: let softness = map(custom, 1, 100, 5, 40); for(let i = softness; i > 0; i--) { let d = map(i, softness, 0, dimensione, 0); layerAnteprima.ellipse(0, 0, d); } break;
-            case 0: let lati = floor(map(custom, 1, 100, 2, 12)); layerAnteprima.beginShape(); for (let i = 0; i < lati; i++) { let ang = map(i, 0, lati, 0, TWO_PI); layerAnteprima.vertex(cos(ang) * dimensione/2, sin(ang) * dimensione/2); } layerAnteprima.endShape(CLOSE); break;
-            default: layerAnteprima.ellipse(0, 0, dimensione); break;
+            case 1:
+                layerAnteprima.ellipse(dimensione*0.1, -dimensione*0.2, dimensione*0.5);
+                layerAnteprima.ellipse(-dimensione*0.2, dimensione*0.15, dimensione*0.3);
+                layerAnteprima.ellipse(-dimensione*0.3, -dimensione*0.25, dimensione*0.2);
+                break;
+            case 2:
+                layerAnteprima.textSize(dimensione); layerAnteprima.textAlign(CENTER, CENTER); layerAnteprima.text('A', 0, 0);
+                break;
+            case 3:
+                layerAnteprima.beginShape(); for (let a = 0; a < TWO_PI; a += 0.5) { let r = dimensione / 2 + noise(a * 10) * (volume * 200); layerAnteprima.vertex(cos(a) * r, sin(a) * r); } layerAnteprima.endShape(CLOSE);
+                break;
+            case 4:
+                for (let i = 0; i < 3; i++) layerAnteprima.ellipse(cos(TWO_PI*i/3) * dimensione/2, sin(TWO_PI*i/3) * dimensione/2, dimensione/5);
+                break;
+            case 5:
+                for(let i=0; i<40; i++) { let a=noise(i)*TWO_PI*2; let r=noise(i+10)*dimensione/2; layerAnteprima.rect(cos(a)*r, sin(a)*r, 1, 1); }
+                break;
+            case 6:
+                layerAnteprima.beginShape(); layerAnteprima.vertex(-dimensione/2,0); layerAnteprima.bezierVertex(-dimensione/4, -dimensione/2, dimensione/4, dimensione/2, dimensione/2, 0); layerAnteprima.endShape();
+                break;
+            case 7:
+                layerAnteprima.line(0,0, -dimensione/2, -dimensione/3); layerAnteprima.line(0,0, dimensione/2, -dimensione/4); layerAnteprima.line(0,0, dimensione/3, dimensione/2);
+                break;
+            case 8:
+                layerAnteprima.line(0,0, -dimensione/2, dimensione/1.5); layerAnteprima.line(0,0, dimensione/1.5, dimensione/2); layerAnteprima.line(0,0, dimensione/2, -dimensione/1.5);
+                break;
+            case 9:
+                let softness = map(custom, 1, 100, 5, 40);
+                for(let i = softness; i > 0; i--) { let d = map(i, softness, 0, dimensione, 0); layerAnteprima.ellipse(0, 0, d); }
+                break;
+            case 0:
+                let lati = floor(map(custom, 1, 100, 2, 12));
+                layerAnteprima.beginShape(); for (let i = 0; i < lati; i++) { let ang = map(i, 0, lati, 0, TWO_PI); layerAnteprima.vertex(cos(ang) * dimensione/2, sin(ang) * dimensione/2); } layerAnteprima.endShape(CLOSE);
+                break;
+            default:
+                layerAnteprima.ellipse(0, 0, dimensione);
+                break;
         }
         layerAnteprima.pop();
     }
@@ -138,10 +175,7 @@
         }
     }
 
-    function ottieniVelocitaMouse() {
-        if (mouseXPrecedente === undefined) return 0;
-        return dist(mouseX, mouseY, mouseXPrecedente, mouseYPrecedente);
-    }
+    function ottieniVelocitaMouse() { if (mouseXPrecedente === undefined) return 0; return dist(mouseX, mouseY, mouseXPrecedente, mouseYPrecedente); }
     
     window.keyPressed = function() {
         if (document.activeElement.tagName === "INPUT") return;
@@ -149,11 +183,7 @@
             tipoPennello = parseInt(key);
             etichettaPennello.html(`Current: ${nomiPennelli[tipoPennello]}`);
         }
-        if (key === ' ') {
-            telaDisegno.background(coloreSfondo); return false; 
-        }
-        if (key.toLowerCase() === 's') {
-            saveCanvas(telaDisegno, 'my-artwork', 'png');
-        }
+        if (key === ' ') { telaDisegno.background(coloreSfondo); return false; }
+        if (key.toLowerCase() === 's') { saveCanvas(telaDisegno, 'my-artwork', 'png'); }
     }
 })();
