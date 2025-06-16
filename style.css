@@ -1,5 +1,6 @@
 /* --- CURSOR STYLES --- */
-html, body, a, input {
+/* FIX: Aggiunto 'label' per nascondere il cursore di sistema anche sulle etichette */
+html, body, a, input, label {
     cursor: none;
 }
 
@@ -201,13 +202,12 @@ body.home {
     padding: 15px 20px;
     box-sizing: border-box;
     color: #ccc;
-    /* FIX: Rimosso height e overflow per evitare lo scorrimento interno */
 }
 
 .control-group {
-    margin-bottom: 15px; /* Spazio ridotto */
+    margin-bottom: 15px;
     border-bottom: 1px solid #333;
-    padding-bottom: 15px; /* Spazio ridotto */
+    padding-bottom: 15px;
 }
 .control-group:last-child {
     border-bottom: none;
@@ -216,7 +216,7 @@ body.home {
 }
 
 #controls-panel h3 {
-    font-size: 1.3em; /* Dimensione ridotta */
+    font-size: 1.3em;
     font-weight: 400;
     margin-top: 0;
     margin-bottom: 15px;
@@ -226,7 +226,7 @@ body.home {
 #color-pickers, #sliders {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spazio ridotto */
+    gap: 15px;
 }
 
 .picker-wrapper {
