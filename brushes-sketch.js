@@ -103,11 +103,8 @@
         layerAnteprima.push();
         layerAnteprima.translate(mouseX, mouseY);
         
-        // --- FIX: Adaptive Preview Color ---
-        // Calcola la luminosità dello sfondo
         let brightness = red(coloreSfondo) * 0.299 + green(coloreSfondo) * 0.587 + blue(coloreSfondo) * 0.114;
-        // Scegli il colore dell'anteprima in base alla luminosità
-        let previewColor = (brightness > 128) ? color(0, 100) : color(255, 100); // Nero o bianco traslucido
+        let previewColor = (brightness > 128) ? color(0, 100) : color(255, 100);
 
         layerAnteprima.noFill();
         layerAnteprima.stroke(previewColor);
@@ -140,13 +137,11 @@
         let c = color(red(colorePennello), green(colorePennello), blue(colorePennello), trasparenza);
         
         if (tipoPennello === 9) { // Soft Eraser
-            // FIX: Nuova logica per una durezza più controllabile
             telaDisegno.noStroke();
-            let num_steps = 80; // Numero fisso di passaggi per una sfumatura liscia
-            let durezza = map(custom, 1, 100, 0.1, 2); // 0.1 = molto morbida, 2 = più dura
+            let num_steps = 80;
+            let durezza = map(custom, 1, 100, 0.1, 2);
             for (let i = num_steps; i > 0; i--) {
                 let r = dimensione * (i / num_steps);
-                // La funzione pow() crea una curva di sfumatura non lineare
                 let alpha = pow(1 - (i / num_steps), durezza) * 255;
                 telaDisegno.fill(red(coloreSfondo), green(coloreSfondo), blue(coloreSfondo), alpha);
                 telaDisegno.ellipse(mouseX, mouseY, r, r);
@@ -154,7 +149,6 @@
             return;
         } else if (tipoPennello === 0) { // Shape Eraser
             telaDisegno.erase();
-            // FIX: Aggiunto push/translate/pop per posizionare la gomma correttamente
             telaDisegno.push();
             telaDisegno.translate(mouseX, mouseY);
             disegnaFormaGomma(telaDisegno, dimensione, custom);
@@ -207,13 +201,12 @@
         }
     }
     
+    // --- FIX: Funzione helper per la gomma a forme semplificata e corretta ---
     function disegnaFormaGomma(pg, dimensione, custom) {
         let tipoForma = floor(map(custom, 1, 101, 1, 11));
+        
+        // Il contesto (fill, stroke, ecc.) è ora gestito dalla funzione chiamante
         pg.push();
-        
-        if (pg === telaDisegno) { pg.noStroke(); pg.fill(coloreSfondo); } 
-        else { pg.noFill(); pg.stroke(pg.stroke().levels[0], pg.stroke().levels[1], pg.stroke().levels[2], 100); pg.strokeWeight(1); }
-        
         pg.rectMode(CENTER);
         let spessoreLinea = max(1, dimensione / 10);
 
@@ -229,7 +222,7 @@
         switch (tipoForma) {
             case 3: return 3; case 4: return 4; case 5: return 5;
             case 6: return 6; case 7: return 8; case 8: return 10;
-            case 9: return 12; case 10: return 60; // Cerchio approssimato
+            case 9: return 12; case 10: return 60;
             default: return 60;
         }
     }
