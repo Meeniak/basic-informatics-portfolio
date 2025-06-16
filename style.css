@@ -30,41 +30,41 @@ body {
     box-sizing: border-box; 
 }
 
+/* FIX: Ensure all links, including visited ones, are white by default */
+a, a:visited {
+    color: #ffffff;
+    text-decoration: none;
+}
+
 header {
     margin-bottom: 60px;
 }
 
-/* --- MODIFICHE AL TITOLO H1 --- */
 h1 {
     font-size: 8.5em;
     font-weight: 400;
     margin: 0;
     padding-top: 20px;
     padding-bottom: 20px;
-    /* Le linee orizzontali sono di nuovo a larghezza piena */
     border-top: 1px solid #444;
     border-bottom: 1px solid #444;
-    position: relative; /* Necessario per il posizionamento corretto dello span */
+    position: relative;
 }
 
-/* NUOVA REGOLA per lo span che contiene il testo */
 h1 span {
-    position: relative; /* Serve come "ancora" per la linea verticale */
-    padding-right: 40px; /* Spazio tra il testo e la linea verticale */
+    position: relative; 
+    padding-right: 40px; 
 }
 
-/* La linea verticale è ora agganciata allo SPAN */
 h1 span::after {
     content: ''; 
     position: absolute;
     background-color: #444;
     width: 1px;
-    /* La linea è più lunga */
-    top: -30px;      /* Sporge di 30px sopra */
-    bottom: -30px;   /* Sporge di 30px sotto */
+    top: -30px;      
+    bottom: -30px;   
     right: 0;
 }
-
 
 h2 {
     font-size: 1.3em;
@@ -152,6 +152,19 @@ h2 {
     display: none;
 }
 
+/* FIX: Ensure sub-page links are gray, even when visited */
+.sub-page-header a, .sub-page-header a:visited {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: 300;
+    transition: color 0.3s ease;
+}
+
+.sub-page-header a:hover {
+    color: white;
+}
+
 
 /* --- REGOLA PER L'ALLINEAMENTO DELLA HOME PAGE --- */
 body.home {
@@ -161,32 +174,32 @@ body.home {
     justify-content: flex-end;
 }
 
-/* --- Styles for Brushes Page --- */
 
+/* --- STYLES FOR BRUSHES PAGE --- */
 #sketch-container {
     display: flex;
-    flex-wrap: wrap; /* Allows panel to wrap below on small screens */
+    flex-wrap: wrap; 
     gap: 30px;
     width: 100%;
 }
 
 #canvas-wrapper {
-    flex-grow: 1; /* Canvas takes up available space */
-    min-width: 500px; /* Minimum width before panel wraps */
-    height: 75vh; /* Canvas height is 75% of the viewport height */
+    flex-grow: 1; 
+    min-width: 500px;
+    height: 75vh; 
     border: 1px solid #444;
 }
 
-/* Make the p5 canvas fill its wrapper */
 #canvas-wrapper canvas {
     width: 100% !important;
     height: 100% !important;
     display: block;
+    cursor: none; /* Hide OS cursor over canvas */
 }
 
 #controls-panel {
     width: 280px;
-    flex-shrink: 0; /* Prevents the panel from shrinking */
+    flex-shrink: 0;
     background-color: #1f1f1f;
     border: 1px solid #444;
     padding: 20px;
@@ -216,13 +229,14 @@ body.home {
 #color-pickers, #sliders {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .picker-wrapper, .slider-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 #controls-panel label {
@@ -230,17 +244,47 @@ body.home {
     font-weight: 300;
 }
 
-/* Style p5 color pickers */
 input[type="color"] {
     border: 1px solid #555;
     border-radius: 4px;
-    width: 60px;
-    height: 30px;
-    padding: 0;
+    width: 100%;
+    height: 35px;
+    padding: 2px;
+    box-sizing: border-box;
     background: none;
 }
 
-/* Style legend */
+/* NEW: Custom Slider Styles */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: #444;
+    outline: none;
+    opacity: 0.9;
+    transition: opacity .2s;
+}
+input[type="range"]:hover {
+    opacity: 1;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    border: 1px solid #333;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    border: 1px solid #333;
+}
+
 #legend p {
     margin: 5px 0;
     font-size: 0.9em;
