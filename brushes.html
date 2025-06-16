@@ -18,8 +18,7 @@
     <div id="sketch-container">
         
         <div id="canvas-wrapper">
-            <!-- p5.js Canvas will be inserted here -->
-        </div>
+            </div>
 
         <div id="controls-panel">
             
@@ -27,11 +26,15 @@
                 <h3>Settings</h3>
                 <div id="color-pickers">
                     <div class="picker-wrapper">
-                        <label for="color-picker">Brush Color</label>
+                        <label for="color-picker-container">
+                            <span class="color-dot" id="brush-color-dot"></span>Brush
+                        </label>
                         <div id="color-picker-container"></div>
                     </div>
                     <div class="picker-wrapper">
-                        <label for="bg-color-picker">Background Color</label>
+                        <label for="bg-color-picker-container">
+                            <span class="color-dot" id="bg-color-dot"></span>Background
+                        </label>
                         <div id="bg-color-picker-container"></div>
                     </div>
                 </div>
