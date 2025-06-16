@@ -13,16 +13,15 @@
     let microfono;
     let puntiPrecedenti = [];
 
-    // FIX: Nomi dei pennelli ripristinati
     const nomiPennelli = {
         1: 'Bubbles',
         2: 'Random Letters',
         3: 'Organic (sounds reactive)',
         4: 'Orbiting Dots',
         5: 'Spray Paint',
-        6: 'Swellings',
-        7: 'Web',
-        8: 'Crystallize',
+        6: 'Hourglass',
+        7: 'Octagram',
+        8: 'Marker',
         9: 'Soft Eraser',
         0: 'Shape Eraser'
     };
@@ -100,20 +99,40 @@
         mouseYPrecedente = mouseY;
     }
     
-    // Le anteprime statiche che avevamo definito sono corrette e rimangono invariate
     function mostraAnteprimaPennello(dimensione, custom) {
         layerAnteprima.push();
         layerAnteprima.translate(mouseX, mouseY);
         layerAnteprima.noFill();
         layerAnteprima.stroke(255, 100);
-        layerAnteprima.strokeWeight(1);
+        layerAnteprima.strokeWeight(1.5); // Leggermente più spesso per chiarezza
 
         switch(tipoPennello) {
-            case 6: layerAnteprima.beginShape(); layerAnteprima.vertex(-dimensione/2,0); layerAnteprima.bezierVertex(-dimensione/4, -dimensione/2, dimensione/4, dimensione/2, dimensione/2, 0); layerAnteprima.endShape(); break;
-            case 7: layerAnteprima.line(0,0, -dimensione/2, -dimensione/3); layerAnteprima.line(0,0, dimensione/2, -dimensione/4); layerAnteprima.line(0,0, dimensione/3, dimensione/2); break;
-            case 8: layerAnteprima.line(0,0, -dimensione/2, dimensione/1.5); layerAnteprima.line(0,0, dimensione/1.5, dimensione/2); layerAnteprima.line(0,0, dimensione/2, -dimensione/1.5); break;
+            case 6: // Hourglass Preview (più pulita)
+                layerAnteprima.beginShape();
+                layerAnteprima.vertex(-dimensione/2, -dimensione/4);
+                layerAnteprima.bezierVertex(-dimensione/8, 0, -dimensione/8, 0, -dimensione/2, dimensione/4);
+                layerAnteprima.endShape();
+                layerAnteprima.beginShape();
+                layerAnteprima.vertex(dimensione/2, -dimensione/4);
+                layerAnteprima.bezierVertex(dimensione/8, 0, dimensione/8, 0, dimensione/2, dimensione/4);
+                layerAnteprima.endShape();
+                break;
+            case 7: // Octagram Preview (più pulita)
+                layerAnteprima.beginShape();
+                for(let i=0; i<8; i++) {
+                    layerAnteprima.vertex(cos(TWO_PI*i/8)*dimensione/2, sin(TWO_PI*i/8)*dimensione/2);
+                }
+                layerAnteprima.endShape(CLOSE);
+                break;
+            case 8: // Marker Preview (più pulita)
+                layerAnteprima.strokeWeight(dimensione/10);
+                layerAnteprima.line(-dimensione/2, 0, dimensione/2, 0);
+                layerAnteprima.strokeWeight(1);
+                layerAnteprima.line(0,0, -dimensione/3.5, -dimensione/3.5);
+                layerAnteprima.line(0,0, dimensione/3.5, -dimensione/3.5);
+                break;
+            // Altre anteprime...
             case 0: disegnaFormaGomma(layerAnteprima, dimensione, custom); break;
-            // Altre anteprime
             case 1: layerAnteprima.ellipse(dimensione*0.1, -dimensione*0.2, dimensione*0.5); layerAnteprima.ellipse(-dimensione*0.2, dimensione*0.15, dimensione*0.3); layerAnteprima.ellipse(-dimensione*0.3, -dimensione*0.25, dimensione*0.2); break;
             case 2: layerAnteprima.textSize(dimensione); layerAnteprima.textAlign(CENTER, CENTER); layerAnteprima.text('A', 0, 0); break;
             case 3: layerAnteprima.beginShape(); for (let a = 0; a < TWO_PI; a += 0.5) layerAnteprima.vertex(cos(a)*dimensione/2.5, sin(a)*dimensione/2.5); layerAnteprima.endShape(CLOSE); break;
@@ -128,15 +147,15 @@
     function disegnaSuTela(dimensione, trasparenza, custom, velocita, volume) {
         let c = color(red(colorePennello), green(colorePennello), blue(colorePennello), trasparenza);
         
-        if (tipoPennello === 9) { // Soft Eraser
+        // --- GOMME ---
+        if (tipoPennello === 9) { 
             let morbidezza = map(custom, 1, 100, 20, 100);
             for (let i = morbidezza; i > 0; i--) { let d = map(i, morbidezza, 0, dimensione, 0); let a = map(i, morbidezza, 0, 0, 255 / (morbidezza*0.1)); telaDisegno.fill(red(coloreSfondo), green(coloreSfondo), blue(coloreSfondo), a); telaDisegno.noStroke(); telaDisegno.ellipse(mouseX, mouseY, d, d); }
             return;
-        } else if (tipoPennello === 0) { // Shape Eraser
+        } else if (tipoPennello === 0) {
             telaDisegno.erase();
             telaDisegno.push();
             telaDisegno.translate(mouseX, mouseY);
-            // La funzione helper ora disegna rettangoli per i segmenti
             disegnaFormaGomma(telaDisegno, dimensione, custom);
             telaDisegno.pop();
             telaDisegno.noErase();
@@ -145,72 +164,85 @@
 
         telaDisegno.noStroke();
         telaDisegno.fill(c);
+        telaDisegno.push();
+        telaDisegno.translate(mouseX, mouseY);
         
-        // FIX: Ripristinata la logica di disegno originale per i pennelli 6, 7 e 8
+        // --- FUNZIONE DI EASING PER LO SLIDER CUSTOM ---
+        // Rende il controllo più graduale e meno sensibile all'inizio
+        let easedCustom = pow(custom / 100, 2); // 0.0 to 1.0
+
         switch (tipoPennello) {
-            case 6: // Swellings
-                telaDisegno.push();
-                let sensSwell = map(custom, 1, 100, 0.1, 1);
-                telaDisegno.strokeWeight(dimensione * 0.1 + velocita * sensSwell);
-                telaDisegno.stroke(c); telaDisegno.noFill();
-                if(velocita > 2) telaDisegno.line(mouseX, mouseY, mouseXPrecedente, mouseYPrecedente);
-                telaDisegno.pop();
+            // --- PENNELLI MODIFICATI ---
+            case 3: // Organic: Sensibilità più estrema
+                let sens = map(easedCustom, 0, 1, 50, 2500); // FIX
+                telaDisegno.beginShape(); for (let a=0; a<TWO_PI; a+=0.3) telaDisegno.vertex(cos(a)*(dimensione/2 + noise(a*5, millis()*0.005) * (volume*sens)), sin(a)*(dimensione/2 + noise(a*5, millis()*0.005) * (volume*sens))); telaDisegno.endShape(CLOSE);
                 break;
-            case 7: // Web
-                telaDisegno.push();
-                let numPunti = floor(map(custom, 1, 100, 2, 20));
-                puntiPrecedenti.push(createVector(mouseX, mouseY));
-                if (puntiPrecedenti.length > numPunti) puntiPrecedenti.shift();
-                telaDisegno.stroke(c);
-                telaDisegno.strokeWeight(map(dimensione, 5, 200, 0.5, 5));
-                for (let i=0; i<puntiPrecedenti.length; i+=2) telaDisegno.line(mouseX, mouseY, puntiPrecedenti[i].x, puntiPrecedenti[i].y);
-                telaDisegno.pop();
+            case 4: // Orbiting Dots: Velocità più estrema
+                let velRotazione = map(easedCustom, 0, 1, 0.01, 0.6); // FIX
+                for (let i=0; i<3; i++) telaDisegno.ellipse(cos(TWO_PI*(i/3)+angolo)*dimensione/1.5, sin(TWO_PI*(i/3)+angolo)*dimensione/1.5, dimensione/5);
+                angolo += velRotazione;
                 break;
-            case 8: // Crystallize
-                telaDisegno.push();
-                if (velocita > 1) {
-                    let shatter = map(custom, 1, 100, 10, dimensione*2);
-                    telaDisegno.stroke(c);
-                    telaDisegno.strokeWeight(1);
-                    telaDisegno.line(mouseX, mouseY, mouseX + random(-shatter, shatter), mouseY + random(-shatter, shatter));
-                    telaDisegno.line(mouseX, mouseY, mouseXPrecedente, mouseYPrecedente);
+            case 5: // Spray Paint: Distribuzione circolare corretta
+                telaDisegno.translate(-mouseX, -mouseY);
+                let densita = map(easedCustom, 0, 1, 5, 250); // FIX
+                for (let i=0; i<densita; i++) {
+                    let r = sqrt(random(1)) * (dimensione / 2); // FIX per distribuzione uniforme
+                    let a = random(TWO_PI);
+                    telaDisegno.ellipse(mouseX + cos(a)*r, mouseY + sin(a)*r, 1, 1);
                 }
-                telaDisegno.pop();
+                break;
+            case 6: // Hourglass: Customize più estremo
+                let vita = map(easedCustom, 0, 1, dimensione/4, -dimensione/3); // FIX
+                telaDisegno.beginShape();
+                telaDisegno.vertex(-dimensione/2, -dimensione/4);
+                telaDisegno.bezierVertex(-vita, 0, -vita, 0, -dimensione/2, dimensione/4);
+                telaDisegno.bezierVertex(vita, 0, vita, 0, dimensione/2, dimensione/4);
+                telaDisegno.bezierVertex(-vita, 0, -vita, 0, -dimensione/2, -dimensione/4);
+                telaDisegno.endShape();
+                break;
+            case 7: // Octagram: Customize più estremo (ora controlla la "spigolosità")
+                let spigolosita = floor(map(easedCustom, 0, 1, 2, 6)); // FIX
+                let vertici = [];
+                for(let i=0; i<8; i++) vertici.push({x: cos(TWO_PI*i/8)*dimensione/2, y: sin(TWO_PI*i/8)*dimensione/2});
+                telaDisegno.stroke(c); telaDisegno.strokeWeight(map(dimensione, 5, 200, 0.5, 5)); telaDisegno.noFill();
+                telaDisegno.beginShape();
+                for(let i=0; i<8; i++) {
+                    let targetIndex = (i + spigolosita) % 8;
+                    telaDisegno.line(vertici[i].x, vertici[i].y, vertici[targetIndex].x, vertici[targetIndex].y);
+                }
+                telaDisegno.endShape();
+                break;
+            case 8: // Marker: Customize più graduale
+                let angoloObliquo = map(easedCustom, 0, 1, PI/8, PI/2.5); // FIX
+                telaDisegno.stroke(c);
+                telaDisegno.strokeWeight(dimensione/10);
+                telaDisegno.line(-dimensione/2, 0, dimensione/2, 0);
+                telaDisegno.strokeWeight(dimensione/15);
+                telaDisegno.line(0,0, cos(angoloObliquo)*dimensione/2.5, sin(angoloObliquo)*dimensione/2.5);
+                telaDisegno.line(0,0, cos(PI-angoloObliquo)*dimensione/2.5, sin(PI-angoloObliquo)*dimensione/2.5);
                 break;
             
-            // --- Logica degli altri pennelli (invariata) ---
-            case 1: let freq=map(custom,1,100,1,15); for (let i=0; i<freq; i++) { telaDisegno.fill(red(c), green(c), blue(c), trasparenza * random(0.1, 1)); telaDisegno.ellipse(mouseX + random(-dimensione/2, dimensione/2), mouseY + random(-dimensione/2, dimensione/2), random(dimensione * 0.1, dimensione * 0.6)); } break;
-            case 2: if (frameCount % floor(map(custom, 1, 100, 20, 1)) === 0) { telaDisegno.textSize(dimensione); telaDisegno.text('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.charAt(floor(random(26))), mouseX - dimensione/2.5, mouseY + dimensione/2.5); } break;
-            case 3: telaDisegno.push(); telaDisegno.translate(mouseX,mouseY); let sens=map(custom, 1, 100, 100, 800); telaDisegno.beginShape(); for (let a=0; a<TWO_PI; a+=0.3) telaDisegno.vertex(cos(a)*(dimensione/2 + noise(a*5, millis()*0.005) * (volume*sens)), sin(a)*(dimensione/2 + noise(a*5, millis()*0.005) * (volume*sens))); telaDisegno.endShape(CLOSE); telaDisegno.pop(); break;
-            case 4: telaDisegno.push(); telaDisegno.translate(mouseX,mouseY); let velRotazione=map(custom, 1, 100, 0.01, 0.2); for (let i=0; i<3; i++) telaDisegno.ellipse(cos(TWO_PI*(i/3)+angolo)*dimensione/1.5, sin(TWO_PI*(i/3)+angolo)*dimensione/1.5, dimensione/5); angolo += velRotazione; telaDisegno.pop(); break;
-            case 5: let densita=map(custom, 1, 100, 5, 200); for (let i=0; i<densita; i++) telaDisegno.ellipse(mouseX + cos(random(TWO_PI))*random(dimensione/2), mouseY + sin(random(TWO_PI))*random(dimensione/2), 1, 1); break;
+            // --- Pennelli precedenti (logica custom graduale) ---
+            case 1: telaDisegno.translate(-mouseX, -mouseY); let freq = map(easedCustom,0,1,1,15); for (let i = 0; i < freq; i++) { telaDisegno.fill(red(c), green(c), blue(c), trasparenza * random(0.1, 1)); telaDisegno.ellipse(mouseX + random(-dimensione/2, dimensione/2), mouseY + random(-dimensione/2, dimensione/2), random(dimensione * 0.1, dimensione * 0.6)); } break;
+            case 2: telaDisegno.translate(-mouseX, -mouseY); if (frameCount % floor(map(custom, 1, 100, 20, 1)) === 0) { telaDisegno.textSize(dimensione); telaDisegno.text('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.charAt(floor(random(26))), mouseX - dimensione/2.5, mouseY + dimensione/2.5); } break;
         }
+        telaDisegno.pop();
     }
     
-    // Helper function for Shape Eraser
     function disegnaFormaGomma(pg, dimensione, custom) {
         let tipoForma = floor(map(custom, 1, 101, 1, 11));
         pg.push();
-        pg.noStroke(); // Non vogliamo il contorno per la gomma
-        
-        // Imposta il riempimento solo se stiamo cancellando (pg === telaDisegno)
-        if (pg === telaDisegno) {
-            pg.fill(coloreSfondo);
-        } else { // Altrimenti per l'anteprima, usa un contorno
-            pg.noFill();
-            pg.stroke(255, 100);
-            pg.strokeWeight(1);
-        }
+        if (pg === telaDisegno) { pg.noStroke(); pg.fill(coloreSfondo); } 
+        else { pg.noFill(); pg.stroke(255, 100); pg.strokeWeight(1); }
         
         pg.rectMode(CENTER);
         let spessoreLinea = max(1, dimensione / 10);
 
         switch (tipoForma) {
-            // FIX: Usa rect() per i segmenti per garantire la cancellazione
-            case 1: pg.rect(0, 0, dimensione, spessoreLinea); break; // H-Line
-            case 2: pg.rect(0, 0, spessoreLinea, dimensione); break; // V-Line
+            case 1: pg.rect(0, 0, dimensione, spessoreLinea); break;
+            case 2: pg.rect(0, 0, spessoreLinea, dimensione); break;
             case 3: disegnaPoligono(pg, 3, dimensione/2); break;
-            case 4: disegnaPoligono(pg, 4, dimensione/1.414); break; // Adatta il quadrato
+            case 4: disegnaPoligono(pg, 4, dimensione/1.414); break;
             case 5: disegnaPoligono(pg, 5, dimensione/2); break;
             case 6: disegnaPoligono(pg, 6, dimensione/2); break;
             case 7: disegnaPoligono(pg, 8, dimensione/2); break;
@@ -221,25 +253,15 @@
         pg.pop();
     }
 
-    function disegnaPoligono(pg, lati, raggio) {
-        pg.beginShape();
-        for (let i = 0; i < lati; i++) {
-            let ang = map(i, 0, lati, 0, TWO_PI) - HALF_PI; // Ruota per allineare meglio
-            pg.vertex(cos(ang) * raggio, sin(ang) * raggio);
-        }
-        pg.endShape(CLOSE);
-    }
-
+    function disegnaPoligono(pg, lati, raggio) { pg.beginShape(); for (let i = 0; i < lati; i++) { let ang = map(i, 0, lati, 0, TWO_PI) - HALF_PI; pg.vertex(cos(ang) * raggio, sin(ang) * raggio); } pg.endShape(CLOSE); }
     function ottieniVelocitaMouse() { if (mouseXPrecedente === undefined) return 0; return dist(mouseX, mouseY, mouseXPrecedente, mouseYPrecedente); }
     
     window.keyPressed = function() {
         if (document.activeElement.tagName === "INPUT") return;
-        if (key >= '0' && key <= '9') {
-            tipoPennello = parseInt(key);
-            etichettaPennello.html(`Current: ${nomiPennelli[tipoPennello]}`);
-        }
+        if (key >= '0' && key <= '9') { tipoPennello = parseInt(key); etichettaPennello.html(`Current: ${nomiPennelli[tipoPennello]}`); }
         if (key === ' ') { telaDisegno.background(coloreSfondo); return false; }
         if (key.toLowerCase() === 's') { saveCanvas(telaDisegno, 'my-artwork', 'png'); }
     }
 })();
+
 
