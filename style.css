@@ -1,5 +1,4 @@
 /* --- CURSOR STYLES --- */
-/* FIX: Aggiunto 'label' per nascondere il cursore di sistema anche sulle etichette */
 html, body, a, input, label {
     cursor: none;
 }
@@ -173,24 +172,24 @@ body.home {
 }
 
 
-/* --- STYLES FOR BRUSHES PAGE --- */
+/* --- STYLES FOR SKETCH PAGES --- */
 #sketch-container {
     display: flex;
     flex-wrap: wrap; 
     gap: 30px;
     width: 100%;
+    justify-content: center; /* Centra il contenuto se c'è spazio */
 }
 
 #canvas-wrapper {
     flex-grow: 1; 
-    min-width: 500px;
-    height: 75vh; 
+    max-width: 800px; /* FIX: Imposta una larghezza massima per il canvas */
     border: 1px solid #444;
 }
 
 #canvas-wrapper canvas {
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important; /* Mantiene le proporzioni */
     display: block;
 }
 
@@ -223,16 +222,10 @@ body.home {
     color: #fff;
 }
 
-#color-pickers, #sliders {
+#sliders {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-.picker-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .slider-wrapper {
@@ -247,26 +240,6 @@ body.home {
     font-weight: 300;
     display: flex; 
     align-items: center;
-}
-
-.color-dot {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 10px;
-    border: 1px solid #555;
-    flex-shrink: 0; 
-}
-
-input[type="color"] {
-    border: 1px solid #555;
-    border-radius: 4px;
-    width: 60px; 
-    height: 35px;
-    padding: 2px;
-    box-sizing: border-box;
-    background: none;
 }
 
 input[type="range"] {
