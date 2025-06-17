@@ -7,8 +7,8 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Cyber Eye',
-        5: 'Weeping Mask'
+        4: 'Construct',
+        5: 'Bio-Lume'
     };
 
     window.setup = function() {
@@ -30,8 +30,8 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new CyberEyeScene(),
-            5: new WeepingMaskScene()
+            4: new ConstructScene(),
+            5: new BioLumeScene()
         };
         switchScene(1);
     }
@@ -59,7 +59,7 @@
         }
     }
     
-    // --- ROBOT: Potenziato e Corretto ---
+    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -67,14 +67,11 @@
             translate(width / 2, height / 2);
             rectMode(CENTER);
 
-            // Antenne
             let antennaWobble = sin(frameCount * 0.2) * vol * 40;
             stroke(0); strokeWeight(6); noFill();
             line(-80, -150, -120, -240 + antennaWobble);
             line(80, -150, 120, -240 - antennaWobble);
             fill(0); ellipse(-120, -240 + antennaWobble, 15, 15); ellipse(120, -240 - antennaWobble, 15, 15);
-
-            // Dettagli laterali
             let sideDetailSize = map(vol, 0.1, 0.6, 0, 40, true);
             rect(-180, 0, 20, sideDetailSize, 5);
             rect(180, 0, 20, sideDetailSize, 5);
@@ -93,7 +90,6 @@
             translate(0, 100);
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
-            
             let spectrum = fft.analyze();
             if (spectrum?.length) {
                 noStroke(); fill(0);
@@ -109,7 +105,7 @@
         }
     }
 
-    // --- DRAGO: Ingrandito e Centrato ---
+    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); this.n = 1; this.increment = 1; }
         draw() {
@@ -149,7 +145,7 @@
         }
     }
     
-    // --- TESCHIO: STABILE E COMPLETO ---
+    // --- TESCHIO ---
     class SkullScene extends Scene {
         constructor() { super(); this.particles = []; }
         draw() {
@@ -196,71 +192,80 @@
         carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
-    // --- CYBER EYE (Migliorato) ---
-    class CyberEyeScene extends Scene {
+    // --- NUOVA MASCHERA 4 ---
+    class ConstructScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2); angleMode(RADIANS);
-            let focus = map(vol, 0.1, 0.9, 0, 1, true);
+            background(255); translate(width/2, height/2); angleMode(RADIANS);
+            let energy = map(vol, 0, 1, 0, 1, true);
+
+            stroke(0); strokeWeight(4); noFill();
             
-            stroke(255, 80); strokeWeight(1); noFill();
-            for(let i=1; i<5; i++) {
-                let d = 200 + i*40 + sin(frameCount * 0.02 * i + i) * 20 * focus;
-                ellipse(0,0,d,d);
+            let mainSize = lerp(200, 250, energy);
+            let mainAngle = frameCount * 0.01;
+            
+            push();
+            rotate(mainAngle);
+            rect(0,0, mainSize, mainSize);
+            pop();
+
+            push();
+            rotate(-mainAngle);
+            let innerSize = lerp(50, 150, energy);
+            ellipse(0,0, innerSize, innerSize);
+            pop();
+
+            let lineCount = floor(lerp(2, 8, energy));
+            for(let i=0; i<lineCount; i++) {
+                let angle = i * TWO_PI / lineCount + frameCount*0.02;
+                let length = lerp(150, 300, energy);
+                line(0,0, cos(angle) * length, sin(angle) * length);
             }
-            
-            let gridVanishing = map(focus, 0, 1, 0, 200);
-            stroke(255, 50);
-            for(let i=0; i<10; i++) {
-                let y = lerp(-height/2, height/2, i/9);
-                line(-width/2, y, -gridVanishing, 0);
-                line(width/2, y, gridVanishing, 0);
-            }
-            
-            let pupilSize = lerp(180, 30, focus);
-            let irisSize = lerp(190, 100, focus);
-            let pupilGlow = map(vol, 0.4, 1.0, 50, 255, true);
-            noStroke();
-            fill(255, 0, 0, pupilGlow);
-            ellipse(0,0,irisSize, irisSize);
-            fill(255);
-            ellipse(0,0,pupilSize, pupilSize);
         }
     }
     
     // --- NUOVA MASCHERA 5 ---
-    class WeepingMaskScene extends Scene {
-        constructor() { super(); this.tears = []; }
+    class BioLumeScene extends Scene {
+        constructor() { super(); this.tentacles = Array.from({length: 12}, (v, i) => new Tentacle(i)); }
         draw() {
             let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2);
-            angleMode(DEGREES);
+            background(0); translate(width/2, height/2);
             
-            if (vol > 0.1 && frameCount % 5 === 0) {
-                let numTears = map(vol, 0.1, 1.0, 1, 5);
-                for(let i=0; i<numTears; i++) {
-                    this.tears.push(new Tear(-80, -20));
-                    this.tears.push(new Tear(80, -20));
-                }
-            }
-            for(let t of this.tears) { t.update(); t.show(); }
-            this.tears = this.tears.filter(t => t.lifespan > 0);
+            for(let t of this.tentacles) { t.update(vol); t.show(); }
 
-            stroke(255); strokeWeight(6); noFill();
-            ellipse(0, 0, 300, 400);
-            arc(-80, -20, 100, 100, 180, 360);
-            arc(80, -20, 100, 100, 180, 360);
-            
-            let mouthSadness = map(vol, 0, 1, 0, 50, true);
-            beginShape();
-            vertex(-80, 100);
-            bezierVertex(-40, 100 + mouthSadness, 40, 100 + mouthSadness, 80, 100);
-            endShape();
+            let coreSize = lerp(80, 120, vol);
+            let coreGlow = lerp(100, 255, vol);
+            noStroke();
+            fill(100, 200, 255, coreGlow);
+            ellipse(0,0, coreSize, coreSize);
+            fill(255);
+            ellipse(0,0, coreSize*0.3, coreSize*0.3);
         }
     }
     
+    // Helpers
     class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(2,5));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,this.lifespan);ellipse(this.pos.x,this.pos.y,8);}}
-    class Tear{constructor(x,y){this.pos=createVector(x,y);this.vel=createVector(random(-1,1),random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.vel.y += 0.1; this.lifespan-=4;}show(){noStroke();fill(100,150,255,this.lifespan);ellipse(this.pos.x,this.pos.y,10,15);}}
+    class Tentacle {
+        constructor(index) {
+            this.angle = index * (360/12);
+            this.segments = 15;
+            this.segLength = 15;
+        }
+        update(vol) { this.wobble = map(vol, 0, 1, 0, 40); }
+        show() {
+            push();
+            rotate(this.angle);
+            noFill(); stroke(255, 150); strokeWeight(3);
+            beginShape();
+            for(let i=0; i<this.segments; i++) {
+                let x = i * this.segLength;
+                let y = sin(i * 0.5 + frameCount * 0.05) * this.wobble;
+                vertex(x, y);
+            }
+            endShape();
+            pop();
+        }
+    }
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
