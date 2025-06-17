@@ -59,7 +59,7 @@
         }
     }
     
-    // --- ROBOT: FFT Corretto ---
+    // --- ROBOT: Potenziato e Corretto ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -67,11 +67,17 @@
             translate(width / 2, height / 2);
             rectMode(CENTER);
 
-            let antennaWobble = sin(frameCount * 0.2) * vol * 30;
+            // Antenne
+            let antennaWobble = sin(frameCount * 0.2) * vol * 40;
             stroke(0); strokeWeight(6); noFill();
-            line(-80, -150, -120, -220 + antennaWobble);
-            line(80, -150, 120, -220 - antennaWobble);
-            fill(0); ellipse(-120, -220 + antennaWobble, 15, 15); ellipse(120, -220 - antennaWobble, 15, 15);
+            line(-80, -150, -120, -240 + antennaWobble);
+            line(80, -150, 120, -240 - antennaWobble);
+            fill(0); ellipse(-120, -240 + antennaWobble, 15, 15); ellipse(120, -240 - antennaWobble, 15, 15);
+
+            // Dettagli laterali
+            let sideDetailSize = map(vol, 0.1, 0.6, 0, 40, true);
+            rect(-180, 0, 20, sideDetailSize, 5);
+            rect(180, 0, 20, sideDetailSize, 5);
 
             let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
             let visorWidth = 280 * map(vol, 0, 0.5, 1, 1.2, true);
@@ -112,7 +118,7 @@
             angleMode(DEGREES);
             push();
             translate(width / 2, height / 2);
-            scale(1.5); // Ingrandisce il disegno
+            scale(1.5);
             translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
@@ -187,7 +193,7 @@
             let noseFlare = map(angerLevel, 0, 1, 0, 10);
             triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
         }
-        carveLowerTeeth(){ fill(0); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
+        carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
     // --- CYBER EYE (Migliorato) ---
@@ -202,6 +208,15 @@
                 let d = 200 + i*40 + sin(frameCount * 0.02 * i + i) * 20 * focus;
                 ellipse(0,0,d,d);
             }
+            
+            let gridVanishing = map(focus, 0, 1, 0, 200);
+            stroke(255, 50);
+            for(let i=0; i<10; i++) {
+                let y = lerp(-height/2, height/2, i/9);
+                line(-width/2, y, -gridVanishing, 0);
+                line(width/2, y, gridVanishing, 0);
+            }
+            
             let pupilSize = lerp(180, 30, focus);
             let irisSize = lerp(190, 100, focus);
             let pupilGlow = map(vol, 0.4, 1.0, 50, 255, true);
@@ -210,12 +225,6 @@
             ellipse(0,0,irisSize, irisSize);
             fill(255);
             ellipse(0,0,pupilSize, pupilSize);
-
-            if (vol > 0.4) {
-                let y = random(-height/2, height/2);
-                let h = random(5, 30);
-                image(get(0, y, width, h), random(-30, 30), y);
-            }
         }
     }
     
@@ -225,6 +234,7 @@
         draw() {
             let vol = this.updateVolume();
             background(24,24,24); translate(width/2, height/2);
+            angleMode(DEGREES);
             
             if (vol > 0.1 && frameCount % 5 === 0) {
                 let numTears = map(vol, 0.1, 1.0, 1, 5);
@@ -237,12 +247,10 @@
             this.tears = this.tears.filter(t => t.lifespan > 0);
 
             stroke(255); strokeWeight(6); noFill();
-            // Faccia
             ellipse(0, 0, 300, 400);
-            // Occhi
             arc(-80, -20, 100, 100, 180, 360);
             arc(80, -20, 100, 100, 180, 360);
-            // Bocca triste
+            
             let mouthSadness = map(vol, 0, 1, 0, 50, true);
             beginShape();
             vertex(-80, 100);
@@ -259,4 +267,3 @@
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
-
