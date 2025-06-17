@@ -7,8 +7,8 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Golem',
-        5: 'Plague Doctor'
+        4: 'Gargoyle',
+        5: 'Jester'
     };
 
     window.setup = function() {
@@ -30,8 +30,8 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new GolemScene(),
-            5: new PlagueDoctorScene()
+            4: new GargoyleScene(),
+            5: new JesterScene()
         };
         switchScene(1);
     }
@@ -148,7 +148,7 @@
     
     // --- TESCHIO ---
     class SkullScene extends Scene {
-        constructor() { super(); this.particles = []; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
             background(0); translate(width / 2, height / 2);
@@ -159,15 +159,6 @@
             translate(random(-shake, shake), random(-shake, shake));
             this.drawAngrySkull(anger);
             pop();
-
-            if (anger > 0.5) {
-                for(let i=0; i<2; i++) {
-                    this.particles.push(new FlameParticle(-60, -80));
-                    this.particles.push(new FlameParticle(60, -80));
-                }
-            }
-            for (let p of this.particles) { p.update(); p.show(); }
-            this.particles = this.particles.filter(p => p.lifespan > 0);
         }
         drawAngrySkull(anger) {
             let jawDrop = map(anger, 0.3, 1, 0, 80, true);
@@ -220,91 +211,77 @@
         }
     }
 
-    // --- GOLEM ---
-    class GolemScene extends Scene {
+    // --- NUOVA MASCHERA 4 ---
+    class GargoyleScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2); angleMode(DEGREES);
+            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
             let energy = map(vol, 0, 1, 0, 1, true);
 
-            stroke(255); strokeWeight(3); noFill();
+            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
+            stroke(100); strokeWeight(8); noFill();
+            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
+            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
             
-            // Mascella
-            let jawY = lerp(80, 120, energy);
-            rect(0, jawY, 200, 80, 5);
+            fill(120); noStroke(); rectMode(CENTER);
+            rect(0,0,300,350,20);
+            arc(-80, -170, 80, 120, PI, TWO_PI);
+            arc(80, -170, 80, 120, PI, TWO_PI);
 
-            // Testa
-            let headShakeX = lerp(0, 10, energy);
-            let headShakeY = lerp(0, 10, energy);
-            push();
-            translate(random(-headShakeX, headShakeX), random(-headShakeY, headShakeY));
-            rect(0, -50, 300, 250, 20);
-            
-            // Occhi
-            let eyeGlow = map(energy, 0.4, 1, 50, 255, true);
-            fill(255, 100, 0, eyeGlow); noStroke();
-            rect(-80, -70, 60, 30, 5);
-            rect(80, -70, 60, 30, 5);
-            pop();
+            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
+            fill(255, 255, 0, eyeGlow);
+            ellipse(-80, -50, 60, 60);
+            ellipse(80, -50, 60, 60);
+
+            let mouthOpen = map(energy, 0, 1, 10, 80);
+            fill(0);
+            rect(0, 80, 150, mouthOpen, 10);
         }
     }
     
-    // --- PLAGUE DOCTOR ---
-    class PlagueDoctorScene extends Scene {
-        constructor() { super(); this.particles = []; }
+    // --- NUOVA MASCHERA 5 ---
+    class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(20); translate(width/2, height/2);
-            let energy = map(vol, 0.1, 0.8, 0, 1, true);
+            background(255); translate(width/2, height/2); angleMode(DEGREES);
+            let energy = map(vol, 0, 1, 0, 1, true);
 
-            if(energy > 0.1 && frameCount % 3 === 0) {
-                this.particles.push(new MiasmaParticle(0, 150));
-            }
-            for(let p of this.particles) { p.update(energy); p.show(); }
-            this.particles = this.particles.filter(p => p.lifespan > 0);
-
-            let headTilt = lerp(0, -15, energy);
+            let headWobble = sin(frameCount * 3) * 5 * energy;
             push();
-            rotate(headTilt);
-            // Maschera
-            fill(230); noStroke();
-            beginShape();
-            vertex(0, -250);
-            bezierVertex(-150, -220, -200, -50, -160, 50);
-            bezierVertex(-120, 120, -50, 180, 0, 190);
-            bezierVertex(50, 180, 120, 120, 160, 50);
-            bezierVertex(200, -50, 150, -220, 0, -250);
-            endShape(CLOSE);
-            
-            // Becco
-            fill(210);
-            beginShape();
-            vertex(-40, 50);
-            bezierVertex(0, 80, 0, 80, 40, 50);
-            vertex(0, 250);
-            endShape(CLOSE);
+            translate(headWobble, 0);
 
-            // Occhiali
-            stroke(50); strokeWeight(15);
-            fill(10, 10, 20);
-            ellipse(-90, -40, 100, 100);
-            ellipse(90, -40, 100, 100);
+            // Faccia
+            fill(0); noStroke();
+            beginShape();
+            vertex(0, -200);
+            bezierVertex(-200, -150, -150, 150, 0, 200);
+            bezierVertex(150, 150, 200, -150, 0, -200);
+            endShape(CLOSE);
             
-            let eyeGlow = map(energy, 0.4, 1, 0, 255, true);
-            noStroke(); fill(255,0,0, eyeGlow);
-            ellipse(-90, -40, 80, 80);
-            ellipse(90, -40, 80, 80);
+            // Decorazioni
+            fill(255);
+            let tearLength = lerp(0, 100, energy);
+            triangle(-80, 0, -60, 0, -70, tearLength);
+            triangle(80, 0, 60, 0, 70, tearLength);
+            
+            // Bocca
+            let mouthOpen = lerp(20, 120, energy);
+            noFill(); stroke(255); strokeWeight(4);
+            arc(0, 120, 100, mouthOpen, 0, 180);
+
+            // Cappello
+            fill(0);
+            let bellWobbleX1 = random(-1,1) * 30 * energy;
+            let bellWobbleY1 = random(-1,1) * 30 * energy;
+            let bellWobbleX2 = random(-1,1) * 30 * energy;
+            let bellWobbleY2 = random(-1,1) * 30 * energy;
+            triangle(0,-180, -150, -200, -80, -250);
+            triangle(0,-180, 150, -200, 80, -250);
+            fill(255);
+            ellipse(-80 + bellWobbleX1, -250 + bellWobbleY1, 20, 20);
+            ellipse(80 + bellWobbleX2, -250 + bellWobbleY2, 20, 20);
             pop();
         }
-    }
-    
-    // Helpers
-    class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,100,0,this.lifespan);ellipse(this.pos.x,this.pos.y,12);}}
-    class MiasmaParticle {
-        constructor(x,y) { this.pos = createVector(x,y); this.vel = createVector(random(-0.5, 0.5), random(1,3)); this.lifespan = 255; this.size = random(5,20); }
-        update(energy) { this.pos.add(this.vel); this.lifespan -= 3 + energy*3; }
-        isFinished() { return this.lifespan <= 0; }
-        show() { noStroke(); fill(50, 80, 50, this.lifespan); ellipse(this.pos.x, this.pos.y, this.size); }
     }
 
     window.keyPressed = function() {
