@@ -8,7 +8,7 @@
         2: 'Dragon',
         3: 'Skull',
         4: 'Sentinel',
-        5: 'Pulsar'
+        5: 'Plague Doctor'
     };
 
     window.setup = function() {
@@ -31,7 +31,7 @@
             2: new DragonScene(),
             3: new SkullScene(),
             4: new SentinelScene(),
-            5: new PulsarScene()
+            5: new PlagueDoctorScene()
         };
         switchScene(1);
     }
@@ -116,7 +116,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-270, -270);
+            translate(-190, -240);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -224,20 +224,25 @@
     class SentinelScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2); angleMode(RADIANS);
+            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
             let energy = map(vol, 0, 1, 0, 1, true);
 
-            // Spalle
             let shoulderHeight = lerp(0, -100, energy);
+            let detailOffset = lerp(0, 20, energy);
             stroke(255); strokeWeight(8); noFill();
+            
+            // Spalle principali
             beginShape(); vertex(-300, 300); bezierVertex(-200, 100, -150, shoulderHeight, -100, shoulderHeight); endShape();
             beginShape(); vertex(300, 300); bezierVertex(200, 100, 150, shoulderHeight, 100, shoulderHeight); endShape();
-            
-            // Testa
-            fill(255); noStroke();
-            rect(0, shoulderHeight - 40, 180, 80, 10);
+            // Spalle secondarie
+            strokeWeight(4);
+            beginShape(); vertex(-250, 300); bezierVertex(-180, 150, -130, shoulderHeight+detailOffset, -90, shoulderHeight+detailOffset); endShape();
+            beginShape(); vertex(250, 300); bezierVertex(180, 150, 130, shoulderHeight+detailOffset, 90, shoulderHeight+detailOffset); endShape();
 
-            // Occhio
+            fill(255); noStroke();
+            rectMode(CENTER);
+            rect(0, shoulderHeight - 40, 180, 80, 10);
+            
             let eyeOpen = lerp(0.1, 1, energy);
             fill(0);
             ellipse(0, shoulderHeight - 40, 140, 70 * eyeOpen);
@@ -248,41 +253,60 @@
         }
     }
     
-    // --- PULSAR ---
-    class PulsarScene extends Scene {
-        constructor() { super(); this.particles = Array.from({length: 200}, () => new StarParticle()); }
+    // --- NUOVA MASCHERA 5 ---
+    class PlagueDoctorScene extends Scene {
+        constructor() { super(); this.particles = []; }
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2); angleMode(DEGREES);
-            
-            for(let p of this.particles) { p.update(vol); p.show(); }
+            background(255); translate(width/2, height/2); angleMode(DEGREES);
+            let energy = map(vol, 0.1, 0.8, 0, 1, true);
 
-            let energy = map(vol, 0, 1, 0, 1, true);
-            let coreSize = lerp(20, 100, energy);
-            let coreGlow = lerp(100, 255, energy);
-
-            // Onde d'urto
-            strokeWeight(2); noFill();
-            for(let i=0; i<5; i++) {
-                let d = (frameCount * 2 + i * 100) % 500;
-                let alpha = map(d, 0, 500, 255, 0);
-                stroke(255, alpha);
-                ellipse(0,0,d,d);
+            if(energy > 0.1 && frameCount % 3 === 0) {
+                this.particles.push(new MiasmaParticle(0, 150));
             }
+            for(let p of this.particles) { p.update(energy); p.show(); }
+            this.particles = this.particles.filter(p => p.lifespan > 0);
+
+            // Maschera
+            let headTilt = lerp(0, -15, energy);
+            push();
+            rotate(headTilt);
+            fill(0); noStroke();
+            beginShape();
+            vertex(0, -200);
+            bezierVertex(-150, -220, -180, -50, -150, 50);
+            bezierVertex(-120, 120, -50, 180, 0, 190);
+            bezierVertex(50, 180, 120, 120, 150, 50);
+            bezierVertex(180, -50, 150, -220, 0, -200);
+            endShape(CLOSE);
             
-            // Nucleo
-            noStroke();
-            fill(255, 255, 200, coreGlow);
-            ellipse(0,0,coreSize,coreSize);
+            // Becco
+            beginShape();
+            vertex(-40, 50);
+            bezierVertex(0, 80, 0, 80, 40, 50);
+            vertex(0, 250);
+            endShape(CLOSE);
+
+            // Occhi
+            let eyeGlow = map(energy, 0.4, 1, 100, 255, true);
+            stroke(100); strokeWeight(15);
+            fill(20,0,0);
+            ellipse(-90, -40, 90, 90);
+            ellipse(90, -40, 90, 90);
+            noStroke(); fill(255,0,0, eyeGlow);
+            ellipse(-90, -40, 70, 70);
+            ellipse(90, -40, 70, 70);
+            pop();
         }
     }
     
     // Helpers
     class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,100,0,this.lifespan);ellipse(this.pos.x,this.pos.y,12);}}
-    class StarParticle {
-        constructor() { this.pos = p5.Vector.random2D().mult(random(width)); this.size = random(1,3); }
-        update(vol) { let distFromCenter = this.pos.mag(); this.pos.mult(1 + vol * 0.001); if(distFromCenter > width/2) this.pos.set(0,0); }
-        show() { noStroke(); fill(255, 100); ellipse(this.pos.x, this.pos.y, this.size); }
+    class MiasmaParticle {
+        constructor(x,y) { this.pos = createVector(x,y); this.vel = createVector(random(-0.5, 0.5), random(1,3)); this.lifespan = 255; this.size = random(5,20); }
+        update(energy) { this.pos.add(this.vel); this.lifespan -= 3 + energy*3; }
+        isFinished() { return this.lifespan <= 0; }
+        show() { noStroke(); fill(50, 80, 50, this.lifespan); ellipse(this.pos.x, this.pos.y, this.size); }
     }
 
     window.keyPressed = function() {
