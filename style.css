@@ -35,7 +35,32 @@ h2 {
 
 /* --- GALLERY STYLES --- */
 .gallery { display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 20px; }
-.gallery-item { position: relative; width: 420px; height: 420px; overflow: hidden; }
+.gallery-item {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    overflow: hidden; /* Assicura che l'immagine non esca */
+}
+/* FIX: Forza l'immagine a riempire il contenitore correttamente */
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter 0.4s ease, transform 0.3s ease;
+    filter: blur(5px);
+}
+.gallery-item:hover img { filter: blur(0); transform: scale(1.05); }
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    opacity: 1; transition: background-color 0.4s ease;
+}
+.gallery-item:hover .overlay { background-color: rgba(0, 0, 0, 0.4); }
+.text {
+    font-size: 2.2em; font-weight: bold; opacity: 0;
+    transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.gallery-item:hover .text { opacity: 1; transform: translateY(0); }
 
 /* --- SUB-PAGE HEADER STYLES --- */
 .sub-page-header {
@@ -57,7 +82,7 @@ body.home { min-height: 100vh; display: flex; flex-direction: column; justify-co
 }
 #canvas-wrapper {
     flex: 1 1 500px;
-    max-width: 700px; /* Ridotto per evitare scrolling */
+    max-width: 800px; /* Canvas più grande */
     aspect-ratio: 1 / 1;
     border: 1px solid #444;
     display: flex; justify-content: center; align-items: center;
