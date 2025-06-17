@@ -7,8 +7,8 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Construct',
-        5: 'Bio-Lume'
+        4: 'Gargoyle',
+        5: 'Symbiote'
     };
 
     window.setup = function() {
@@ -30,8 +30,8 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new ConstructScene(),
-            5: new BioLumeScene()
+            4: new GargoyleScene(),
+            5: new SymbioteScene()
         };
         switchScene(1);
     }
@@ -90,6 +90,7 @@
             translate(0, 100);
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
+            
             let spectrum = fft.analyze();
             if (spectrum?.length) {
                 noStroke(); fill(0);
@@ -107,15 +108,15 @@
 
     // --- DRAGO ---
     class DragonScene extends Scene {
-        constructor() { super(); this.n = 1; this.increment = 1; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2, height / 2);
-            scale(1.5);
-            translate(-270, -270);
+            translate(width / 2, height / 2); // Centra il punto di origine
+            scale(1.5); // Ingrandisce
+            translate(-150, -235); // Sposta il centro del disegno sul punto di origine
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -160,8 +161,7 @@
             pop();
 
             if (angerLevel > 0.5) {
-                let pCount = map(angerLevel, 0.5, 1, 0, 3, true);
-                for(let i=0; i<pCount; i++) {
+                for(let i=0; i<2; i++) {
                     this.particles.push(new FlameParticle(-60, -20));
                     this.particles.push(new FlameParticle(60, -20));
                 }
@@ -192,74 +192,80 @@
         carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
-    // --- NUOVA MASCHERA 4 ---
-    class ConstructScene extends Scene {
+    // --- GARGOYLE ---
+    class GargoyleScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(255); translate(width/2, height/2); angleMode(RADIANS);
+            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
             let energy = map(vol, 0, 1, 0, 1, true);
 
-            stroke(0); strokeWeight(4); noFill();
+            // Ali
+            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
+            stroke(100); strokeWeight(8); noFill();
+            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
+            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
             
-            let mainSize = lerp(200, 250, energy);
-            let mainAngle = frameCount * 0.01;
-            
-            push();
-            rotate(mainAngle);
-            rect(0,0, mainSize, mainSize);
-            pop();
+            // Faccia
+            fill(120); noStroke();
+            rect(0,0,300,350,20);
+            // Corna
+            arc(-80, -170, 80, 120, PI, TWO_PI);
+            arc(80, -170, 80, 120, PI, TWO_PI);
 
-            push();
-            rotate(-mainAngle);
-            let innerSize = lerp(50, 150, energy);
-            ellipse(0,0, innerSize, innerSize);
-            pop();
+            // Occhi
+            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
+            fill(255, 255, 0, eyeGlow);
+            ellipse(-80, -50, 60, 60);
+            ellipse(80, -50, 60, 60);
 
-            let lineCount = floor(lerp(2, 8, energy));
-            for(let i=0; i<lineCount; i++) {
-                let angle = i * TWO_PI / lineCount + frameCount*0.02;
-                let length = lerp(150, 300, energy);
-                line(0,0, cos(angle) * length, sin(angle) * length);
-            }
+            // Bocca
+            let mouthOpen = map(energy, 0, 1, 10, 80);
+            fill(0);
+            rect(0, 80, 150, mouthOpen, 10);
         }
     }
     
     // --- NUOVA MASCHERA 5 ---
-    class BioLumeScene extends Scene {
-        constructor() { super(); this.tentacles = Array.from({length: 12}, (v, i) => new Tentacle(i)); }
+    class SymbioteScene extends Scene {
+        constructor() { super(); this.tentacles = Array.from({length: 10}, () => new Tentacle()); }
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2);
+            background(0); translate(width/2, height/2); angleMode(RADIANS);
             
             for(let t of this.tentacles) { t.update(vol); t.show(); }
 
-            let coreSize = lerp(80, 120, vol);
-            let coreGlow = lerp(100, 255, vol);
-            noStroke();
-            fill(100, 200, 255, coreGlow);
-            ellipse(0,0, coreSize, coreSize);
+            // Faccia
+            let faceWobble = map(vol, 0, 1, 0, 30);
+            fill(50); noStroke();
+            beginShape();
+            for(let a=0; a<TWO_PI; a+=0.1) {
+                let r = 150 + sin(a*4 + frameCount*0.05)*20 + faceWobble;
+                vertex(cos(a)*r, sin(a)*r);
+            }
+            endShape(CLOSE);
+            
+            // Occhi
             fill(255);
-            ellipse(0,0, coreSize*0.3, coreSize*0.3);
+            let eyeW = map(vol, 0, 1, 50, 100);
+            let eyeH = map(vol, 0, 1, 100, 50);
+            triangle(-120, -100, -40, 20, -150, 50);
+            triangle(120, -100, 40, 20, 150, 50);
         }
     }
     
     // Helpers
     class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(2,5));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,this.lifespan);ellipse(this.pos.x,this.pos.y,8);}}
     class Tentacle {
-        constructor(index) {
-            this.angle = index * (360/12);
-            this.segments = 15;
-            this.segLength = 15;
-        }
-        update(vol) { this.wobble = map(vol, 0, 1, 0, 40); }
+        constructor() { this.angle = random(TWO_PI); this.offset = random(1000); }
+        update(vol) { this.wobble = map(vol, 0, 1, 0, 80); }
         show() {
             push();
             rotate(this.angle);
-            noFill(); stroke(255, 150); strokeWeight(3);
+            noFill(); stroke(200); strokeWeight(4);
             beginShape();
-            for(let i=0; i<this.segments; i++) {
-                let x = i * this.segLength;
-                let y = sin(i * 0.5 + frameCount * 0.05) * this.wobble;
+            for(let i=0; i<20; i++) {
+                let x = i * 20;
+                let y = sin(i * 0.2 + frameCount * 0.05 + this.offset) * this.wobble;
                 vertex(x, y);
             }
             endShape();
