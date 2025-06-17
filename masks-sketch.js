@@ -13,7 +13,7 @@
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        const canvas = createCanvas(650, 650); // Canvas più piccolo
+        const canvas = createCanvas(650, 650);
         canvas.parent(canvasWrapper);
         
         mic = new p5.AudioIn();
@@ -57,20 +57,25 @@
         }
     }
     
-    // --- ROBOT: Potenziato e Corretto ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(255); // Sfondo bianco
+            background(255);
             translate(width / 2, height / 2);
             rectMode(CENTER);
 
-            // Antenne reattive
+            // Antenne
             let antennaWobble = sin(frameCount * 0.2) * vol * 30;
-            stroke(0); strokeWeight(4); noFill();
-            line(-80, -150, -100, -180 + antennaWobble);
-            line(80, -150, 100, -180 - antennaWobble);
-            fill(0); ellipse(-100, -180 + antennaWobble, 10, 10); ellipse(100, -180 - antennaWobble, 10, 10);
+            stroke(0); strokeWeight(6); noFill();
+            line(-80, -150, -120, -220 + antennaWobble);
+            line(80, -150, 120, -220 - antennaWobble);
+            fill(0); ellipse(-120, -220 + antennaWobble, 15, 15); ellipse(120, -220 - antennaWobble, 15, 15);
+
+            // Dettagli laterali
+            let sideDetailSize = map(vol, 0.1, 0.6, 0, 40, true);
+            rect(-180, 0, 20, sideDetailSize, 5);
+            rect(180, 0, 20, sideDetailSize, 5);
+
 
             let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
             let visorWidth = 280 * map(vol, 0, 0.5, 1, 1.2, true);
@@ -86,30 +91,31 @@
             translate(0, 100);
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
+            
             let spectrum = fft.analyze();
             if (spectrum?.length) {
                 noStroke(); fill(0);
-                let barWidth = mouthWidth / spectrum.length;
-                for (let i=0; i < spectrum.length; i++) {
-                    let x = map(i, 0, spectrum.length - 1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
+                let barCount = spectrum.length / 2;
+                let barWidth = mouthWidth / barCount;
+                for (let i=0; i < barCount; i++) {
                     let h = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
-                    rect(x, 0, barWidth * 0.8, h); // Barre centrate verticalmente
+                    let x = map(i, 0, barCount-1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
+                    rect(x, 0, barWidth * 0.8, h);
                 }
             }
             pop();
         }
     }
 
-    // --- DRAGO: Centrato e Corretto ---
     class DragonScene extends Scene {
         constructor() { super(); this.n = 1; this.increment = 1; }
         draw() {
             let vol = this.updateVolume();
-            background(0); // Sfondo nero
+            background(0);
             angleMode(DEGREES);
             push();
             translate(width / 2, height / 2);
-            scale(1.3);
+            scale(1.2);
             translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
@@ -120,12 +126,13 @@
             let pp = map(vol, 0, 0.5, 40, 5, true);
             let arc1 = map(vol, 0, 0.5, -90, 20, true);
             let jawRotation = map(vol, 0, 0.5, 0, 25, true);
+            let nostrilSize = constrain(5 + vol * 40, 5, 20);
 
-            fill(255); noStroke(); rectMode(CORNER); // Colore invertito
+            fill(255); noStroke(); rectMode(CORNER);
             rect(100, 180, 180, 50); arc(150, 225, 100, 100, 0, 180);
             push(); fill(150); ellipse(150, 225, 70, 70); pop();
             ellipse(150, 225, pp, pp);
-            push(); fill(0); ellipse(135, 210, 10, 10); ellipse(260, 195, 5 + vol*40, 5 + vol*40); pop();
+            push(); fill(0); ellipse(135, 210, 10, 10); ellipse(260, 195, nostrilSize, nostrilSize); pop();
             arc(150, 225, 80, 80, 240, arc1, CHORD);
             triangle(100, 155, 100, 180, 130, 180);
             triangle(200, 170, 200, 180, 220, 180); triangle(220, 170, 220, 180, 240, 180); triangle(240, 170, 240, 180, 260, 180);
@@ -143,7 +150,6 @@
         }
     }
     
-    // --- TESCHIO: STABILE E COMPLETO ---
     class SkullScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -162,9 +168,9 @@
             let cheekFlareX = map(angerLevel, 0.2, 1, 0, 25, true);
             let crownSpike = map(angerLevel, 0.4, 1, 0, 40, true);
             
-            fill(255); noStroke();
             push(); translate(0, jawDrop);
-            beginShape(); vertex(-115,70); bezierVertex(-125,75,-145,110,-130,160); bezierVertex(-100,185,100,185,130,160); bezierVertex(145,110,125,75,115,70); endShape(CLOSE);
+            fill(255); noStroke();
+            beginShape(); vertex(-115,70); bezierVertex(-125,75,-145-cheekFlareX,110,-130,160); bezierVertex(-100,185,100,185,130,160); bezierVertex(145+cheekFlareX,110,125,75,115,70); endShape(CLOSE);
             this.carveLowerTeeth();
             pop();
 
@@ -175,29 +181,41 @@
             beginShape(); vertex(-40,-100); bezierVertex(-100,-90,-115,-40+eyePinch,-85,-10+eyePinch); bezierVertex(-70,-5+eyePinch,-45,-20,-40,-40); endShape(CLOSE);
             beginShape(); vertex(40,-100); bezierVertex(100,-90,115,-40+eyePinch,85,-10+eyePinch); bezierVertex(70,-5+eyePinch,45,-20,40,-40); endShape(CLOSE);
             let noseFlare = map(angerLevel, 0, 1, 0, 10);
-            triangle(0, 20, -15 - noseFlare, 50, 15 + noseFlare, 50);
+            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
         }
         carveLowerTeeth(){ fill(0); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
-    // --- NUOVA MASCHERA 4 ---
     class CyberEyeScene extends Scene {
         draw() {
             let vol = this.updateVolume();
             background(0); translate(width/2, height/2); angleMode(RADIANS);
             let focus = map(vol, 0.1, 0.9, 0, 1, true);
+            
             stroke(255, 80); strokeWeight(1); noFill();
             for(let i=1; i<5; i++) {
-                let d = 200 + i*40 + sin(frameCount*0.02*i + i) * 20 * focus;
+                let d = 200 + i*40 + sin(frameCount * 0.02 * i + i) * 20 * focus;
                 ellipse(0,0,d,d);
             }
+            
+            // Griglia prospettica
+            let gridVanishing = map(focus, 0, 1, 0, 200);
+            stroke(255, 50);
+            for(let i=0; i<10; i++) {
+                let y = lerp(-height/2, height/2, i/9);
+                line(-width/2, y, -gridVanishing, 0);
+                line(width/2, y, gridVanishing, 0);
+            }
+            
             let pupilSize = lerp(180, 30, focus);
             let irisSize = lerp(190, 100, focus);
+            let pupilGlow = map(vol, 0.4, 1.0, 50, 255, true);
             noStroke();
-            fill(255, 0, 0, 150 + focus*105);
+            fill(255, 0, 0, pupilGlow);
             ellipse(0,0,irisSize, irisSize);
             fill(255);
             ellipse(0,0,pupilSize, pupilSize);
+
             if (vol > 0.4) {
                 let y = random(-height/2, height/2);
                 let h = random(5, 30);
@@ -206,7 +224,6 @@
         }
     }
     
-    // --- NUOVA MASCHERA 5 ---
     class TribalSunScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -214,28 +231,30 @@
             let energy = map(vol, 0, 1, 0, 1, true);
             let pulse = sin(frameCount*5)*5*energy;
 
-            // Raggi esterni
+            // Raggi
             stroke(255); strokeWeight(2 + 4*energy);
             for(let i=0; i<12; i++) {
                 let angle = i * 30;
                 let length = lerp(150, 250, energy);
-                let start = 120;
-                push();
-                rotate(angle);
-                line(start, 0, length, 0);
-                pop();
+                push(); rotate(angle); line(120, 0, length, 0); pop();
             }
+            // Raggi interni
+            strokeWeight(1);
+            for(let i=0; i<12; i++) {
+                let angle = i * 30 - frameCount*0.8;
+                let length = lerp(80, 120, energy);
+                push(); rotate(angle); line(80, 0, length, 0); pop();
+            }
+
             // Faccia
             noStroke(); fill(24,24,24); ellipse(0,0,220+pulse,220+pulse);
             stroke(255); strokeWeight(6); noFill();
             ellipse(0,0,200+pulse,200+pulse);
             
-            // Occhi
             let eyeY = lerp(0, -15, energy);
             line(-80, -30, -40, -30 + eyeY);
             line(80, -30, 40, -30 + eyeY);
             
-            // Bocca
             let mouthY = lerp(50, 70, energy);
             line(-40, 50, 40, mouthY);
         }
