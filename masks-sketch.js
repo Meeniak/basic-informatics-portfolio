@@ -7,13 +7,13 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Glitched God',
-        5: 'Forest Spirit'
+        4: 'The Watcher',
+        5: 'Celestial Mask'
     };
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        const canvas = createCanvas(800, 800); // Canvas Quadrato
+        const canvas = createCanvas(800, 800); // Canvas quadrato
         canvas.parent(canvasWrapper);
         
         mic = new p5.AudioIn();
@@ -22,7 +22,7 @@
         fft.setInput(mic);
 
         maskLabel = select('#current-mask-label');
-        sensitivitySlider = createSlider(1, 20, 8, 0.1); // Gamma più ampia
+        sensitivitySlider = createSlider(1, 20, 10, 0.1);
         sensitivitySlider.parent('sensitivity-slider-container');
         sensitivitySlider.style('width', '100%');
         
@@ -30,8 +30,8 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new GlitchedGodScene(),
-            5: new ForestSpiritScene()
+            4: new WatcherScene(),
+            5: new CelestialMaskScene()
         };
         switchScene(1);
     }
@@ -67,15 +67,13 @@
             let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
             let visorScaleX = map(vol, 0, 0.5, 1, 1.2, true);
             let visorWidth = 280 * visorScaleX;
-            let visorInfo = { y: -80, width: visorWidth, height: eyeHeight };
-
             noStroke(); fill(255); rectMode(CENTER);
-            rect(0, visorInfo.y, visorInfo.width, visorInfo.height, 3);
+            rect(0, -80, visorWidth, eyeHeight, 3);
             if (eyeHeight > 10) {
                 let pupilSize = 60; let pupilXOffset = map(vol, 0.1, 0.5, 0, visorWidth / 2 - 40, true);
-                fill(0); ellipse(-pupilXOffset, visorInfo.y, pupilSize, pupilSize); ellipse(pupilXOffset, visorInfo.y, pupilSize, pupilSize);
+                fill(0); ellipse(-pupilXOffset, -80, pupilSize, pupilSize); ellipse(pupilXOffset, -80, pupilSize, pupilSize);
             }
-            noFill(); stroke(255); strokeWeight(8); rect(0, visorInfo.y, visorInfo.width, visorInfo.height, 3);
+            noFill(); stroke(255); strokeWeight(8); rect(0, -80, visorWidth, eyeHeight, 3);
             
             push();
             translate(0, 100);
@@ -88,7 +86,7 @@
                 for (let i=0; i < spectrum.length; i++) {
                     let x = map(i, 0, spectrum.length - 1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
                     let h = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
-                    rect(x, mouthHeight/2 - h, barWidth * 0.8, h); // Corretto per disegnare dal basso
+                    rect(x, (mouthHeight/2) - h, barWidth * 0.8, h);
                 }
             }
             pop();
@@ -102,7 +100,10 @@
             let vol = this.updateVolume();
             background(220);
             angleMode(DEGREES);
-            translate(width/2 - 270, height/2 - 270);
+            push();
+            translate(width / 2, height / 2);
+            scale(1.3); // Ingrandisce il disegno
+            translate(-270, -270); // Centra l'area di disegno
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             this.n += this.increment;
@@ -131,6 +132,7 @@
             rect(0, 40, 80, 49); arc(80, 40, 100, 98, 0, 90); arc(0, 90, 100, 100, 180, 270);
             triangle(130, 40, 130, 25, 110, 40); triangle(100, 40, 100, 25, 80, 40); triangle(70, 40, 70, 25, 50, 40);
             pop();
+            pop();
         }
     }
     
@@ -139,9 +141,12 @@
         constructor() { super(); this.particles = []; }
         draw() {
             let vol = this.updateVolume();
-            background(255); translate(width / 2, height / 2);
+            background(255);
+            translate(width / 2, height / 2);
             let angerLevel = map(vol, 0.1, 0.8, 0, 1, true);
             let shakeAmount = constrain(map(angerLevel, 0.7, 1, 0, 15, true), 0, 15);
+            
+            push(); // Contenitore per il tremore
             translate(random(-shakeAmount, shakeAmount), random(-shakeAmount, shakeAmount));
 
             if (angerLevel > 0.5) {
@@ -152,85 +157,113 @@
                 }
             }
             this.drawAngrySkull(angerLevel);
+            pop(); // Fine contenitore tremore
+
             for (let p of this.particles) { p.update(); p.show(); }
             this.particles = this.particles.filter(p => p.lifespan > 0);
         }
         drawAngrySkull(angerLevel) {
             let jawDrop = map(angerLevel, 0, 1, 0, 100);
-            fill(0); noStroke();
+            fill(0); noStroke(); rectMode(CORNER);
+            
+            // Cranio e mandibola neri
             beginShape(); vertex(0,-185); bezierVertex(-80,-190,-150,-140,-160,-80); bezierVertex(-170,-20,-145,50,-120,60); vertex(120,60); bezierVertex(145,50,170,-20,160,-80); bezierVertex(150,-140,80,-190,0,-185); endShape(CLOSE);
             push(); translate(0, jawDrop);
             beginShape(); vertex(-115,70); bezierVertex(-125,75,-145,110,-130,160); bezierVertex(-100,185,100,185,130,160); bezierVertex(145,110,125,75,115,70); endShape(CLOSE);
+            // Denti inferiori
+            fill(255);
+            for(let i=0;i<7;i++){let t=i/6,x=lerp(-60,60,t),w=120/7*.9,h=15-pow(abs(t-.5)*2,2)*10;beginShape();vertex(x-w/2,100);vertex(x+w/2,100);vertex(x,100+h);endShape(CLOSE);}
             pop();
+            
+            // Cavità e denti superiori disegnati sopra
             fill(255);
             let eyePinch = map(angerLevel, 0.5, 1, 0, 20, true);
             beginShape(); vertex(-40,-100); bezierVertex(-100,-90,-115,-40+eyePinch,-85,-10+eyePinch); bezierVertex(-70,-5+eyePinch,-45,-20,-40,-40); endShape(CLOSE);
             beginShape(); vertex(40,-100); bezierVertex(100,-90,115,-40+eyePinch,85,-10+eyePinch); bezierVertex(70,-5+eyePinch,45,-20,40,-40); endShape(CLOSE);
             let noseFlare = map(angerLevel, 0, 1, 0, 15);
             triangle(0, 0, -15 - noseFlare, 55, 15 + noseFlare, 55);
+            for(let i=0;i<8;i++){let t=i/7,x=lerp(-70,70,t),w=140/8*.9,h=15-pow(abs(t-.5)*2,2)*8;beginShape();vertex(x-w/2,110);vertex(x+w/2,110);vertex(x,110-h);endShape(CLOSE);}
         }
     }
 
     // --- NUOVA MASCHERA 4 ---
-    class GlitchedGodScene extends Scene {
+    class WatcherScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2);
-            let glitchAmount = map(vol, 0.3, 1.0, 0, 80, true);
+            background(24,24,24); translate(width/2, height/2);
+            
+            let focus = map(vol, 0.1, 0.8, 0, 1, true);
+            let blink = 1 - pow(1 - focus, 4); // Easing per un'apertura più d'impatto
 
-            // Faccia
-            noFill(); stroke(255); strokeWeight(6);
-            rect(0, 0, 300, 400, 20);
-            // Occhio
-            let eyeSize = map(vol, 0, 1, 200, 100, true);
-            let pupilSize = map(vol, 0, 1, 150, 20, true);
-            ellipse(0, -80, eyeSize, eyeSize);
-            fill(255); noStroke(); ellipse(0, -80, pupilSize, pupilSize);
-            // Bocca
-            noFill(); stroke(255);
-            line(-80, 100, 80, 100);
+            let outerFragmentsAngle = frameCount * 0.1;
+            let innerFragmentsAngle = -frameCount * 0.2;
 
-            // Effetto Glitch
-            if (glitchAmount > 5) {
-                let y = random(-height/2, height/2);
-                let h = random(10, 50);
-                image(get(0, y, width, h), random(-glitchAmount, glitchAmount), y);
-                fill(random(255), random(255), random(255), 100);
-                rect(0, 0, width, height);
+            stroke(255);
+            // Frammenti esterni rotanti
+            for(let i=0; i<6; i++) {
+                push();
+                rotate(outerFragmentsAngle + i * 60);
+                strokeWeight(2);
+                line(250, 0, 300, 0);
+                pop();
+            }
+             // Frammenti interni rotanti
+            for(let i=0; i<8; i++) {
+                push();
+                rotate(innerFragmentsAngle + i * 45);
+                strokeWeight(1);
+                line(180, 0, 200, 0);
+                pop();
+            }
+
+            // Occhio centrale
+            noFill(); strokeWeight(5);
+            ellipse(0, 0, 150, 150 * blink);
+            
+            // Pupilla che segue il mouse
+            if (blink > 0.1) {
+                let angleToMouse = atan2(mouseY - height/2, mouseX - width/2);
+                let pupilX = cos(angleToMouse) * 30 * focus;
+                let pupilY = sin(angleToMouse) * 40 * focus;
+                fill(255); noStroke();
+                ellipse(pupilX, pupilY, 50 * blink, 50 * blink);
             }
         }
     }
     
     // --- MASCHERA 5 ---
-    class ForestSpiritScene extends Scene {
-        constructor() { super(); this.particles = Array.from({length: 50}, () => new LightMote()); }
+    class CelestialMaskScene extends Scene {
+        constructor() { super(); this.stars = Array.from({length: 100}, () => createVector(random(-width, width), random(-height, height))); }
         draw() {
             let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2);
-            for(let p of this.particles) { p.update(vol); p.show(); }
+            background(24, 24, 24); translate(width / 2, height / 2);
             
-            let headTilt = map(vol, 0, 1, 0, 15, true);
-            let leafGrow = map(vol, 0, 1, 0, 60, true);
-            let breath = sin(frameCount * 0.03) * 8;
-            stroke(255); strokeWeight(4); fill(24, 24, 24);
-            push();
-            rotate(-headTilt);
-            scale(1 + breath/400);
-            ellipse(0, 0, 200 + breath, 250 + breath);
-            fill(0);
-            ellipse(-50, -30, 50, 70);
-            ellipse(50, -30, 50, 70);
-            noFill(); stroke(255);
-            arc(0, 80, 60, lerp(10, 50, vol), 0, 180);
-            beginShape();vertex(-100,0);bezierVertex(-150,-50,-150-leafGrow,-100,-100,-150);endShape();
-            beginShape();vertex(100,0);bezierVertex(150,-50,150+leafGrow,-100,100,-150);endShape();
-            pop();
+            // Costellazioni reattive
+            let constellationAlpha = map(vol, 0.1, 0.7, 0, 200, true);
+            if (constellationAlpha > 10) {
+                stroke(255, constellationAlpha); strokeWeight(0.5);
+                for(let i=0; i<this.stars.length; i+=10) {
+                    line(this.stars[i].x, this.stars[i].y, this.stars[i+1].x, this.stars[i+1].y);
+                    line(this.stars[i+1].x, this.stars[i+1].y, this.stars[i+3].x, this.stars[i+3].y);
+                }
+            }
+
+            // Maschera principale
+            let glow = map(vol, 0, 1, 0, 150, true);
+            noFill(); stroke(255); strokeWeight(4);
+            arc(0, 0, 300, 300, 140, 400); // Forma a mezzaluna
+            // Occhi
+            ellipse(-80, -20, 40, 40);
+            ellipse(80, -20, 40, 40);
+            // Bagliore occhi
+            noStroke(); fill(255, glow);
+            ellipse(-80, -20, 40, 40);
+            ellipse(80, -20, 40, 40);
         }
     }
     
-    // Helpers
+    // Helper per il teschio
     class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(2,5));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(0,this.lifespan);ellipse(this.pos.x,this.pos.y,8);}}
-    class LightMote{constructor(){this.pos=createVector(random(-width/2,width/2),random(-height/1.5,height/1.5));this.vel=createVector(random(-0.5,0.5),-random(0.2,1));this.lifespan=random(50,150);}update(vol){this.pos.add(this.vel);this.vel.y-=vol*0.05;if(this.pos.y<-height/2||this.pos.x<-width/2||this.pos.x>width/2)this.pos.set(random(-width/2,width/2),height/2);}show(){noStroke();fill(255,this.lifespan*vol*2);ellipse(this.pos.x,this.pos.y,3);}}
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
