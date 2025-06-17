@@ -2,290 +2,93 @@
 html, body, a, input, label {
     cursor: none;
 }
-
 .custom-cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 20px;
-    height: 23px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    transition: opacity 0.2s ease-in-out;
+    position: fixed; top: 0; left: 0; width: 20px; height: 23px;
+    background-size: contain; background-repeat: no-repeat;
+    pointer-events: none; transform: translate(-50%, -50%);
+    z-index: 9999; transition: opacity 0.2s ease-in-out;
 }
-
 
 /* --- GENERAL BODY AND HEADER STYLES --- */
 body {
-    background-color: #1a1a1a;
-    color: #ffffff;
+    background-color: #1a1a1a; color: #ffffff;
     font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 30px;
-    text-align: left;
-    box-sizing: border-box; 
+    margin: 0; padding: 20px;
+    text-align: left; box-sizing: border-box; 
 }
-
-a, a:visited {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-header {
-    margin-bottom: 40px;
-}
-
+a, a:visited { color: #ffffff; text-decoration: none; }
+header { margin-bottom: 30px; }
 h1 {
-    font-size: 8em;
-    font-weight: 400;
-    margin: 0;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    border-top: 1px solid #444;
-    border-bottom: 1px solid #444;
+    font-size: 8em; font-weight: 400; margin: 0; padding: 15px 0;
+    border-top: 1px solid #444; border-bottom: 1px solid #444;
     position: relative;
 }
-
-h1 span {
-    position: relative; 
-    padding-right: 40px; 
-}
-
+h1 span { position: relative; padding-right: 40px; }
 h1 span::after {
-    content: ''; 
-    position: absolute;
-    background-color: #444;
-    width: 1px;
-    top: -30px;      
-    bottom: -30px;   
-    right: 0;
+    content: ''; position: absolute; background-color: #444;
+    width: 1px; top: -30px; bottom: -30px; right: 0;
 }
-
 h2 {
-    font-size: 1.2em;
-    font-weight: 300;
-    margin-top: 15px;
-    max-width: 100%;
-    white-space: nowrap;
+    font-size: 1.2em; font-weight: 300; margin-top: 15px;
+    max-width: 100%; white-space: nowrap;
 }
 
 /* --- GALLERY STYLES --- */
-.gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    gap: 20px;
-}
-
-.gallery-item {
-    position: relative;
-    width: 420px;
-    height: 420px;
-    overflow: hidden;
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: filter 0.4s ease, transform 0.3s ease;
-    filter: blur(5px);
-}
-
-.overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 1;
-    transition: background-color 0.4s ease;
-}
-
-.text {
-    font-size: 2.2em;
-    font-weight: bold;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.gallery-item:hover img {
-    filter: blur(0);
-    transform: scale(1.05);
-}
-
-.gallery-item:hover .overlay {
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.gallery-item:hover .text {
-    opacity: 1;
-    transform: translateY(0);
-}
-
+.gallery { display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 20px; }
+.gallery-item { position: relative; width: 420px; height: 420px; overflow: hidden; }
 
 /* --- SUB-PAGE HEADER STYLES --- */
 .sub-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 1px solid #444;
-    margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid #444; margin-bottom: 20px;
 }
-
-.sub-page-header h1 {
-    font-size: 4em;
-    border: none;
-    padding: 0;
-}
-
-.sub-page-header h1::after {
-    display: none;
-}
-
-.sub-page-header a, .sub-page-header a:visited {
-    color: #ccc;
-    text-decoration: none;
-    font-size: 1.1em;
-    font-weight: 300;
-    transition: color 0.3s ease;
-}
-
-.sub-page-header a:hover {
-    color: white;
-}
-
+.sub-page-header h1 { font-size: 4em; border: none; padding: 0; }
+.sub-page-header h1::after { display: none; }
+.sub-page-header a, .sub-page-header a:visited { color: #ccc; text-decoration: none; font-size: 1.1em; font-weight: 300; transition: color 0.3s ease; }
+.sub-page-header a:hover { color: white; }
 
 /* --- REGOLA PER L'ALLINEAMENTO DELLA HOME PAGE --- */
-body.home {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
+body.home { min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; }
 
 /* --- STYLES FOR SKETCH PAGES --- */
 #sketch-container {
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 20px;
-    width: 100%;
-    align-items: flex-start;
-    justify-content: center;
+    display: flex; flex-wrap: wrap; gap: 20px;
+    width: 100%; align-items: flex-start; justify-content: center;
 }
-
 #canvas-wrapper {
     flex: 1 1 500px;
-    max-width: 600px;
+    max-width: 700px; /* Ridotto per evitare scrolling */
     aspect-ratio: 1 / 1;
     border: 1px solid #444;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
 }
-
-#canvas-wrapper canvas {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-}
-
+#canvas-wrapper canvas { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
 #controls-panel {
-    width: 250px;
-    flex-shrink: 0;
-    background-color: #1f1f1f;
-    border: 1px solid #444;
-    padding: 15px;
-    box-sizing: border-box;
-    color: #ccc;
+    width: 250px; flex-shrink: 0; background-color: #1f1f1f;
+    border: 1px solid #444; padding: 15px;
+    box-sizing: border-box; color: #ccc;
 }
-
-.control-group {
-    margin-bottom: 15px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 15px;
-}
-.control-group:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-#controls-panel h3 {
-    font-size: 1.2em;
-    font-weight: 400;
-    margin: 0 0 15px 0;
-    color: #fff;
-}
-
-#sliders {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.slider-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-#controls-panel label {
-    font-size: 1em;
-    font-weight: 300;
-    display: flex; 
-    align-items: center;
-}
-
+.control-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+.control-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+#controls-panel h3 { font-size: 1.2em; font-weight: 400; margin: 0 0 15px 0; color: #fff; }
+#sliders { display: flex; flex-direction: column; gap: 15px; }
+.slider-wrapper { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+#controls-panel label { font-size: 1em; font-weight: 300; display: flex; align-items: center; }
 input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 3px;
-    background: #444;
-    outline: none;
-    opacity: 0.9;
-    transition: opacity .2s;
+    -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
+    background: #444; outline: none; opacity: 0.9; transition: opacity .2s;
 }
-input[type="range"]:hover {
-    opacity: 1;
-}
+input[type="range"]:hover { opacity: 1; }
 input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #fff;
-    border-radius: 50%;
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
 }
 input[type="range"]::-moz-range-thumb {
-    width: 15px;
-    height: 15px;
-    background: #fff;
-    border-radius: 50%;
+    width: 15px; height: 15px; background: #fff; border-radius: 50%;
 }
-
-#legend p {
-    margin: 5px 0;
-    font-size: 0.9em;
-}
-
+#legend p { margin: 5px 0; font-size: 0.9em; }
 #legend span {
-    display: inline-block;
-    background-color: #333;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: monospace;
+    display: inline-block; background-color: #333; color: #fff;
+    padding: 2px 8px; border-radius: 4px; font-family: monospace;
     margin-right: 10px;
 }
