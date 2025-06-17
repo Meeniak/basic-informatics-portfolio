@@ -59,6 +59,7 @@
         }
     }
     
+    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -105,6 +106,7 @@
         }
     }
 
+    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -144,8 +146,9 @@
         }
     }
     
+    // --- TESCHIO ---
     class SkullScene extends Scene {
-        constructor() { super(); }
+        constructor() { super(); this.particles = []; }
         draw() {
             let vol = this.updateVolume();
             background(0); translate(width / 2, height / 2);
@@ -156,6 +159,15 @@
             translate(random(-shake, shake), random(-shake, shake));
             this.drawAngrySkull(anger);
             pop();
+
+            if (anger > 0.5) {
+                for(let i=0; i<2; i++) {
+                    this.particles.push(new FlameParticle(-60, -80));
+                    this.particles.push(new FlameParticle(60, -80));
+                }
+            }
+            for (let p of this.particles) { p.update(); p.show(); }
+            this.particles = this.particles.filter(p => p.lifespan > 0);
         }
         drawAngrySkull(anger) {
             let jawDrop = map(anger, 0.3, 1, 0, 80, true);
@@ -164,34 +176,30 @@
             
             fill(255); noStroke();
 
-            // Disegna una metà e riflettila per la simmetria
-            this.drawHalfSkull(1, cheekFlare, crownSpike); // Destra
-            this.drawHalfSkull(-1, cheekFlare, crownSpike); // Sinistra
+            this.drawHalfSkull(1, cheekFlare, crownSpike);
+            this.drawHalfSkull(-1, cheekFlare, crownSpike);
 
             push(); translate(0, jawDrop);
-            this.drawHalfJaw(1, cheekFlare); // Destra
-            this.drawHalfJaw(-1, cheekFlare); // Sinistra
+            this.drawHalfJaw(1, cheekFlare);
+            this.drawHalfJaw(-1, cheekFlare);
             pop();
         }
 
         drawHalfSkull(side, cheekFlare, crownSpike) {
             push();
             scale(side, 1);
-            // Cranio
             beginShape();
             vertex(0,-185-crownSpike);
             bezierVertex(80,-190-crownSpike, 150,-140, 160,-80-cheekFlare);
             bezierVertex(170,-20, 145,50, 120,60);
             vertex(0,60);
             endShape();
-            // Cavità oculare
             fill(0);
             beginShape();
             vertex(40,-100);
             bezierVertex(100,-90, 115,-40, 85,-10);
             bezierVertex(70,-5, 45,-20, 40,-40);
             endShape(CLOSE);
-            // Naso
             triangle(0,20, 15,45, 0,45);
             pop();
         }
@@ -206,80 +214,75 @@
             bezierVertex(125,75, 145+cheekFlare,110, 130,160);
             vertex(0,160);
             endShape(CLOSE);
-            // Denti
             fill(0); rectMode(CENTER);
             for(let i=0; i<3; i++) rect(25 + i * 30, 110, 14, 18, 3);
             pop();
         }
     }
 
-    class GargoyleScene extends Scene {
-        draw() {
-            let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
-            let energy = map(vol, 0, 1, 0, 1, true);
-
-            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
-            stroke(100); strokeWeight(8); noFill();
-            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
-            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
-            
-            fill(120); noStroke(); rectMode(CENTER);
-            rect(0,0,300,350,20);
-            arc(-80, -170, 80, 120, PI, TWO_PI);
-            arc(80, -170, 80, 120, PI, TWO_PI);
-
-            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
-            fill(255, 255, 0, eyeGlow);
-            ellipse(-80, -50, 60, 60);
-            ellipse(80, -50, 60, 60);
-
-            let mouthOpen = map(energy, 0, 1, 10, 80);
-            fill(0);
-            rect(0, 80, 150, mouthOpen, 10);
-        }
-    }
-    
-    class SymbioteScene extends Scene {
-        constructor() { super(); this.tentacles = Array.from({length: 10}, () => new Tentacle()); }
+    // --- SENTINEL ---
+    class SentinelScene extends Scene {
         draw() {
             let vol = this.updateVolume();
             background(0); translate(width/2, height/2); angleMode(RADIANS);
-            
-            for(let t of this.tentacles) { t.update(vol); t.show(); }
+            let energy = map(vol, 0, 1, 0, 1, true);
 
-            let faceWobble = map(vol, 0, 1, 0, 30);
-            fill(50); noStroke();
-            beginShape();
-            for(let a=0; a<TWO_PI; a+=0.1) {
-                let r = 150 + sin(a*4 + frameCount*0.05)*20 + faceWobble;
-                vertex(cos(a)*r, sin(a)*r);
-            }
-            endShape(CLOSE);
+            // Spalle
+            let shoulderHeight = lerp(0, -100, energy);
+            stroke(255); strokeWeight(8); noFill();
+            beginShape(); vertex(-300, 300); bezierVertex(-200, 100, -150, shoulderHeight, -100, shoulderHeight); endShape();
+            beginShape(); vertex(300, 300); bezierVertex(200, 100, 150, shoulderHeight, 100, shoulderHeight); endShape();
             
-            fill(255);
-            triangle(-120, -100, -40, 20, -150, 50);
-            triangle(120, -100, 40, 20, 150, 50);
+            // Testa
+            fill(255); noStroke();
+            rect(0, shoulderHeight - 40, 180, 80, 10);
+
+            // Occhio
+            let eyeOpen = lerp(0.1, 1, energy);
+            fill(0);
+            ellipse(0, shoulderHeight - 40, 140, 70 * eyeOpen);
+            
+            let pupilGlow = map(energy, 0.5, 1, 0, 255, true);
+            fill(255,0,0, pupilGlow);
+            ellipse(0, shoulderHeight - 40, 30, 30 * eyeOpen);
         }
     }
     
-    class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,100,0,this.lifespan);ellipse(this.pos.x,this.pos.y,12);}}
-    class Tentacle {
-        constructor() { this.angle = random(TWO_PI); this.offset = random(1000); }
-        update(vol) { this.wobble = map(vol, 0, 1, 0, 80); }
-        show() {
-            push();
-            rotate(this.angle);
-            noFill(); stroke(200); strokeWeight(4);
-            beginShape();
-            for(let i=0; i<20; i++) {
-                let x = i * 20;
-                let y = sin(i * 0.2 + frameCount * 0.05 + this.offset) * this.wobble;
-                vertex(x, y);
+    // --- PULSAR ---
+    class PulsarScene extends Scene {
+        constructor() { super(); this.particles = Array.from({length: 200}, () => new StarParticle()); }
+        draw() {
+            let vol = this.updateVolume();
+            background(0); translate(width/2, height/2); angleMode(DEGREES);
+            
+            for(let p of this.particles) { p.update(vol); p.show(); }
+
+            let energy = map(vol, 0, 1, 0, 1, true);
+            let coreSize = lerp(20, 100, energy);
+            let coreGlow = lerp(100, 255, energy);
+
+            // Onde d'urto
+            strokeWeight(2); noFill();
+            for(let i=0; i<5; i++) {
+                let d = (frameCount * 2 + i * 100) % 500;
+                let alpha = map(d, 0, 500, 255, 0);
+                stroke(255, alpha);
+                ellipse(0,0,d,d);
             }
-            endShape();
-            pop();
+            
+            // Nucleo
+            noStroke();
+            fill(255, 255, 200, coreGlow);
+            ellipse(0,0,coreSize,coreSize);
         }
+    }
+    
+    // Helpers
+    class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,100,0,this.lifespan);ellipse(this.pos.x,this.pos.y,12);}}
+    class StarParticle {
+        constructor() { this.pos = p5.Vector.random2D().mult(random(width)); this.size = random(1,3); }
+        update(vol) { let distFromCenter = this.pos.mag(); this.pos.mult(1 + vol * 0.001); if(distFromCenter > width/2) this.pos.set(0,0); }
+        show() { noStroke(); fill(255, 100); ellipse(this.pos.x, this.pos.y, this.size); }
     }
 
     window.keyPressed = function() {
