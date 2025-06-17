@@ -39,11 +39,11 @@ header {
 }
 
 h1 {
-    font-size: 8.5em;
+    font-size: 8em;
     font-weight: 400;
     margin: 0;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     border-top: 1px solid #444;
     border-bottom: 1px solid #444;
     position: relative;
@@ -65,9 +65,9 @@ h1 span::after {
 }
 
 h2 {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 300;
-    margin-top: 20px;
+    margin-top: 15px;
     max-width: 100%;
     white-space: nowrap;
 }
@@ -77,7 +77,7 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
-    gap: 30px;
+    gap: 20px;
 }
 
 .gallery-item {
@@ -137,7 +137,7 @@ h2 {
     justify-content: space-between;
     align-items: baseline;
     border-bottom: 1px solid #444;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .sub-page-header h1 {
@@ -176,15 +176,15 @@ body.home {
 #sketch-container {
     display: flex;
     flex-wrap: wrap; 
-    gap: 30px;
+    gap: 20px;
     width: 100%;
     align-items: flex-start;
     justify-content: center;
 }
 
 #canvas-wrapper {
-    flex-grow: 1; 
-    max-width: 700px;
+    flex: 1 1 500px;
+    max-width: 600px;
     aspect-ratio: 1 / 1;
     border: 1px solid #444;
     display: flex;
@@ -200,11 +200,11 @@ body.home {
 }
 
 #controls-panel {
-    width: 280px;
+    width: 250px;
     flex-shrink: 0;
     background-color: #1f1f1f;
     border: 1px solid #444;
-    padding: 15px 20px;
+    padding: 15px;
     box-sizing: border-box;
     color: #ccc;
 }
@@ -221,10 +221,9 @@ body.home {
 }
 
 #controls-panel h3 {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 400;
-    margin-top: 0;
-    margin-bottom: 15px;
+    margin: 0 0 15px 0;
     color: #fff;
 }
 
