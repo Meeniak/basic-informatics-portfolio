@@ -7,7 +7,7 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Sentinel',
+        4: 'Golem',
         5: 'Plague Doctor'
     };
 
@@ -30,7 +30,7 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new SentinelScene(),
+            4: new GolemScene(),
             5: new PlagueDoctorScene()
         };
         switchScene(1);
@@ -116,7 +116,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-190, -240);
+            translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -220,45 +220,41 @@
         }
     }
 
-    // --- SENTINEL ---
-    class SentinelScene extends Scene {
+    // --- GOLEM ---
+    class GolemScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
+            background(0); translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0, 1, 0, 1, true);
 
-            let shoulderHeight = lerp(0, -100, energy);
-            let detailOffset = lerp(0, 20, energy);
-            stroke(255); strokeWeight(8); noFill();
+            stroke(255); strokeWeight(3); noFill();
             
-            // Spalle principali
-            beginShape(); vertex(-300, 300); bezierVertex(-200, 100, -150, shoulderHeight, -100, shoulderHeight); endShape();
-            beginShape(); vertex(300, 300); bezierVertex(200, 100, 150, shoulderHeight, 100, shoulderHeight); endShape();
-            // Spalle secondarie
-            strokeWeight(4);
-            beginShape(); vertex(-250, 300); bezierVertex(-180, 150, -130, shoulderHeight+detailOffset, -90, shoulderHeight+detailOffset); endShape();
-            beginShape(); vertex(250, 300); bezierVertex(180, 150, 130, shoulderHeight+detailOffset, 90, shoulderHeight+detailOffset); endShape();
+            // Mascella
+            let jawY = lerp(80, 120, energy);
+            rect(0, jawY, 200, 80, 5);
 
-            fill(255); noStroke();
-            rectMode(CENTER);
-            rect(0, shoulderHeight - 40, 180, 80, 10);
+            // Testa
+            let headShakeX = lerp(0, 10, energy);
+            let headShakeY = lerp(0, 10, energy);
+            push();
+            translate(random(-headShakeX, headShakeX), random(-headShakeY, headShakeY));
+            rect(0, -50, 300, 250, 20);
             
-            let eyeOpen = lerp(0.1, 1, energy);
-            fill(0);
-            ellipse(0, shoulderHeight - 40, 140, 70 * eyeOpen);
-            
-            let pupilGlow = map(energy, 0.5, 1, 0, 255, true);
-            fill(255,0,0, pupilGlow);
-            ellipse(0, shoulderHeight - 40, 30, 30 * eyeOpen);
+            // Occhi
+            let eyeGlow = map(energy, 0.4, 1, 50, 255, true);
+            fill(255, 100, 0, eyeGlow); noStroke();
+            rect(-80, -70, 60, 30, 5);
+            rect(80, -70, 60, 30, 5);
+            pop();
         }
     }
     
-    // --- NUOVA MASCHERA 5 ---
+    // --- PLAGUE DOCTOR ---
     class PlagueDoctorScene extends Scene {
         constructor() { super(); this.particles = []; }
         draw() {
             let vol = this.updateVolume();
-            background(255); translate(width/2, height/2); angleMode(DEGREES);
+            background(20); translate(width/2, height/2);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
 
             if(energy > 0.1 && frameCount % 3 === 0) {
@@ -267,35 +263,37 @@
             for(let p of this.particles) { p.update(energy); p.show(); }
             this.particles = this.particles.filter(p => p.lifespan > 0);
 
-            // Maschera
             let headTilt = lerp(0, -15, energy);
             push();
             rotate(headTilt);
-            fill(0); noStroke();
+            // Maschera
+            fill(230); noStroke();
             beginShape();
-            vertex(0, -200);
-            bezierVertex(-150, -220, -180, -50, -150, 50);
+            vertex(0, -250);
+            bezierVertex(-150, -220, -200, -50, -160, 50);
             bezierVertex(-120, 120, -50, 180, 0, 190);
-            bezierVertex(50, 180, 120, 120, 150, 50);
-            bezierVertex(180, -50, 150, -220, 0, -200);
+            bezierVertex(50, 180, 120, 120, 160, 50);
+            bezierVertex(200, -50, 150, -220, 0, -250);
             endShape(CLOSE);
             
             // Becco
+            fill(210);
             beginShape();
             vertex(-40, 50);
             bezierVertex(0, 80, 0, 80, 40, 50);
             vertex(0, 250);
             endShape(CLOSE);
 
-            // Occhi
-            let eyeGlow = map(energy, 0.4, 1, 100, 255, true);
-            stroke(100); strokeWeight(15);
-            fill(20,0,0);
-            ellipse(-90, -40, 90, 90);
-            ellipse(90, -40, 90, 90);
+            // Occhiali
+            stroke(50); strokeWeight(15);
+            fill(10, 10, 20);
+            ellipse(-90, -40, 100, 100);
+            ellipse(90, -40, 100, 100);
+            
+            let eyeGlow = map(energy, 0.4, 1, 0, 255, true);
             noStroke(); fill(255,0,0, eyeGlow);
-            ellipse(-90, -40, 70, 70);
-            ellipse(90, -40, 70, 70);
+            ellipse(-90, -40, 80, 80);
+            ellipse(90, -40, 80, 80);
             pop();
         }
     }
