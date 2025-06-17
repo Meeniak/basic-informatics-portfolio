@@ -1,6 +1,5 @@
 (function() {
     let mic, fft, sensitivitySlider, maskLabel;
-    let primaryColorPicker, secondaryColorPicker;
     let scenes = {};
     let currentScene;
     
@@ -8,8 +7,8 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Geometric Entity',
-        5: 'Gaseous Being'
+        4: 'Sentinel',
+        5: 'Pulsar'
     };
 
     window.setup = function() {
@@ -27,17 +26,12 @@
         sensitivitySlider.parent('sensitivity-slider-container');
         sensitivitySlider.style('width', '100%');
         
-        primaryColorPicker = createColorPicker('#FFFFFF');
-        primaryColorPicker.parent('primary-color-container');
-        secondaryColorPicker = createColorPicker('#FF0000');
-        secondaryColorPicker.parent('secondary-color-container');
-        
         scenes = {
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new GeometricEntityScene(),
-            5: new GaseousBeingScene()
+            4: new SentinelScene(),
+            5: new PulsarScene()
         };
         switchScene(1);
     }
@@ -65,40 +59,40 @@
         }
     }
     
-    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0);
+            background(255);
             translate(width / 2, height / 2);
             rectMode(CENTER);
 
             let antennaWobble = sin(frameCount * 0.2) * vol * 40;
-            stroke(255); strokeWeight(6); noFill();
+            stroke(0); strokeWeight(6); noFill();
             line(-80, -150, -120, -240 + antennaWobble);
             line(80, -150, 120, -240 - antennaWobble);
-            fill(255); ellipse(-120, -240 + antennaWobble, 15, 15); ellipse(120, -240 - antennaWobble, 15, 15);
+            fill(0); ellipse(-120, -240 + antennaWobble, 15, 15); ellipse(120, -240 - antennaWobble, 15, 15);
             let sideDetailSize = map(vol, 0.1, 0.6, 0, 40, true);
             rect(-180, 0, 20, sideDetailSize, 5);
             rect(180, 0, 20, sideDetailSize, 5);
 
             let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
             let visorWidth = 280 * map(vol, 0, 0.5, 1, 1.2, true);
-            noStroke(); fill(255);
+            noStroke(); fill(0);
             rect(0, -80, visorWidth, eyeHeight, 3);
             if (eyeHeight > 10) {
                 let pupilSize = 60; let pupilXOffset = map(vol, 0.1, 0.5, 0, visorWidth / 2 - 40, true);
-                fill(0); ellipse(-pupilXOffset, -80, pupilSize, pupilSize); ellipse(pupilXOffset, -80, pupilSize, pupilSize);
+                fill(255); ellipse(-pupilXOffset, -80, pupilSize, pupilSize); ellipse(pupilXOffset, -80, pupilSize, pupilSize);
             }
-            noFill(); stroke(255); strokeWeight(8); rect(0, -80, visorWidth, eyeHeight, 3);
+            noFill(); stroke(0); strokeWeight(8); rect(0, -80, visorWidth, eyeHeight, 3);
             
             push();
             translate(0, 100);
             let mouthWidth = 280, mouthHeight = 90;
-            noFill(); stroke(255); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
+            noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
+            
             let spectrum = fft.analyze();
             if (spectrum?.length) {
-                noStroke(); fill(255);
+                noStroke(); fill(0);
                 let barCount = spectrum.length / 2;
                 let barWidth = mouthWidth / barCount;
                 for (let i=0; i < barCount; i++) {
@@ -111,7 +105,6 @@
         }
     }
 
-    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -120,8 +113,8 @@
             angleMode(DEGREES);
             push();
             translate(width / 2, height / 2);
-            scale(1.8);
-            translate(-190, -240);
+            scale(1.5);
+            translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -129,7 +122,7 @@
             let jawRotation = map(vol, 0, 0.5, 0, 25, true);
             let nostrilSize = constrain(5 + vol * 40, 5, 15);
 
-            noStroke(); fill(255); rectMode(CORNER);
+            fill(255); noStroke(); rectMode(CORNER);
             rect(100, 180, 180, 50); arc(150, 225, 100, 100, 0, 180);
             push(); fill(150); ellipse(150, 225, 70, 70); pop();
             ellipse(150, 225, pp, pp);
@@ -151,113 +144,141 @@
         }
     }
     
-    // --- TESCHIO ---
     class SkullScene extends Scene {
-        constructor() { super(); this.particles = []; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
             background(0); translate(width / 2, height / 2);
-            let anger = map(vol, 0.1, 0.8, 0, 1, true);
+            let anger = map(vol, 0.1, 0.9, 0, 1, true);
             let shake = constrain(map(anger, 0.6, 1, 0, 15, true), 0, 15);
             
             push();
             translate(random(-shake, shake), random(-shake, shake));
             this.drawAngrySkull(anger);
             pop();
-
-            if (anger > 0.5) {
-                for(let i=0; i<2; i++) {
-                    this.particles.push(new FlameParticle(-60, -80));
-                    this.particles.push(new FlameParticle(60, -80));
-                }
-            }
-            for (let p of this.particles) { p.update(); p.show(); }
-            this.particles = this.particles.filter(p => p.lifespan > 0);
         }
         drawAngrySkull(anger) {
-            let jawDrop = map(anger, 0.3, 1, 0, 100, true);
+            let jawDrop = map(anger, 0.3, 1, 0, 80, true);
             let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
             let crownSpike = map(anger, 0.4, 1, 0, 40, true);
             
-            fill(255); noStroke(); rectMode(CENTER);
-            
-            push();
-            translate(0, jawDrop);
-            beginShape(); vertex(-115,70); bezierVertex(-125,75,-145-cheekFlare,110,-130,160); bezierVertex(-100,185,100,185,130,160); bezierVertex(145+cheekFlare,110,125,75,115,70); endShape(CLOSE);
-            fill(0); for(let i=0;i<5;i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); }
+            fill(255); noStroke();
+
+            // Disegna una metà e riflettila per la simmetria
+            this.drawHalfSkull(1, cheekFlare, crownSpike); // Destra
+            this.drawHalfSkull(-1, cheekFlare, crownSpike); // Sinistra
+
+            push(); translate(0, jawDrop);
+            this.drawHalfJaw(1, cheekFlare); // Destra
+            this.drawHalfJaw(-1, cheekFlare); // Sinistra
             pop();
+        }
 
-            fill(255);
-            beginShape(); vertex(0,-185-crownSpike); bezierVertex(-80,-190-crownSpike,-150,-140,-160,-80-cheekFlare); bezierVertex(-170,-20,-145,50,-120,60); vertex(120,60); bezierVertex(145,50,170,-20,160,-80-cheekFlare); bezierVertex(150,-140,80,-190,0,-185-crownSpike); endShape(CLOSE);
-            
+        drawHalfSkull(side, cheekFlare, crownSpike) {
+            push();
+            scale(side, 1);
+            // Cranio
+            beginShape();
+            vertex(0,-185-crownSpike);
+            bezierVertex(80,-190-crownSpike, 150,-140, 160,-80-cheekFlare);
+            bezierVertex(170,-20, 145,50, 120,60);
+            vertex(0,60);
+            endShape();
+            // Cavità oculare
             fill(0);
-            let eyePinch = map(anger, 0.5, 1, 0, 20, true);
-            beginShape(); vertex(-40,-100); bezierVertex(-100,-90,-115,-40+eyePinch,-85,-10+eyePinch); bezierVertex(-70,-5+eyePinch,-45,-20,-40,-40); endShape(CLOSE);
-            beginShape(); vertex(40,-100); bezierVertex(100,-90,115,-40+eyePinch,85,-10+eyePinch); bezierVertex(70,-5+eyePinch,-45,-20,40,-40); endShape(CLOSE);
-            let noseFlare = map(anger, 0, 1, 0, 10);
-            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
+            beginShape();
+            vertex(40,-100);
+            bezierVertex(100,-90, 115,-40, 85,-10);
+            bezierVertex(70,-5, 45,-20, 40,-40);
+            endShape(CLOSE);
+            // Naso
+            triangle(0,20, 15,45, 0,45);
+            pop();
+        }
+
+        drawHalfJaw(side, cheekFlare) {
+            push();
+            scale(side, 1);
+            fill(255);
+            beginShape();
+            vertex(0,70);
+            vertex(115,70);
+            bezierVertex(125,75, 145+cheekFlare,110, 130,160);
+            vertex(0,160);
+            endShape(CLOSE);
+            // Denti
+            fill(0); rectMode(CENTER);
+            for(let i=0; i<3; i++) rect(25 + i * 30, 110, 14, 18, 3);
+            pop();
         }
     }
 
-    // --- NUOVA MASCHERA 4 ---
-    class GeometricEntityScene extends Scene {
+    class GargoyleScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width / 2, height / 2);
+            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
             let energy = map(vol, 0, 1, 0, 1, true);
-            let pColor = primaryColorPicker.color();
-            let sColor = secondaryColorPicker.color();
 
-            stroke(pColor); fill(sColor); strokeWeight(3);
+            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
+            stroke(100); strokeWeight(8); noFill();
+            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
+            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
             
-            // Elementi che si separano
-            let separation = lerp(0, 150, energy);
-            let rotation = lerp(0, 45, energy);
+            fill(120); noStroke(); rectMode(CENTER);
+            rect(0,0,300,350,20);
+            arc(-80, -170, 80, 120, PI, TWO_PI);
+            arc(80, -170, 80, 120, PI, TWO_PI);
 
-            // Occhio destro
-            push(); translate(100 + separation/2, -50); rotate(rotation); rect(0,0,80,80); pop();
-            // Occhio sinistro
-            push(); translate(-100 - separation/2, -50); rotate(-rotation); rect(0,0,80,80); pop();
-            // Bocca
-            push(); translate(0, 80 + separation); noFill(); arc(0,0,150,100,0,180); pop();
-            // Fronte
-            push(); translate(0, -150 - separation); rotate(rotation*2); triangle(-50,0,50,0,0,-50); pop();
+            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
+            fill(255, 255, 0, eyeGlow);
+            ellipse(-80, -50, 60, 60);
+            ellipse(80, -50, 60, 60);
+
+            let mouthOpen = map(energy, 0, 1, 10, 80);
+            fill(0);
+            rect(0, 80, 150, mouthOpen, 10);
         }
     }
     
-    // --- NUOVA MASCHERA 5 ---
-    class GaseousBeingScene extends Scene {
-        constructor() { super(); this.particles = Array.from({length: 200}, () => new GasParticle()); }
+    class SymbioteScene extends Scene {
+        constructor() { super(); this.tentacles = Array.from({length: 10}, () => new Tentacle()); }
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2);
-            let pColor = primaryColorPicker.color();
-            let sColor = secondaryColorPicker.color();
+            background(0); translate(width/2, height/2); angleMode(RADIANS);
             
-            for(let p of this.particles) {
-                p.update(vol);
-                p.show(pColor, sColor);
+            for(let t of this.tentacles) { t.update(vol); t.show(); }
+
+            let faceWobble = map(vol, 0, 1, 0, 30);
+            fill(50); noStroke();
+            beginShape();
+            for(let a=0; a<TWO_PI; a+=0.1) {
+                let r = 150 + sin(a*4 + frameCount*0.05)*20 + faceWobble;
+                vertex(cos(a)*r, sin(a)*r);
             }
+            endShape(CLOSE);
+            
+            fill(255);
+            triangle(-120, -100, -40, 20, -150, 50);
+            triangle(120, -100, 40, 20, 150, 50);
         }
     }
     
-    // Helpers
     class FlameParticle{constructor(x,y){this.pos=createVector(x,y);this.vel=p5.Vector.random2D().mult(random(1,4));this.lifespan=255;}isFinished(){return this.lifespan<=0;}update(){this.pos.add(this.vel);this.lifespan-=5;}show(){noStroke();fill(255,100,0,this.lifespan);ellipse(this.pos.x,this.pos.y,12);}}
-    class GasParticle {
-        constructor() { this.pos = p5.Vector.random2D().mult(random(150)); this.vel = createVector(); this.lifespan = 255; }
-        update(vol) {
-            let angle = noise(this.pos.x * 0.01, this.pos.y * 0.01, frameCount * 0.01) * TWO_PI * 4;
-            this.vel = p5.Vector.fromAngle(angle).mult(0.5 + vol * 2);
-            this.pos.add(this.vel);
-            this.lifespan -= 1.5;
-            if(this.lifespan < 0) { this.pos = p5.Vector.random2D().mult(random(150)); this.lifespan = 255; }
-        }
-        show(c1, c2) {
-            noStroke();
-            let interColor = lerpColor(c1, c2, this.pos.mag() / 200);
-            interColor.setAlpha(this.lifespan * map(this.pos.mag(), 0, 200, 1, 0.2));
-            fill(interColor);
-            ellipse(this.pos.x, this.pos.y, 10, 10);
+    class Tentacle {
+        constructor() { this.angle = random(TWO_PI); this.offset = random(1000); }
+        update(vol) { this.wobble = map(vol, 0, 1, 0, 80); }
+        show() {
+            push();
+            rotate(this.angle);
+            noFill(); stroke(200); strokeWeight(4);
+            beginShape();
+            for(let i=0; i<20; i++) {
+                let x = i * 20;
+                let y = sin(i * 0.2 + frameCount * 0.05 + this.offset) * this.wobble;
+                vertex(x, y);
+            }
+            endShape();
+            pop();
         }
     }
 
