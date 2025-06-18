@@ -200,7 +200,7 @@
             fill(0);
             let eyeExpansion = map(anger, 0, 1, 0, 40, true); // Più reattivi
             
-            // Occhio sinistro (speculare perfetto)
+            // Occhio sinistro
             beginShape(); 
             vertex(-40-eyeExpansion/2, -100); 
             bezierVertex(-100-eyeExpansion, -90, -115-eyeExpansion, -40, -85, -10); 
@@ -323,7 +323,7 @@
         }
     }
     
-    // --- JESTER (cappello migliorato mantenendo stile originale) ---
+    // --- JESTER (cappello rifatto come richiesto) ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -332,35 +332,7 @@
             
             push();
 
-            // Cappello da giullare a 3 punte migliorato
-            let bellWobble = energy * 25;
-            noStroke(); fill(0);
-            
-            // Punta centrale
-            beginShape(); 
-            vertex(0, -120); 
-            bezierVertex(-20, -200, -30, -250, -10, -280);
-            bezierVertex(10, -250, 30, -250, 10, -280);
-            bezierVertex(30, -250, 20, -200, 0, -120);
-            endShape(CLOSE);
-            
-            // Punta sinistra
-            beginShape(); 
-            vertex(-60, -100); 
-            bezierVertex(-120, -120, -200, -140, -220, -180);
-            bezierVertex(-240, -160, -260, -140, -240, -120);
-            bezierVertex(-200, -130, -120, -110, -60, -100);
-            endShape(CLOSE);
-            
-            // Punta destra
-            beginShape(); 
-            vertex(60, -100); 
-            bezierVertex(120, -120, 200, -140, 220, -180);
-            bezierVertex(240, -160, 260, -140, 240, -120);
-            bezierVertex(200, -130, 120, -110, 60, -100);
-            endShape(CLOSE);
-
-            // Faccia
+            // Faccia prima (sotto il cappello)
             fill(255);
             beginShape();
             vertex(0, -150);
@@ -368,13 +340,7 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            // Campanelle che tremano alle punte
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -280, 40, 40);
-            ellipse(-240 + random(-bellWobble, bellWobble), -120, 40, 40);
-            ellipse(240 + random(-bellWobble, bellWobble), -120, 40, 40);
-            
-            // Dettagli Neri
+            // Dettagli Neri della faccia
             fill(0); noStroke();
             let pupilY = lerp(0, -8, energy);
             let pupilSize = lerp(15, 25, energy);
@@ -395,6 +361,33 @@
             // Bocca a sorriso
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 0, 180, CHORD);
+
+            // Cappello sopra (in primo piano)
+            let bellWobble = energy * 25;
+            fill(0); noStroke();
+            
+            // Punta centrale (triangolo normale)
+            triangle(-30, -150, 30, -150, random(-bellWobble, bellWobble), -280);
+            
+            // Punta sinistra (due archi che formano triangolo ricurvo)
+            beginShape();
+            vertex(-60, -120);
+            quadraticVertex(-180, -160, -220 + random(-bellWobble, bellWobble), -140);
+            quadraticVertex(-180, -100, -60, -120);
+            endShape(CLOSE);
+            
+            // Punta destra (due archi che formano triangolo ricurvo)
+            beginShape();
+            vertex(60, -120);
+            quadraticVertex(180, -160, 220 + random(-bellWobble, bellWobble), -140);
+            quadraticVertex(180, -100, 60, -120);
+            endShape(CLOSE);
+            
+            // Campanelle che tremano alle punte
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(random(-bellWobble, bellWobble), -280, 30, 30);
+            ellipse(-220 + random(-bellWobble, bellWobble), -140, 30, 30);
+            ellipse(220 + random(-bellWobble, bellWobble), -140, 30, 30);
 
             pop();
         }
