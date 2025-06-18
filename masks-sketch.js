@@ -7,7 +7,7 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Mechanical Sun',
+        4: 'Celestial Guardian',
         5: 'Jester'
     };
 
@@ -30,7 +30,7 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new MechanicalSunScene(),
+            4: new CelestialGuardianScene(),
             5: new JesterScene()
         };
         switchScene(1);
@@ -175,6 +175,7 @@
             this.drawHalfJaw(-1, cheekFlare);
             pop();
         }
+
         drawHalfSkull(side, cheekFlare, crownSpike) {
             push();
             scale(side, 1);
@@ -193,6 +194,7 @@
             triangle(0,20, 15,45, 0,45);
             pop();
         }
+
         drawHalfJaw(side, cheekFlare) {
             push();
             scale(side, 1);
@@ -210,44 +212,43 @@
     }
 
     // --- NUOVA MASCHERA 4 ---
-    class MechanicalSunScene extends Scene {
+    class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width/2, height/2); angleMode(DEGREES);
-            let energy = map(vol, 0, 1, 0, 1, true);
+            background(0); translate(width / 2, height / 2); angleMode(RADIANS);
+            let energy = map(vol, 0.1, 1.0, 0, 1, true);
 
-            let rotation = frameCount * lerp(0.1, 2, energy);
-            
-            // Raggi esterni
-            push();
-            rotate(rotation);
-            stroke(255); strokeWeight(3);
-            for(let i=0; i<8; i++) {
-                let angle = i * 45;
-                let length = lerp(200, 300, energy);
-                line(0,0, cos(angle) * length, sin(angle) * length);
-            }
-            pop();
+            let rotation = frameCount * 0.01;
+            let haloRadius = lerp(200, 250, energy);
 
-            // Ingranaggi alla base
-            noFill(); strokeWeight(8);
-            ellipse(0,0,250,250);
-            push();
-            rotate(-rotation * 1.5);
-            for(let i=0; i<16; i++) {
-                let angle = i * (360/16);
-                rect(cos(angle)*125, sin(angle)*125, 20, 20);
+            // Alone di frammenti
+            stroke(255, 150); strokeWeight(2); noFill();
+            for(let i=0; i<10; i++) {
+                let angle = i * TWO_PI / 10 + rotation;
+                let x = cos(angle) * haloRadius;
+                let y = sin(angle) * haloRadius;
+                push();
+                translate(x,y);
+                rotate(angle);
+                triangle(-15,0, 15,0, 0, -30);
+                pop();
             }
-            pop();
-            
-            // Nucleo
-            let coreSize = lerp(80, 120, energy);
-            let coreGlow = lerp(50, 255, energy);
-            noStroke();
-            fill(255, 220, 100, coreGlow);
-            ellipse(0,0,coreSize,coreSize);
-            fill(255);
-            ellipse(0,0,coreSize*0.2, coreSize*0.2);
+
+            // Faccia
+            noFill(); strokeWeight(5); stroke(255);
+            rectMode(CENTER);
+            rect(0,0, 250, 350, 20);
+
+            // Runa sulla fronte
+            let runeGlow = map(energy, 0.5, 1, 100, 255, true);
+            fill(0, 200, 255, runeGlow); noStroke();
+            textSize(60); text("⟎", 0, -120);
+
+            // Occhi
+            let eyeOpen = lerp(5, 50, energy);
+            fill(0); stroke(255);
+            ellipse(-80, -30, 70, eyeOpen);
+            ellipse(80, -30, 70, eyeOpen);
         }
     }
     
@@ -256,7 +257,7 @@
         draw() {
             let vol = this.updateVolume();
             background(255); translate(width/2, height/2); angleMode(DEGREES);
-            let energy = map(vol, 0.1, 0.8, 0, 1, true);
+            let energy = map(vol, 0, 1, 0, 1, true);
 
             let headWobble = sin(frameCount * 5) * 5 * energy;
             push();
@@ -268,31 +269,38 @@
             let bellWobbleY1 = random(-1,1) * 30 * energy;
             let bellWobbleX2 = random(-1,1) * 30 * energy;
             let bellWobbleY2 = random(-1,1) * 30 * energy;
-            beginShape(); vertex(0,-180); bezierVertex(-150,-150, -80, -300, -80+bellWobbleX1, -250+bellWobbleY1); endShape();
-            beginShape(); vertex(0,-180); bezierVertex(150,-150, 80, -300, 80+bellWobbleX2, -250+bellWobbleY2); endShape();
             
-            // Campanelle con contorno
+            // Punte del cappello
+            beginShape(); vertex(0,-100); bezierVertex(-100,-150, -150,-250, -120+bellWobbleX1, -280+bellWobbleY1); endShape();
+            beginShape(); vertex(0,-100); bezierVertex(100,-150, 150,-250, 120+bellWobbleX2, -280+bellWobbleY2); endShape();
+
+            // Campanelle
             stroke(0); strokeWeight(2); fill(255);
-            ellipse(-80 + bellWobbleX1, -250 + bellWobbleY1, 20, 20);
-            ellipse(80 + bellWobbleX2, -250 + bellWobbleY2, 20, 20);
-            
+            ellipse(-120 + bellWobbleX1, -280 + bellWobbleY1, 25, 25);
+            ellipse(120 + bellWobbleX2, -280 + bellWobbleY2, 25, 25);
+
             // Faccia
             fill(0); noStroke();
             beginShape();
-            vertex(0, -200);
-            bezierVertex(-200, -150, -150, 150, 0, 200);
-            bezierVertex(150, 150, 200, -150, 0, -200);
+            vertex(0, -120);
+            bezierVertex(-220, -100, -180, 200, 0, 220);
+            bezierVertex(180, 200, 220, -100, 0, -120);
             endShape(CLOSE);
             
             // Dettagli bianchi
             fill(255);
             // Occhi
-            ellipse(-80, -50, 40, 60);
-            ellipse(80, -50, 40, 60);
-            // Lacrime più spesse
-            beginShape(); vertex(-90, -20); vertex(-50, -20); vertex(-70, 80); endShape(CLOSE);
-            beginShape(); vertex(90, -20); vertex(50, -20); vertex(70, 80); endShape(CLOSE);
-            
+            arc(-80, -30, 80, 100, 180, 360);
+            arc(80, -30, 80, 100, 180, 360);
+            fill(0);
+            ellipse(-80, -25, 20, 20);
+            ellipse(80, -25, 20, 20);
+
+            // Lacrime
+            fill(255);
+            rect(-80, 40, 20, 60, 5); // Lacrima più spessa
+            rect(80, 40, 20, 60, 5);
+
             // Bocca
             let mouthOpen = lerp(20, 120, energy);
             noFill(); stroke(255); strokeWeight(4);
