@@ -22,7 +22,7 @@
         fft.setInput(mic);
 
         maskLabel = select('#current-mask-label');
-        sensitivitySlider = createSlider(1, 40, 12, 0.1); // Aumentato il margine
+        sensitivitySlider = createSlider(1, 40, 15, 0.1); // Margine aumentato
         sensitivitySlider.parent('sensitivity-slider-container');
         sensitivitySlider.style('width', '100%');
         
@@ -116,7 +116,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-190, -240); // Posizione ricalibrata
+            translate(-190, -240);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -146,7 +146,7 @@
         }
     }
     
-    // --- TESCHIO ---
+    // --- TESCHIO (RISCRITTO) ---
     class SkullScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -165,48 +165,37 @@
             let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
             let crownSpike = map(anger, 0.4, 1, 0, 40, true);
             
-            noStroke();
-            this.drawHalfSkull(1, cheekFlare, crownSpike);
-            this.drawHalfSkull(-1, cheekFlare, crownSpike);
-
-            push(); translate(0, jawDrop);
-            this.drawHalfJaw(1, cheekFlare);
-            this.drawHalfJaw(-1, cheekFlare);
-            pop();
-        }
-
-        drawHalfSkull(side, cheekFlare, crownSpike) {
-            push();
-            scale(side, 1);
-            fill(255);
+            noStroke(); fill(255);
+            
+            // Cranio (disegnato come forma unica)
             beginShape();
-            vertex(1, -185 - crownSpike); // Sovrapposizione di 1px per coprire la linea
-            bezierVertex(80,-190-crownSpike, 150,-140, 160,-80-cheekFlare);
-            bezierVertex(170,-20, 145,50, 120,60);
-            vertex(1, 60);
-            endShape();
-            fill(0);
-            beginShape();
-            vertex(40,-100); bezierVertex(100,-90, 115,-40, 85,-10);
-            bezierVertex(70,-5, 45,-20, 40,-40);
+            vertex(0, -185 - crownSpike);
+            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
+            bezierVertex(-170,-20, -145,50, -120,60);
+            vertex(120, 60);
+            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
+            bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
             endShape(CLOSE);
-            triangle(0,20, 15,45, 0,45);
-            pop();
-        }
 
-        drawHalfJaw(side, cheekFlare) {
+            // Mandibola (disegnata come forma unica)
             push();
-            scale(side, 1);
-            fill(255);
+            translate(0, jawDrop);
             beginShape();
-            vertex(1, 70);
             vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
-            vertex(1, 160);
+            bezierVertex(100,185, -100,185, -130,160);
+            bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
             endShape(CLOSE);
-            fill(0); rectMode(CENTER);
-            for(let i=0; i<3; i++) rect(25 + i * 30, 85, 14, 20, 3); // Denti più in alto
+            this.carveLowerTeeth();
             pop();
+
+            // Cavità
+            fill(0);
+            beginShape(); vertex(-40,-100); bezierVertex(-100,-90, -115,-40, -85,-10); bezierVertex(-70,-5, -45,-20, -40,-40); endShape(CLOSE);
+            beginShape(); vertex(40,-100); bezierVertex(100,-90, 115,-40, 85,-10); bezierVertex(70,-5, 45,-20, 40,-40); endShape(CLOSE);
+            let noseFlare = map(anger, 0, 1, 0, 10);
+            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
         }
+        carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0; i<5; i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
     // --- CELESTIAL GUARDIAN ---
@@ -233,7 +222,8 @@
             rect(0,0, 250, 350, 20);
 
             let mouthSize = lerp(10, 80, energy);
-            fill(0); ellipse(0, 100, mouthSize, mouthSize);
+            fill(0); noStroke();
+            ellipse(0, 100, mouthSize, mouthSize);
 
             let eyeOpen = lerp(5, 50, energy);
             fill(0); stroke(255); strokeWeight(5);
@@ -249,20 +239,23 @@
             background(24, 24, 24); translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
-            // Cappello
-            let bellWobble = energy * 20;
-            fill(0); noStroke();
-            // Punta centrale
-            beginShape(); vertex(0, -150); bezierVertex(0, -250, -80, -280, -20 + random(-bellWobble, bellWobble), -320 + random(-bellWobble, bellWobble)); endShape();
-            // Punta destra
-            beginShape(); vertex(100, -100); bezierVertex(150, -50, 250, -100, 280 + random(-bellWobble, bellWobble), -80 + random(-bellWobble, bellWobble)); endShape();
-            // Punta sinistra
-            beginShape(); vertex(-100, -100); bezierVertex(-150, -50, -250, -100, -280 + random(-bellWobble, bellWobble), -80 + random(-bellWobble, bellWobble)); endShape();
+            push();
 
-            stroke(255); strokeWeight(3); fill(0);
-            ellipse(-20 + random(-bellWobble, bellWobble), -320 + random(-bellWobble, bellWobble), 40, 40);
-            ellipse(280 + random(-bellWobble, bellWobble), -80 + random(-bellWobble, bellWobble), 40, 40);
-            ellipse(-280 + random(-bellWobble, bellWobble), -80 + random(-bellWobble, bellWobble), 40, 40);
+            // Cappello
+            fill(0); noStroke();
+            let bellWobble = energy * 25;
+            
+            // Punte laterali ricurve
+            beginShape(); vertex(-60,-120); bezierVertex(-150,-150, -250,-100, -280+random(-bellWobble,bellWobble),-80+random(-bellWobble,bellWobble)); bezierVertex(-200,-150, -100,-120,-60,-120); endShape(CLOSE);
+            beginShape(); vertex(60,-120); bezierVertex(150,-150, 250,-100, 280+random(-bellWobble,bellWobble),-80+random(-bellWobble,bellWobble)); bezierVertex(200,-150, 100,-120,60,-120); endShape(CLOSE);
+            // Punta centrale
+            triangle(-60, -120, 60, -120, 0, -250);
+
+            // Campanelle
+            stroke(255); strokeWeight(2); fill(0);
+            ellipse(-280 + random(-bellWobble,bellWobble), -80, 40, 40);
+            ellipse(280 + random(-bellWobble,bellWobble), -80, 40, 40);
+            ellipse(0, -250, 40, 40);
 
             // Faccia
             fill(255); noStroke();
@@ -272,29 +265,34 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            // Dettagli neri
+            // Dettagli Neri
             fill(0);
-            let pupilY = lerp(0, -8, energy);
+            let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
-            let tearLength = lerp(60, 120, energy);
+            let tearLength = lerp(40, 100, energy);
             
             // Occhi
-            triangle(-120, -80, -40, -80, -80, 20);
-            triangle(120, -80, 40, -80, 80, 20);
+            ellipse(-80, -50, 40, 80);
+            ellipse(80, -50, 40, 80);
             // Pupille
-            fill(255); ellipse(-80, -55 + pupilY, pupilSize, pupilSize); ellipse(80, -55 + pupilY, pupilSize, pupilSize);
+            fill(255);
+            ellipse(-80, -55 + pupilY, pupilSize, pupilSize);
+            ellipse(80, -55 + pupilY, pupilSize, pupilSize);
+
             // Lacrime
-            rectMode(CORNER); fill(0);
-            rect(-95, 20, 30, tearLength, 10);
-            rect(65, 20, 30, tearLength, 10);
+            fill(0);
+            triangle(-90, 0, -70, 0, -80, tearLength);
+            triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca
-            let mouthY = lerp(120, 100, energy);
-            noFill(); stroke(0); strokeWeight(5);
-            arc(0, 140, 150, mouthY, 180, 360);
+            // Bocca a sorriso
+            let smileHeight = lerp(10, 100, energy);
+            noStroke();
+            arc(0, 120, 150, smileHeight, 0, 180, CHORD);
+
+            pop();
         }
     }
-
+    
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
