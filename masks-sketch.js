@@ -114,7 +114,7 @@
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2 + 20, height / 2); // Spostato a destra
+            translate(width / 2 + 60, height / 2); // Spostato molto più a destra
             scale(1.5);
             translate(-270, -270);
             
@@ -200,7 +200,7 @@
             fill(0);
             let eyeExpansion = map(anger, 0, 1, 0, 40, true); // Più reattivi
             
-            // Occhio sinistro
+            // Occhio sinistro (speculare perfetto)
             beginShape(); 
             vertex(-40-eyeExpansion/2, -100); 
             bezierVertex(-100-eyeExpansion, -90, -115-eyeExpansion, -40, -85, -10); 
@@ -323,7 +323,7 @@
         }
     }
     
-    // --- JESTER (cappello completamente ridisegnato) ---
+    // --- JESTER (cappello migliorato mantenendo stile originale) ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -332,98 +332,69 @@
             
             push();
 
-            // Cappello da giullare tradizionale migliorato
-            let bellWobble = energy * 15;
-            noStroke(); 
+            // Cappello da giullare a 3 punte migliorato
+            let bellWobble = energy * 25;
+            noStroke(); fill(0);
             
-            // Base del cappello
-            fill(120, 0, 120); // Viola scuro
-            ellipse(0, -120, 200, 60);
+            // Punta centrale
+            beginShape(); 
+            vertex(0, -120); 
+            bezierVertex(-20, -200, -30, -250, -10, -280);
+            bezierVertex(10, -250, 30, -250, 10, -280);
+            bezierVertex(30, -250, 20, -200, 0, -120);
+            endShape(CLOSE);
             
-            // Punte del cappello con pattern a strisce
-            for(let i = 0; i < 3; i++) {
-                let angle = i * 120 - 60; // -60, 60, 180 gradi
-                let wobbleX = cos(radians(angle)) * bellWobble;
-                let wobbleY = sin(radians(angle)) * bellWobble;
-                
-                push();
-                rotate(angle);
-                
-                // Punta con strisce alternate
-                for(let j = 0; j < 8; j++) {
-                    fill(j % 2 == 0 ? color(120, 0, 120) : color(255, 215, 0)); // Viola e oro
-                    let segmentY = -120 - j * 25;
-                    let segmentWidth = map(j, 0, 7, 40, 8);
-                    ellipse(0, segmentY, segmentWidth, 30);
-                }
-                
-                // Campanella alla punta
-                stroke(255, 215, 0); strokeWeight(2); fill(255, 215, 0);
-                let bellY = -320 + wobbleY;
-                ellipse(wobbleX, bellY, 25, 25);
-                
-                // Filo della campanella
-                stroke(255, 215, 0); strokeWeight(1);
-                line(0, -295, wobbleX, bellY);
-                
-                pop();
-            }
+            // Punta sinistra
+            beginShape(); 
+            vertex(-60, -100); 
+            bezierVertex(-120, -120, -200, -140, -220, -180);
+            bezierVertex(-240, -160, -260, -140, -240, -120);
+            bezierVertex(-200, -130, -120, -110, -60, -100);
+            endShape(CLOSE);
+            
+            // Punta destra
+            beginShape(); 
+            vertex(60, -100); 
+            bezierVertex(120, -120, 200, -140, 220, -180);
+            bezierVertex(240, -160, 260, -140, 240, -120);
+            bezierVertex(200, -130, 120, -110, 60, -100);
+            endShape(CLOSE);
 
-            // Faccia del giullare
-            noStroke(); fill(255, 240, 220); // Carnagione
-            ellipse(0, 0, 280, 320);
+            // Faccia
+            fill(255);
+            beginShape();
+            vertex(0, -150);
+            bezierVertex(-250, -100, -200, 220, 0, 250);
+            bezierVertex(200, 220, 250, -100, 0, -150);
+            endShape(CLOSE);
             
-            // Trucco del giullare
-            fill(255, 0, 0); // Rosso
-            ellipse(-100, 40, 60, 60); // Guancia sinistra
-            ellipse(100, 40, 60, 60);  // Guancia destra
+            // Campanelle che tremano alle punte
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(random(-bellWobble, bellWobble), -280, 40, 40);
+            ellipse(-240 + random(-bellWobble, bellWobble), -120, 40, 40);
+            ellipse(240 + random(-bellWobble, bellWobble), -120, 40, 40);
             
-            // Dettagli degli occhi
+            // Dettagli Neri
             fill(0); noStroke();
-            let pupilY = lerp(3, -12, energy);
-            let pupilSize = lerp(15, 30, energy);
-            let tearLength = lerp(40, 120, energy);
-            
-            // Sopracciglia espressive
-            strokeWeight(8); stroke(0);
-            let browAngle = map(energy, 0, 1, 0, 20);
-            push(); translate(-80, -60); rotate(-browAngle); line(-30, 0, 30, 0); pop();
-            push(); translate(80, -60); rotate(browAngle); line(-30, 0, 30, 0); pop();
+            let pupilY = lerp(0, -8, energy);
+            let pupilSize = lerp(15, 25, energy);
+            let tearLength = lerp(40, 100, energy);
             
             // Occhi
-            noStroke();
-            arc(-80, -30, 80, 120, 180, 360);
-            arc(80, -30, 80, 120, 180, 360);
-            
-            // Pupille che si muovono
+            arc(-80, -30, 80, 100, 180, 360);
+            arc(80, -30, 80, 100, 180, 360);
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
-            
-            // Punto nero nelle pupille
-            fill(0);
-            ellipse(-80, -25 + pupilY, pupilSize/3, pupilSize/3);
-            ellipse(80, -25 + pupilY, pupilSize/3, pupilSize/3);
 
-            // Lacrime che si allungano
-            fill(0, 100, 255); // Lacrime blu
-            ellipse(-90, 0, 8, tearLength);
-            ellipse(90, 0, 8, tearLength);
+            // Lacrime
+            fill(0);
+            triangle(-90, 0, -70, 0, -80, tearLength);
+            triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca a sorriso esagerato
-            fill(255, 0, 0);
-            let smileWidth = lerp(100, 200, energy);
-            let smileHeight = lerp(15, 80, energy);
-            arc(0, 120, smileWidth, smileHeight, 0, 180, CHORD);
-            
-            // Denti bianchi nel sorriso
-            if (energy > 0.3) {
-                fill(255);
-                for(let i = 0; i < 6; i++) {
-                    let x = lerp(-smileWidth/3, smileWidth/3, i/5);
-                    rect(x, 120, 8, smileHeight/2);
-                }
-            }
+            // Bocca a sorriso
+            let smileHeight = lerp(10, 100, energy);
+            arc(0, 120, 150, smileHeight, 0, 180, CHORD);
 
             pop();
         }
