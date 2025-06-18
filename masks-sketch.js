@@ -7,7 +7,7 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Gargoyle',
+        4: 'Mechanical Sun',
         5: 'Jester'
     };
 
@@ -30,7 +30,7 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new GargoyleScene(),
+            4: new MechanicalSunScene(),
             5: new JesterScene()
         };
         switchScene(1);
@@ -175,7 +175,6 @@
             this.drawHalfJaw(-1, cheekFlare);
             pop();
         }
-
         drawHalfSkull(side, cheekFlare, crownSpike) {
             push();
             scale(side, 1);
@@ -194,7 +193,6 @@
             triangle(0,20, 15,45, 0,45);
             pop();
         }
-
         drawHalfJaw(side, cheekFlare) {
             push();
             scale(side, 1);
@@ -212,30 +210,44 @@
     }
 
     // --- NUOVA MASCHERA 4 ---
-    class GargoyleScene extends Scene {
+    class MechanicalSunScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
+            background(0); translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0, 1, 0, 1, true);
 
-            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
-            stroke(100); strokeWeight(8); noFill();
-            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
-            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
+            let rotation = frameCount * lerp(0.1, 2, energy);
             
-            fill(120); noStroke(); rectMode(CENTER);
-            rect(0,0,300,350,20);
-            arc(-80, -170, 80, 120, PI, TWO_PI);
-            arc(80, -170, 80, 120, PI, TWO_PI);
+            // Raggi esterni
+            push();
+            rotate(rotation);
+            stroke(255); strokeWeight(3);
+            for(let i=0; i<8; i++) {
+                let angle = i * 45;
+                let length = lerp(200, 300, energy);
+                line(0,0, cos(angle) * length, sin(angle) * length);
+            }
+            pop();
 
-            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
-            fill(255, 255, 0, eyeGlow);
-            ellipse(-80, -50, 60, 60);
-            ellipse(80, -50, 60, 60);
-
-            let mouthOpen = map(energy, 0, 1, 10, 80);
-            fill(0);
-            rect(0, 80, 150, mouthOpen, 10);
+            // Ingranaggi alla base
+            noFill(); strokeWeight(8);
+            ellipse(0,0,250,250);
+            push();
+            rotate(-rotation * 1.5);
+            for(let i=0; i<16; i++) {
+                let angle = i * (360/16);
+                rect(cos(angle)*125, sin(angle)*125, 20, 20);
+            }
+            pop();
+            
+            // Nucleo
+            let coreSize = lerp(80, 120, energy);
+            let coreGlow = lerp(50, 255, energy);
+            noStroke();
+            fill(255, 220, 100, coreGlow);
+            ellipse(0,0,coreSize,coreSize);
+            fill(255);
+            ellipse(0,0,coreSize*0.2, coreSize*0.2);
         }
     }
     
@@ -244,12 +256,26 @@
         draw() {
             let vol = this.updateVolume();
             background(255); translate(width/2, height/2); angleMode(DEGREES);
-            let energy = map(vol, 0, 1, 0, 1, true);
+            let energy = map(vol, 0.1, 0.8, 0, 1, true);
 
-            let headWobble = sin(frameCount * 3) * 5 * energy;
+            let headWobble = sin(frameCount * 5) * 5 * energy;
             push();
             translate(headWobble, 0);
 
+            // Cappello
+            fill(0); noStroke();
+            let bellWobbleX1 = random(-1,1) * 30 * energy;
+            let bellWobbleY1 = random(-1,1) * 30 * energy;
+            let bellWobbleX2 = random(-1,1) * 30 * energy;
+            let bellWobbleY2 = random(-1,1) * 30 * energy;
+            beginShape(); vertex(0,-180); bezierVertex(-150,-150, -80, -300, -80+bellWobbleX1, -250+bellWobbleY1); endShape();
+            beginShape(); vertex(0,-180); bezierVertex(150,-150, 80, -300, 80+bellWobbleX2, -250+bellWobbleY2); endShape();
+            
+            // Campanelle con contorno
+            stroke(0); strokeWeight(2); fill(255);
+            ellipse(-80 + bellWobbleX1, -250 + bellWobbleY1, 20, 20);
+            ellipse(80 + bellWobbleX2, -250 + bellWobbleY2, 20, 20);
+            
             // Faccia
             fill(0); noStroke();
             beginShape();
@@ -258,32 +284,24 @@
             bezierVertex(150, 150, 200, -150, 0, -200);
             endShape(CLOSE);
             
-            // Decorazioni
+            // Dettagli bianchi
             fill(255);
-            let tearLength = lerp(0, 100, energy);
-            triangle(-80, 0, -60, 0, -70, tearLength);
-            triangle(80, 0, 60, 0, 70, tearLength);
+            // Occhi
+            ellipse(-80, -50, 40, 60);
+            ellipse(80, -50, 40, 60);
+            // Lacrime più spesse
+            beginShape(); vertex(-90, -20); vertex(-50, -20); vertex(-70, 80); endShape(CLOSE);
+            beginShape(); vertex(90, -20); vertex(50, -20); vertex(70, 80); endShape(CLOSE);
             
             // Bocca
             let mouthOpen = lerp(20, 120, energy);
             noFill(); stroke(255); strokeWeight(4);
             arc(0, 120, 100, mouthOpen, 0, 180);
 
-            // Cappello
-            fill(0);
-            let bellWobbleX1 = random(-1,1) * 30 * energy;
-            let bellWobbleY1 = random(-1,1) * 30 * energy;
-            let bellWobbleX2 = random(-1,1) * 30 * energy;
-            let bellWobbleY2 = random(-1,1) * 30 * energy;
-            triangle(0,-180, -150, -200, -80, -250);
-            triangle(0,-180, 150, -200, 80, -250);
-            fill(255);
-            ellipse(-80 + bellWobbleX1, -250 + bellWobbleY1, 20, 20);
-            ellipse(80 + bellWobbleX2, -250 + bellWobbleY2, 20, 20);
             pop();
         }
     }
-
+    
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
