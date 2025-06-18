@@ -116,13 +116,13 @@
 
     // --- DRAGO ---
     class DragonScene extends Scene {
-        constructor() { super(); }
+        constructor() { super(); this.n = 1; this.increment = 1; }
         draw() {
             let vol = this.updateVolume();
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2, height / 2);
+            translate(width / 2, height / 2); // Centrato
             scale(1.5);
             translate(-270, -270);
             
@@ -237,7 +237,16 @@
         }
         drawLowerJaw(yOffset, angerLevel) {
             push();
-            translate(0, yOffset); rotate(map(yOffset, 0, 140, 0, 0.05));
+            if (angerLevel < 0.98) {
+                translate(0, yOffset);
+                rotate(map(yOffset, 0, 140, 0, 0.05));
+            } else {
+                let orbitRadius = 180 + sin(frameCount * 0.05) * 10;
+                let orbitAngle = frameCount * 0.1;
+                let selfRotation = frameCount * 0.3;
+                translate(cos(orbitAngle) * orbitRadius, sin(orbitAngle) * orbitRadius);
+                rotate(selfRotation);
+            }
             let cheekFlareX = map(angerLevel, 0, 1, 0, 15);
             fill(0); noStroke();
             beginShape();
@@ -250,8 +259,8 @@
             fill(255); this.carveLowerTeeth(angerLevel);
             pop();
         }
-        carveTopTeeth() { /*...*/ }
-        carveLowerTeeth() { /*...*/ }
+        carveTopTeeth(angerLevel) { /*...*/ }
+        carveLowerTeeth(angerLevel) { /*...*/ }
     }
 
     // --- CELESTIAL GUARDIAN (TUA VERSIONE) ---
@@ -345,6 +354,7 @@
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
+
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
@@ -353,7 +363,8 @@
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
             
             let bellWobble = energy * 25;
-            fill(0); noStroke();
+            noStroke(); fill(0);
+            
             rectMode(CENTER);
             rect(0, -145, 280, 40, 10);
 
@@ -363,9 +374,10 @@
             triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
             
             stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -250, 30, 30);
-            ellipse(-250 + random(-bellWobble, bellWobble), -200, 30, 30);
-            ellipse(250 + random(-bellWobble, bellWobble), -120, 30, 30);
+            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
+
             pop();
         }
     }
