@@ -116,13 +116,13 @@
 
     // --- DRAGO ---
     class DragonScene extends Scene {
-        constructor() { super(); this.n = 1; this.increment = 1; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2, height / 2); // Centrato
+            translate(width / 2, height / 2);
             scale(1.5);
             translate(-270, -270);
             
@@ -354,7 +354,6 @@
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
-
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
@@ -384,12 +383,29 @@
     
     // Helper per il teschio
     class FlameParticle {
-        constructor(x, y, pColor) { this.pos = createVector(x,y); this.vel = createVector(random(-2,2), random(-5,-12)); this.lifespan=1; this.decay=random(0.015,0.04); this.size=random(10,25); this.pColor=pColor;}
+        constructor(x, y, pColor) {
+            this.pos = createVector(x, y);
+            this.vel = p5.Vector.random2D().mult(random(2, 5));
+            this.lifespan = 1.0;
+            this.decay = random(0.015, 0.04);
+            this.size = random(10, 25);
+            this.pColor = pColor;
+        }
         isFinished() { return this.lifespan <= 0; }
-        update() { this.pos.add(this.vel); this.vel.y*=0.98; this.lifespan-=this.decay; this.size-=0.3; }
-        show() { noStroke(); this.pColor.setAlpha(this.lifespan*220); fill(this.pColor); ellipse(this.pos.x,this.pos.y,max(0,this.size));}
+        update() {
+            this.pos.add(this.vel);
+            this.vel.y *= 0.98;
+            this.lifespan -= this.decay;
+            this.size -= 0.3;
+        }
+        show() {
+            noStroke();
+            this.pColor.setAlpha(this.lifespan * 220);
+            fill(this.pColor);
+            ellipse(this.pos.x, this.pos.y, max(0, this.size));
+        }
     }
-
+    
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
