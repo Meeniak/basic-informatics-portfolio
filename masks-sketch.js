@@ -59,12 +59,12 @@
         }
     }
     
-    // --- ROBOT (spostato più in basso per centratura) ---
+    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
             background(255);
-            translate(width / 2, height / 2 + 30); // Spostato più in basso
+            translate(width / 2, height / 2 + 30);
             rectMode(CENTER);
 
             let antennaWobble = sin(frameCount * 0.2) * vol * 40;
@@ -106,7 +106,7 @@
         }
     }
 
-    // --- DRAGO (spostato leggermente a destra) ---
+    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -114,9 +114,9 @@
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2 + 60, height / 2); // Spostato molto più a destra
+            translate(width / 2, height / 2);
             scale(1.5);
-            translate(-270, -270);
+            translate(-190, -240);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -146,7 +146,7 @@
         }
     }
     
-    // --- TESCHIO (completamente ridisegnato simmetrico con pupille pirata) ---
+    // --- TESCHIO (RISCRITTO) ---
     class SkullScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -167,86 +167,34 @@
             
             noStroke(); fill(255);
             
-            // Cranio perfettamente simmetrico
             beginShape();
             vertex(0, -185 - crownSpike);
-            // Lato destro
-            bezierVertex(80, -190-crownSpike, 150, -140, 160, -80-cheekFlare);
-            bezierVertex(170, -20, 145, 50, 120, 60);
-            vertex(0, 60);
-            // Lato sinistro (speculare perfetto)
-            vertex(-120, 60);
-            bezierVertex(-145, 50, -170, -20, -160, -80-cheekFlare);
-            bezierVertex(-150, -140, -80, -190-crownSpike, 0, -185-crownSpike);
+            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
+            bezierVertex(-170,-20, -145,50, -120,60);
+            vertex(120, 60);
+            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
+            bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
             endShape(CLOSE);
 
-            // Mandibola simmetrica
-            push(); 
-            translate(0, jawDrop);
+            push(); translate(0, jawDrop);
             beginShape();
-            vertex(0, 70);
-            vertex(115, 70); 
-            bezierVertex(125, 75, 145+cheekFlare, 110, 130, 160);
-            vertex(-130, 160); 
-            bezierVertex(-145-cheekFlare, 110, -125, 75, -115, 70);
-            vertex(0, 70);
+            vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
+            vertex(-130,160); bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
             endShape(CLOSE);
-            
-            // Denti sul bordo della mandibola
-            this.drawTeethOnJaw();
+            this.carveLowerTeeth();
             pop();
 
-            // Cavità oculari simmetriche con maggiore reattività
             fill(0);
-            let eyeExpansion = map(anger, 0, 1, 0, 40, true); // Più reattivi
-            
-            // Occhio sinistro
-            beginShape(); 
-            vertex(-40-eyeExpansion/2, -100); 
-            bezierVertex(-100-eyeExpansion, -90, -115-eyeExpansion, -40, -85, -10); 
-            bezierVertex(-70, -5, -45, -20, -40, -40); 
-            endShape(CLOSE);
-            
-            // Occhio destro (perfettamente speculare)
-            beginShape(); 
-            vertex(40+eyeExpansion/2, -100); 
-            bezierVertex(100+eyeExpansion, -90, 115+eyeExpansion, -40, 85, -10); 
-            bezierVertex(70, -5, 45, -20, 40, -40); 
-            endShape(CLOSE);
-            
-            // Pupille "piratate" che appaiono sopra soglia
-            if (anger > 0.4) {
-                fill(255);
-                // Pupilla sinistra con benda pirata
-                ellipse(-65, -60, 20, 20);
-                fill(0);
-                rect(-75, -65, 20, 10); // Benda
-                
-                // Pupilla destra normale
-                fill(255);
-                ellipse(65, -60, 20, 20);
-                fill(0);
-                ellipse(65, -60, 8, 8); // Pupilla normale
-            }
-            
-            // Cavità nasale simmetrica
-            fill(0);
+            let eyePinch = map(anger, 0.5, 1, 0, 20, true);
+            beginShape(); vertex(-40,-100); bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); bezierVertex(-70,-5, -45,-20, -40,-40); endShape(CLOSE);
+            beginShape(); vertex(40,-100); bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10); bezierVertex(70,-5, 45,-20, 40,-40); endShape(CLOSE);
             let noseFlare = map(anger, 0, 1, 0, 10);
             triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
         }
-        
-        drawTeethOnJaw() {
-            fill(0); 
-            rectMode(CENTER); 
-            // Denti posizionati esattamente sul bordo della mandibola
-            for(let i = 0; i < 7; i++) {
-                let x = lerp(-70, 70, i/6);
-                rect(x, 70, 12, 20, 3); // Posizionati sul bordo a y=70
-            }
-        }
+        carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0; i<5; i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
-    // --- CELESTIAL GUARDIAN (migliorato con elementi aggiuntivi) ---
+    // --- CELESTIAL GUARDIAN ---
     class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -256,7 +204,6 @@
             let rotation = frameCount * 0.01;
             let haloRadius = lerp(200, 250, energy);
 
-            // Alone esterno pulsante
             stroke(255, 150); strokeWeight(2); noFill();
             for(let i=0; i<10; i++) {
                 let angle = i * TWO_PI / 10 + rotation;
@@ -266,64 +213,22 @@
                 triangle(-15,0, 15,0, 0, -30);
                 pop();
             }
-            
-            // Alone interno che reagisce al suono
-            strokeWeight(1); stroke(255, 200);
-            let innerRadius = lerp(150, 180, energy);
-            for(let i=0; i<20; i++) {
-                let angle = i * TWO_PI / 20 - rotation;
-                let x = cos(angle) * innerRadius;
-                let y = sin(angle) * innerRadius;
-                point(x, y);
-            }
 
-            // Corpo principale
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
             
-            // Simbolo mistico al centro che pulsa
-            push();
-            rotate(frameCount * 0.02);
-            stroke(255, 150 + energy * 105); strokeWeight(3);
-            let symbolSize = 60 + energy * 20;
-            line(-symbolSize/2, 0, symbolSize/2, 0);
-            line(0, -symbolSize/2, 0, symbolSize/2);
-            ellipse(0, 0, symbolSize, symbolSize);
-            pop();
-            
-            // Particelle di energia che volano via
-            if (energy > 0.5) {
-                for(let i = 0; i < 8; i++) {
-                    let angle = i * TWO_PI / 8 + frameCount * 0.05;
-                    let distance = 100 + energy * 50;
-                    let x = cos(angle) * distance;
-                    let y = sin(angle) * distance;
-                    fill(255, 150); noStroke();
-                    ellipse(x, y, 5 + energy * 10, 5 + energy * 10);
-                }
-            }
-
-            // Bocca tonda più reattiva
             let mouthSize = lerp(10, 80, energy);
             fill(255); noStroke();
             ellipse(0, 100, mouthSize, mouthSize);
 
-            // Occhi più espressivi
             let eyeOpen = lerp(5, 50, energy);
             fill(0); stroke(255); strokeWeight(5);
             ellipse(-80, -30, 70, eyeOpen);
             ellipse(80, -30, 70, eyeOpen);
-            
-            // Pupille che si accendono con alta energia
-            if (energy > 0.6) {
-                fill(255, 200); noStroke();
-                ellipse(-80, -30, 20, 20);
-                ellipse(80, -30, 20, 20);
-            }
         }
     }
     
-    // --- JESTER (cappello rifatto come richiesto) ---
+    // --- JESTER (RIDISEGNATO) ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -331,18 +236,19 @@
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
             push();
+            translate(0, -30); // Sposta tutto più in alto
 
-            // Faccia prima (sotto il cappello)
-            fill(255);
+            // Maschera bianca
+            fill(255); noStroke();
             beginShape();
             vertex(0, -150);
             bezierVertex(-250, -100, -200, 220, 0, 250);
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
-            
-            // Dettagli Neri della faccia
-            fill(0); noStroke();
-            let pupilY = lerp(0, -8, energy);
+
+            // Dettagli Neri
+            fill(0);
+            let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
             
@@ -358,41 +264,32 @@
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca a sorriso
+            // Bocca a sorriso (mezzaluna bianca)
             let smileHeight = lerp(10, 100, energy);
-            arc(0, 120, 150, smileHeight, 0, 180, CHORD);
+            fill(255); noStroke();
+            arc(0, 120, 150, smileHeight, 180, 360, CHORD);
 
-            // Cappello sopra (in primo piano)
+            // Cappello nero (disegnato per ultimo)
             let bellWobble = energy * 25;
-            fill(0); noStroke();
+            noStroke(); fill(0);
+            // Base del cappello
+            rectMode(CENTER);
+            rect(0, -145, 300, 60, 10);
+            // Punta centrale
+            triangle(-40, -170, 40, -170, random(-bellWobble, bellWobble), -300);
+            // Punte laterali
+            beginShape(); vertex(-120, -130); bezierVertex(-200, -150, -280, -100, -250 + random(-bellWobble, bellWobble), -80); endShape();
+            beginShape(); vertex(120, -130); bezierVertex(200, -150, 280, -100, 250 + random(-bellWobble, bellWobble), -80); endShape();
             
-            // Punta centrale (triangolo normale)
-            triangle(-30, -150, 30, -150, random(-bellWobble, bellWobble), -280);
-            
-            // Punta sinistra (due archi che formano triangolo ricurvo)
-            beginShape();
-            vertex(-60, -120);
-            quadraticVertex(-180, -160, -220 + random(-bellWobble, bellWobble), -140);
-            quadraticVertex(-180, -100, -60, -120);
-            endShape(CLOSE);
-            
-            // Punta destra (due archi che formano triangolo ricurvo)
-            beginShape();
-            vertex(60, -120);
-            quadraticVertex(180, -160, 220 + random(-bellWobble, bellWobble), -140);
-            quadraticVertex(180, -100, 60, -120);
-            endShape(CLOSE);
-            
-            // Campanelle che tremano alle punte
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -280, 30, 30);
-            ellipse(-220 + random(-bellWobble, bellWobble), -140, 30, 30);
-            ellipse(220 + random(-bellWobble, bellWobble), -140, 30, 30);
-
+            // Campanelle
+            stroke(255); strokeWeight(3); fill(0);
+            ellipse(random(-bellWobble, bellWobble), -300, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -80, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -80, 40, 40);
             pop();
         }
     }
-    
+
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
