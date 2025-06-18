@@ -116,7 +116,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-190, -240); // Correzione per centrare
+            translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -146,7 +146,7 @@
         }
     }
     
-    // --- TESCHIO (RISCRITTO) ---
+    // --- TESCHIO ---
     class SkullScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -166,51 +166,38 @@
             let crownSpike = map(anger, 0.4, 1, 0, 40, true);
             
             noStroke(); fill(255);
-
-            this.drawHalfSkull(1, cheekFlare, crownSpike, anger);
-            this.drawHalfSkull(-1, cheekFlare, crownSpike, anger);
-
-            push(); translate(0, jawDrop);
-            this.drawHalfJaw(1, cheekFlare);
-            this.drawHalfJaw(-1, cheekFlare);
-            pop();
-        }
-
-        drawHalfSkull(side, cheekFlare, crownSpike, anger) {
-            push();
-            scale(side, 1);
-            // Cranio
+            
+            // Cranio disegnato come forma unica per eliminare la linea
             beginShape();
+            // Lato sinistro
             vertex(1, -185 - crownSpike);
-            bezierVertex(80,-190-crownSpike, 150,-140, 160,-80-cheekFlare);
-            bezierVertex(170,-20, 145,50, 120,60);
+            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
+            bezierVertex(-170,-20, -145,50, -120,60);
+            vertex(-1, 60);
+            // Lato destro (speculare)
             vertex(1, 60);
-            endShape();
-            // Cavità oculare
+            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
+            bezierVertex(150,-140, 80,-190, 1,-185-crownSpike);
+            endShape(CLOSE);
+
+            // Mandibola
+            push(); translate(0, jawDrop);
+            beginShape();
+            vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
+            vertex(-130,160); bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
+            endShape(CLOSE);
+            this.carveLowerTeeth();
+            pop();
+
+            // Cavità
             fill(0);
             let eyePinch = map(anger, 0.5, 1, 0, 20, true);
-            beginShape();
-            vertex(40, -100);
-            bezierVertex(100, -90 - eyePinch, 115, -40, 85, -10);
-            bezierVertex(70, -5, 45, -20, 40, -40);
-            endShape(CLOSE);
-            triangle(0,20, 15,45, 0,45);
-            pop();
+            beginShape(); vertex(-40,-100); bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); bezierVertex(-70,-5, -45,-20, -40,-40); endShape(CLOSE);
+            beginShape(); vertex(40,-100); bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10); bezierVertex(70,-5, 45,-20, 40,-40); endShape(CLOSE);
+            let noseFlare = map(anger, 0, 1, 0, 10);
+            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
         }
-
-        drawHalfJaw(side, cheekFlare) {
-            push();
-            scale(side, 1);
-            fill(255);
-            beginShape();
-            vertex(1, 70);
-            vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
-            vertex(1, 160);
-            endShape(CLOSE);
-            fill(0); rectMode(CENTER);
-            for(let i=0; i<3; i++) rect(25 + i * 30, 85, 14, 20, 3);
-            pop();
-        }
+        carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0; i<5; i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
     // --- CELESTIAL GUARDIAN ---
@@ -236,10 +223,10 @@
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
             
-            // Bocca Triangolare
-            let mouthY = lerp(100, 150, energy);
-            fill(0); noStroke();
-            triangle(-50, 100, 50, 100, 0, mouthY);
+            // Bocca tonda
+            let mouthSize = lerp(10, 80, energy);
+            fill(255); noStroke();
+            ellipse(0, 100, mouthSize, mouthSize);
 
             // Occhi
             let eyeOpen = lerp(5, 50, energy);
@@ -268,6 +255,7 @@
             beginShape(); vertex(60, -100); bezierVertex(150, -120, 280, -150, 250 + random(-bellWobble, bellWobble), -120); endShape();
 
             // Faccia
+            fill(255);
             beginShape();
             vertex(0, -150);
             bezierVertex(-250, -100, -200, 220, 0, 250);
@@ -280,8 +268,8 @@
             ellipse(-250 + random(-bellWobble, bellWobble), -120, 40, 40);
             ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
             
-            // Dettagli bianchi
-            fill(255); noStroke();
+            // Dettagli Neri
+            fill(0); noStroke();
             let pupilY = lerp(0, -8, energy);
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
@@ -289,27 +277,25 @@
             // Occhi
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
-            fill(0);
+            fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
             // Lacrime
-            fill(255);
+            fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
             // Bocca a sorriso
             let smileHeight = lerp(10, 100, energy);
-            fill(0); noStroke();
-            arc(0, 120, 150, smileHeight, 0, 180);
+            arc(0, 120, 150, smileHeight, 0, 180, CHORD);
 
             pop();
         }
     }
-
+    
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
-
