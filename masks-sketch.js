@@ -234,17 +234,6 @@
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
 
-            // Runa sulla fronte
-            let runeGlow = map(energy, 0.5, 1, 0, 255, true);
-            let runeWobble = map(energy, 0, 1, 0, 10);
-            stroke(0, 200, 255, runeGlow); strokeWeight(4);
-            let yRune = -130;
-            line(0, yRune - 20, 0, yRune + 20);
-            line(-20, yRune, 20, yRune);
-            line(0, yRune, 20 + runeWobble, yRune - 20);
-            line(0, yRune, -20 - runeWobble, yRune + 20);
-
-
             // Bocca rotonda
             let mouthSize = lerp(10, 80, energy);
             fill(0); noStroke();
@@ -303,14 +292,17 @@
 
             // Lacrime
             let tearLength = lerp(60, 120, energy);
-            fill(255); rectMode(CORNER);
-            rect(-92.5, 20, 25, tearLength, 5);
-            rect(67.5, 20, 25, tearLength, 5);
+            fill(255); rectMode(CENTER);
+            rect(-80, 20 + tearLength/2, 25, tearLength, 5);
+            rect(80, 20 + tearLength/2, 25, tearLength, 5);
             
             // Bocca
-            let mouthOpen = lerp(20, 120, energy);
+            let mouthWidth = lerp(80, 150, energy);
             noFill(); stroke(255); strokeWeight(4);
-            arc(0, 120, 100, mouthOpen, 0, 180);
+            beginShape();
+            vertex(-mouthWidth/2, 120);
+            bezierVertex(-20, 150, 20, 150, mouthWidth/2, 120);
+            endShape();
 
             pop();
         }
@@ -321,4 +313,3 @@
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
-
