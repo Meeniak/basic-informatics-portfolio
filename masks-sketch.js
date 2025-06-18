@@ -211,38 +211,32 @@
         }
     }
 
-    // --- NUOVA MASCHERA 4 ---
+    // --- CELESTIAL GUARDIAN ---
     class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(0); translate(width / 2, height / 2); angleMode(RADIANS);
+            background(0); translate(width/2, height/2); angleMode(RADIANS);
             let energy = map(vol, 0.1, 1.0, 0, 1, true);
 
             let rotation = frameCount * 0.01;
             let haloRadius = lerp(200, 250, energy);
 
-            // Alone di frammenti
             stroke(255, 150); strokeWeight(2); noFill();
             for(let i=0; i<10; i++) {
                 let angle = i * TWO_PI / 10 + rotation;
                 let x = cos(angle) * haloRadius;
                 let y = sin(angle) * haloRadius;
-                push();
-                translate(x,y);
-                rotate(angle);
+                push(); translate(x,y); rotate(angle);
                 triangle(-15,0, 15,0, 0, -30);
                 pop();
             }
 
-            // Faccia
-            noFill(); strokeWeight(5); stroke(255);
-            rectMode(CENTER);
+            noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
 
-            // Runa sulla fronte
-            let runeGlow = map(energy, 0.5, 1, 100, 255, true);
-            fill(0, 200, 255, runeGlow); noStroke();
-            textSize(60); text("⟎", 0, -120);
+            // Bocca rotonda
+            let mouthSize = lerp(10, 80, energy);
+            fill(0); ellipse(0, 100, mouthSize, mouthSize);
 
             // Occhi
             let eyeOpen = lerp(5, 50, energy);
@@ -252,12 +246,12 @@
         }
     }
     
-    // --- NUOVA MASCHERA 5 ---
+    // --- JESTER (RIDISEGNATO) ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
             background(255); translate(width/2, height/2); angleMode(DEGREES);
-            let energy = map(vol, 0, 1, 0, 1, true);
+            let energy = map(vol, 0.1, 0.8, 0, 1, true);
 
             let headWobble = sin(frameCount * 5) * 5 * energy;
             push();
@@ -275,10 +269,10 @@
             beginShape(); vertex(0,-100); bezierVertex(100,-150, 150,-250, 120+bellWobbleX2, -280+bellWobbleY2); endShape();
 
             // Campanelle
-            stroke(0); strokeWeight(2); fill(255);
-            ellipse(-120 + bellWobbleX1, -280 + bellWobbleY1, 25, 25);
-            ellipse(120 + bellWobbleX2, -280 + bellWobbleY2, 25, 25);
-
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(-120 + bellWobbleX1, -280 + bellWobbleY1, 30, 30);
+            ellipse(120 + bellWobbleX2, -280 + bellWobbleY2, 30, 30);
+            
             // Faccia
             fill(0); noStroke();
             beginShape();
@@ -290,17 +284,19 @@
             // Dettagli bianchi
             fill(255);
             // Occhi
+            let pupilY = lerp(0, -15, energy);
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
             fill(0);
-            ellipse(-80, -25, 20, 20);
-            ellipse(80, -25, 20, 20);
+            ellipse(-80, -25 + pupilY, 20, 20);
+            ellipse(80, -25 + pupilY, 20, 20);
 
             // Lacrime
-            fill(255);
-            rect(-80, 40, 20, 60, 5); // Lacrima più spessa
-            rect(80, 40, 20, 60, 5);
-
+            let tearLength = lerp(60, 120, energy);
+            fill(255); rectMode(CENTER);
+            rect(-80, 50, 25, tearLength, 5);
+            rect(80, 50, 25, tearLength, 5);
+            
             // Bocca
             let mouthOpen = lerp(20, 120, energy);
             noFill(); stroke(255); strokeWeight(4);
