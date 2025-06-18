@@ -116,7 +116,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-190, -240);
+            translate(-270, -270);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -188,11 +188,11 @@
             fill(0);
             let eyePinch = map(anger, 0.5, 1, 0, 20, true);
             beginShape();
-            vertex(40, -100);
-            bezierVertex(100, -90 - eyePinch, 115, -40, 85, -10);
-            bezierVertex(70, -5, 45, -20, 40, -40);
+            vertex(40,-100);
+            bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10);
+            bezierVertex(70,-5, 45,-20, 40,-40);
             endShape(CLOSE);
-            triangle(0, 20, 15, 45, 0, 45);
+            triangle(0,20, 15,45, 0,45);
             pop();
         }
 
@@ -234,12 +234,10 @@
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
             
-            // Bocca Triangolare
             let mouthY = lerp(100, 150, energy);
-            fill(0);
+            fill(0); noStroke();
             triangle(-50, 100, 50, 100, 0, mouthY);
 
-            // Occhi
             let eyeOpen = lerp(5, 50, energy);
             fill(0); stroke(255); strokeWeight(5);
             ellipse(-80, -30, 70, eyeOpen);
@@ -260,10 +258,10 @@
             let bellWobble = energy * 25;
             noStroke(); fill(0);
             // Punta centrale
-            beginShape(); vertex(0,-120); bezierVertex(0,-220, -50,-250, random(-bellWobble,bellWobble),-300); endShape();
+            beginShape(); vertex(0, -120); bezierVertex(0, -220, -50, -250, random(-bellWobble, bellWobble), -300); endShape();
             // Punte laterali
-            beginShape(); vertex(-60,-100); bezierVertex(-150,-120, -280,-150, -250+random(-bellWobble,bellWobble),-120); endShape();
-            beginShape(); vertex(60,-100); bezierVertex(150,-120, 280,-150, 250+random(-bellWobble,bellWobble),-120); endShape();
+            beginShape(); vertex(-60, -100); bezierVertex(-150, -120, -280, -150, -250 + random(-bellWobble, bellWobble), -120); endShape();
+            beginShape(); vertex(60, -100); bezierVertex(150, -120, 280, -150, 250 + random(-bellWobble, bellWobble), -120); endShape();
 
             // Faccia
             beginShape();
@@ -272,7 +270,7 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            // Dettagli
+            // Dettagli bianchi
             fill(255);
             let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
@@ -290,20 +288,20 @@
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca a sorriso
+            // Bocca
             let smileHeight = lerp(10, 100, energy);
             fill(0); noStroke();
             arc(0, 120, 150, smileHeight, 0, 180);
             
             // Campanelle disegnate per ultime
             stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble,bellWobble), -300, 40, 40);
-            ellipse(-250+random(-bellWobble,bellWobble), -120, 40, 40);
-            ellipse(250+random(-bellWobble,bellWobble), -120, 40, 40);
+            ellipse(random(-bellWobble, bellWobble), -300, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -120, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
             pop();
         }
     }
-
+    
     window.keyPressed = function() {
         if (key >= '1' && key <= '5') switchScene(parseInt(key));
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
