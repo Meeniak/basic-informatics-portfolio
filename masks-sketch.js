@@ -234,13 +234,25 @@
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
 
+            // Runa sulla fronte
+            let runeGlow = map(energy, 0.5, 1, 0, 255, true);
+            let runeWobble = map(energy, 0, 1, 0, 10);
+            stroke(0, 200, 255, runeGlow); strokeWeight(4);
+            let yRune = -130;
+            line(0, yRune - 20, 0, yRune + 20);
+            line(-20, yRune, 20, yRune);
+            line(0, yRune, 20 + runeWobble, yRune - 20);
+            line(0, yRune, -20 - runeWobble, yRune + 20);
+
+
             // Bocca rotonda
             let mouthSize = lerp(10, 80, energy);
-            fill(0); ellipse(0, 100, mouthSize, mouthSize);
+            fill(0); noStroke();
+            ellipse(0, 100, mouthSize, mouthSize);
 
             // Occhi
             let eyeOpen = lerp(5, 50, energy);
-            fill(0); stroke(255);
+            fill(0); stroke(255); strokeWeight(5);
             ellipse(-80, -30, 70, eyeOpen);
             ellipse(80, -30, 70, eyeOpen);
         }
@@ -264,14 +276,12 @@
             let bellWobbleX2 = random(-1,1) * 30 * energy;
             let bellWobbleY2 = random(-1,1) * 30 * energy;
             
-            // Punte del cappello
             beginShape(); vertex(0,-100); bezierVertex(-100,-150, -150,-250, -120+bellWobbleX1, -280+bellWobbleY1); endShape();
             beginShape(); vertex(0,-100); bezierVertex(100,-150, 150,-250, 120+bellWobbleX2, -280+bellWobbleY2); endShape();
 
-            // Campanelle
             stroke(0); strokeWeight(3); fill(255);
-            ellipse(-120 + bellWobbleX1, -280 + bellWobbleY1, 30, 30);
-            ellipse(120 + bellWobbleX2, -280 + bellWobbleY2, 30, 30);
+            ellipse(-120 + bellWobbleX1, -280 + bellWobbleY1, 40, 40);
+            ellipse(120 + bellWobbleX2, -280 + bellWobbleY2, 40, 40);
             
             // Faccia
             fill(0); noStroke();
@@ -283,19 +293,19 @@
             
             // Dettagli bianchi
             fill(255);
-            // Occhi
-            let pupilY = lerp(0, -15, energy);
+            let pupilY = lerp(0, -10, energy);
+            let pupilSize = lerp(20, 30, energy);
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
             fill(0);
-            ellipse(-80, -25 + pupilY, 20, 20);
-            ellipse(80, -25 + pupilY, 20, 20);
+            ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
+            ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
             // Lacrime
             let tearLength = lerp(60, 120, energy);
-            fill(255); rectMode(CENTER);
-            rect(-80, 50, 25, tearLength, 5);
-            rect(80, 50, 25, tearLength, 5);
+            fill(255); rectMode(CORNER);
+            rect(-92.5, 20, 25, tearLength, 5);
+            rect(67.5, 20, 25, tearLength, 5);
             
             // Bocca
             let mouthOpen = lerp(20, 120, energy);
@@ -311,3 +321,4 @@
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
+
