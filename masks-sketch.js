@@ -7,7 +7,7 @@
         1: 'Robot',
         2: 'Dragon',
         3: 'Skull',
-        4: 'Gargoyle',
+        4: 'Celestial Guardian',
         5: 'Jester'
     };
 
@@ -30,7 +30,7 @@
             1: new RobotScene(),
             2: new DragonScene(),
             3: new SkullScene(),
-            4: new GargoyleScene(),
+            4: new CelestialGuardianScene(),
             5: new JesterScene()
         };
         switchScene(1);
@@ -64,7 +64,7 @@
         draw() {
             let vol = this.updateVolume();
             background(255);
-            translate(width / 2, height / 2 + 30);
+            translate(width / 2, height / 2);
             rectMode(CENTER);
 
             let antennaWobble = sin(frameCount * 0.2) * vol * 40;
@@ -167,7 +167,6 @@
             
             noStroke(); fill(255);
             
-            // Cranio
             beginShape();
             vertex(0, -185 - crownSpike);
             bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
@@ -177,7 +176,6 @@
             bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
             endShape(CLOSE);
             
-            // Mandibola
             push(); translate(0, jawDrop);
             beginShape();
             vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
@@ -186,7 +184,6 @@
             this.carveLowerTeeth();
             pop();
 
-            // Cavità
             fill(0);
             let eyePinch = map(anger, 0.5, 1, 0, 20, true);
             beginShape(); vertex(-40,-100); bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); bezierVertex(-70,-5, -45,-20, -40,-40); endShape(CLOSE);
@@ -197,31 +194,37 @@
         carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0; i<5; i++){ let x=lerp(-50,50,i/4); rect(x, 110, 14, 18, 3); } }
     }
 
-    // --- NUOVA MASCHERA 4 ---
-    class GargoyleScene extends Scene {
+    // --- CELESTIAL GUARDIAN ---
+    class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(24,24,24); translate(width/2, height/2); angleMode(RADIANS);
-            let energy = map(vol, 0, 1, 0, 1, true);
+            background(0); translate(width/2, height/2); angleMode(RADIANS);
+            let energy = map(vol, 0.1, 1.0, 0, 1, true);
 
-            let wingFlap = sin(frameCount*0.2)*20 + map(energy, 0, 1, 0, 40);
-            stroke(100); strokeWeight(8); noFill();
-            beginShape(); vertex(-150,-50); bezierVertex(-250, -150, -300, 0-wingFlap, -150, 100); endShape();
-            beginShape(); vertex(150,-50); bezierVertex(250, -150, 300, 0-wingFlap, 150, 100); endShape();
+            let rotation = frameCount * 0.01;
+            let haloRadius = lerp(200, 250, energy);
+
+            stroke(255, 150); strokeWeight(2); noFill();
+            for(let i=0; i<10; i++) {
+                let angle = i * TWO_PI / 10 + rotation;
+                let x = cos(angle) * haloRadius;
+                let y = sin(angle) * haloRadius;
+                push(); translate(x,y); rotate(angle);
+                triangle(-15,0, 15,0, 0, -30);
+                pop();
+            }
+
+            noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
+            rect(0,0, 250, 350, 20);
             
-            fill(120); noStroke(); rectMode(CENTER);
-            rect(0,0,300,350,20);
-            arc(-80, -170, 80, 120, PI, TWO_PI);
-            arc(80, -170, 80, 120, PI, TWO_PI);
+            let mouthSize = lerp(10, 80, energy);
+            fill(255); noStroke();
+            ellipse(0, 100, mouthSize, mouthSize);
 
-            let eyeGlow = map(energy, 0.3, 1, 50, 255, true);
-            fill(255, 255, 0, eyeGlow);
-            ellipse(-80, -50, 60, 60);
-            ellipse(80, -50, 60, 60);
-
-            let mouthOpen = map(energy, 0, 1, 10, 80);
-            fill(0);
-            rect(0, 80, 150, mouthOpen, 10);
+            let eyeOpen = lerp(5, 50, energy);
+            fill(0); stroke(255); strokeWeight(5);
+            ellipse(-80, -30, 70, eyeOpen);
+            ellipse(80, -30, 70, eyeOpen);
         }
     }
     
@@ -235,7 +238,7 @@
             push();
             translate(0, 50); // Sposta tutto più in basso
 
-            // Maschera
+            // Faccia
             fill(255); noStroke();
             beginShape();
             vertex(0, -150);
@@ -249,37 +252,31 @@
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
             
-            // Occhi
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
-            // Lacrime a triangolo
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
             
-            // Cappello (disegnato per ultimo)
+            // Cappello
             let bellWobble = energy * 25;
             noStroke(); fill(0);
             
-            // Base del cappello
             rectMode(CENTER);
             rect(0, -145, 280, 40, 10);
 
-            // Punte
             noFill(); stroke(0); strokeWeight(40);
             beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
             beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
             triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
             
-            // Campanelle
             stroke(0); strokeWeight(3); fill(255);
             ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
             ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
