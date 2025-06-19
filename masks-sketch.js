@@ -72,12 +72,20 @@
         draw() {
             let vol = this.updateVolume();
             background(255);
-            translate(width / 2, height / 2);
+            translate(width / 2, height / 2 + 30);
             rectMode(CENTER);
+
+            let antennaWobble = sin(frameCount * 0.2) * vol * 40;
+            stroke(0); strokeWeight(6); noFill();
+            line(-80, -150, -120, -240 + antennaWobble);
+            line(80, -150, 120, -240 - antennaWobble);
+            fill(0); ellipse(-120, -240 + antennaWobble, 15, 15); ellipse(120, -240 - antennaWobble, 15, 15);
+            let sideDetailSize = map(vol, 0.1, 0.6, 0, 40, true);
+            rect(-180, 0, 20, sideDetailSize, 5);
+            rect(180, 0, 20, sideDetailSize, 5);
 
             let eyeHeight = map(vol, 0, 0.5, 4, 60, true);
             let visorWidth = 280 * map(vol, 0, 0.5, 1, 1.2, true);
-            
             noStroke(); fill(0);
             rect(0, -80, visorWidth, eyeHeight, 3);
             if (eyeHeight > 10) {
