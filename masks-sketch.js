@@ -67,7 +67,7 @@
         }
     }
     
-    // --- ROBOT ---
+    // --- ROBOT CON ONDA DI FREQUENZA ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -99,23 +99,29 @@
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
             
-            // Onda di frequenza reattiva all'interno della bocca
+            // Onda di frequenza migliorata
             let spectrum = fft.analyze();
             if (spectrum?.length) {
                 noStroke(); fill(0);
-                let barCount = 32; // Numero ridotto di barre per adattarsi meglio
+                let barCount = 24; // Numero ottimale di barre
                 let barWidth = mouthWidth / barCount;
+                let centerY = 0;
+                
                 for (let i=0; i < barCount; i++) {
-                    let h = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
+                    let freqIndex = floor(map(i, 0, barCount, 0, spectrum.length));
+                    let h = map(spectrum[freqIndex], 0, 255, 2, mouthHeight - 15);
                     let x = map(i, 0, barCount-1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
-                    rect(x, mouthHeight/2 - h/2, barWidth * 0.8, h);
+                    
+                    // Barra che parte dal basso e arriva fino all'altezza calcolata
+                    rect(x, centerY + mouthHeight/4, barWidth * 0.7, -h/2);
+                    rect(x, centerY - mouthHeight/4, barWidth * 0.7, h/2);
                 }
             }
             pop();
         }
     }
 
-    // --- DRAGO ---
+    // --- DRAGO POSIZIONATO CORRETTAMENTE ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -123,8 +129,8 @@
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2 + 100, height / 2 - 50); // Spostato più a destra e leggermente più in alto
-            scale(1.5);
+            translate(width / 2 + 50, height / 2 + 50); // Posizione centrata meglio
+            scale(1.3); // Scala leggermente ridotta
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -154,7 +160,7 @@
         }
     }
     
-    // --- TESCHIO MIGLIORATO ---
+    // --- TESCHIO CON OCCHI ---
     class SkullScene extends Scene {
         constructor() { super(); this.particles = []; this.rageHasTriggered = false; }
         setup() { this.particles = []; }
@@ -218,15 +224,23 @@
 
             fill(255); this.carveTopTeeth(angerLevel);
             
-            // Aggiunte cavità oculari e naso
+            // Occhi migliorati
             fill(255);
-            ellipse(-60, -20, 40, 30); // Cavità oculare sinistra
-            ellipse(60, -20, 40, 30);  // Cavità oculare destra
-            triangle(0, 40, -12, 75, 12, 75); // Naso
+            ellipse(-60, -20, 40, 25); // Occhio sinistro
+            ellipse(60, -20, 40, 25);  // Occhio destro
+            
+            // Pupille che reagiscono al volume
+            let pupilSize = map(angerLevel, 0, 1, 10, 20);
+            fill(0);
+            ellipse(-60, -20 + map(angerLevel, 0, 1, 0, 5), pupilSize, pupilSize);
+            ellipse(60, -20 + map(angerLevel, 0, 1, 0, 5), pupilSize, pupilSize);
             
             fill(0);
             beginShape(); vertex(-40, -80 + browDrop); bezierVertex(-80, -70 - eyeSlant, -95 - cheekFlareX, -20 + eyePinch, -75, 10 + eyePinch); bezierVertex(-60, 15 + eyePinch, -45, 0, -40, -20); endShape(CLOSE);
             beginShape(); vertex(40, -80 + browDrop); bezierVertex(80, -70 - eyeSlant, 95 + cheekFlareX, -20 + eyePinch, 75, 10 + eyePinch); bezierVertex(60, 15 + eyePinch, 45, 0, 40, -20); endShape(CLOSE);
+            
+            // Naso
+            beginShape(); vertex(0, 40); vertex(-12 - noseFlare, 75); vertex(12 + noseFlare, 75); endShape(CLOSE);
             
             if (angerLevel > 0.6) {
                 let baseSize = map(angerLevel, 0.6, 1, 10, 45, true);
@@ -241,7 +255,6 @@
         }
         drawLowerJaw(yOffset, angerLevel) {
             push();
-            // Rimossa la rotazione eccessiva
             translate(0, yOffset);
             if (angerLevel < 0.98) {
                 rotate(map(yOffset, 0, 140, 0, 0.05));
@@ -327,11 +340,11 @@
         }
     }
     
-    // --- JESTER MIGLIORATO ---
+    // --- JESTER CON CAMPANELLI POSIZIONATI MEGLIO ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(255); // Sfondo bianco
+            background(255);
             translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
@@ -368,31 +381,31 @@
             rectMode(CENTER);
             rect(0, -145, 280, 40, 10);
 
-            // Campanelli posizionati sulle punte del cappello
+            // Linee del cappello con campanelli
             noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250, -200); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250, -200); endShape();
-            triangle(-20, -165, 20, -165, 0, -250);
+            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250, -180); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250, -180); endShape();
+            beginShape(); vertex(-20, -165); vertex(20, -165); vertex(0, -280); endShape();
             
-            // Campanelli che vibrano
+            // Campanelli posizionati meglio
             stroke(0); strokeWeight(3); fill(255);
-            ellipse(0 + random(-bellWobble, bellWobble), -250, 40, 40); // Campanello centrale
-            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40); // Campanello sinistro
-            ellipse(250 + random(-bellWobble, bellWobble), -200, 40, 40); // Campanello destro
+            ellipse(0 + random(-bellWobble, bellWobble), -280 + random(-bellWobble/2, bellWobble/2), 40, 40); // Centrale più in alto
+            ellipse(-250 + random(-bellWobble, bellWobble), -180 + random(-bellWobble/2, bellWobble/2), 40, 40); // Sinistro
+            ellipse(250 + random(-bellWobble, bellWobble), -180 + random(-bellWobble/2, bellWobble/2), 40, 40); // Destro
             
-            // Aggiunte linguette ai campanelli
+            // Linguette dei campanelli
             fill(0);
-            triangle(0 + random(-bellWobble/2, bellWobble/2), -230, 
-                    0 + random(-bellWobble/2, bellWobble/2), -240, 
-                    5 + random(-bellWobble/2, bellWobble/2), -235);
+            triangle(0 + random(-bellWobble/2, bellWobble/2), -260, 
+                    0 + random(-bellWobble/2, bellWobble/2), -270, 
+                    5 + random(-bellWobble/2, bellWobble/2), -265);
             
-            triangle(-250 + random(-bellWobble/2, bellWobble/2), -180, 
-                    -250 + random(-bellWobble/2, bellWobble/2), -190, 
-                    -245 + random(-bellWobble/2, bellWobble/2), -185);
+            triangle(-250 + random(-bellWobble/2, bellWobble/2), -160, 
+                    -250 + random(-bellWobble/2, bellWobble/2), -170, 
+                    -245 + random(-bellWobble/2, bellWobble/2), -165);
             
-            triangle(250 + random(-bellWobble/2, bellWobble/2), -180, 
-                    250 + random(-bellWobble/2, bellWobble/2), -190, 
-                    255 + random(-bellWobble/2, bellWobble/2), -185);
+            triangle(250 + random(-bellWobble/2, bellWobble/2), -160, 
+                    250 + random(-bellWobble/2, bellWobble/2), -170, 
+                    255 + random(-bellWobble/2, bellWobble/2), -165);
 
             pop();
         }
