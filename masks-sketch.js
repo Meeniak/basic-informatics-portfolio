@@ -18,7 +18,8 @@
         
         mic = new p5.AudioIn();
         mic.start();
-        fft = new p5.FFT(0.8, 128);
+        // FFT per l'oscilloscopio del Robot
+        fft = new p5.FFT(0.9, 1024);
         fft.setInput(mic);
 
         maskLabel = select('#current-mask-label');
@@ -45,9 +46,6 @@
     function switchScene(sceneId) {
         if (scenes[sceneId]) {
             currentScene = scenes[sceneId];
-            if (typeof currentScene.setup === 'function') {
-                currentScene.setup();
-            }
             maskLabel.html(`Current: ${maskNames[sceneId]}`);
         }
     }
@@ -67,7 +65,7 @@
         }
     }
     
-    // --- ROBOT CON ONDA DI FREQUENZA ---
+    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -99,29 +97,23 @@
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
             
-            // Onda di frequenza migliorata
-            let spectrum = fft.analyze();
-            if (spectrum?.length) {
-                noStroke(); fill(0);
-                let barCount = 24; // Numero ottimale di barre
-                let barWidth = mouthWidth / barCount;
-                let centerY = 0;
-                
-                for (let i=0; i < barCount; i++) {
-                    let freqIndex = floor(map(i, 0, barCount, 0, spectrum.length));
-                    let h = map(spectrum[freqIndex], 0, 255, 2, mouthHeight - 15);
-                    let x = map(i, 0, barCount-1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
-                    
-                    // Barra che parte dal basso e arriva fino all'altezza calcolata
-                    rect(x, centerY + mouthHeight/4, barWidth * 0.7, -h/2);
-                    rect(x, centerY - mouthHeight/4, barWidth * 0.7, h/2);
-                }
+            // Oscilloscopio
+            let waveform = fft.waveform();
+            noFill();
+            beginShape();
+            stroke(0);
+            strokeWeight(3);
+            for (let i = 0; i < waveform.length; i++) {
+                let x = map(i, 0, waveform.length, -mouthWidth/2, mouthWidth/2);
+                let y = map(waveform[i], -1, 1, -mouthHeight/2 + 10, mouthHeight/2 - 10);
+                vertex(x, y);
             }
+            endShape();
             pop();
         }
     }
 
-    // --- DRAGO POSIZIONATO CORRETTAMENTE ---
+    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -129,8 +121,9 @@
             background(0);
             angleMode(DEGREES);
             push();
-            translate(width / 2 + 50, height / 2 + 50); // Posizione centrata meglio
-            scale(1.3); // Scala leggermente ridotta
+            translate(width / 2, height / 2);
+            scale(1.5);
+            translate(-190, -240); // Correzione per centrare
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -160,123 +153,60 @@
         }
     }
     
-    // --- TESCHIO CON OCCHI ---
+    // --- TESCHIO ---
     class SkullScene extends Scene {
-        constructor() { super(); this.particles = []; this.rageHasTriggered = false; }
-        setup() { this.particles = []; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
-            background(255);
-            let angerLevel = map(vol, 0.04, 0.7, 0, 1, true);
-
-            if (angerLevel > 0.98 && !this.rageHasTriggered) {
-                this.rageFlash = 15;
-                this.rageHasTriggered = true;
-            }
-            if (angerLevel < 0.9) this.rageHasTriggered = false;
+            background(0); translate(width / 2, height / 2);
+            let anger = map(vol, 0.1, 0.9, 0, 1, true);
+            let shake = constrain(map(anger, 0.6, 1, 0, 15, true), 0, 15);
             
-            translate(width / 2, height / 2);
-            let idleFloat = sin(frameCount * 0.03) * 3;
-            translate(0, idleFloat);
-            let shakeAmount = map(angerLevel, 0.7, 1, 0, 60, true);
-            translate(random(-shakeAmount, shakeAmount), random(-shakeAmount, shakeAmount));
-            
-            if (this.rageFlash > 0) { filter(INVERT); this.rageFlash--; }
-            
-            if (angerLevel > 0.8) {
-                let particleCount = map(angerLevel, 0.8, 1, 1, 15);
-                for (let i = 0; i < particleCount; i++) {
-                    let pColor = (random(1) > 0.7) ? color(0) : color(255);
-                    this.particles.push(new FlameParticle(-60, -20, pColor));
-                    pColor = (random(1) > 0.7) ? color(0) : color(255);
-                    this.particles.push(new FlameParticle(60, -20, pColor));
-                }
-            }
-            
-            this.drawAngrySkull(angerLevel);
-            for (let p of this.particles) { p.update(); p.show(); }
-            this.particles = this.particles.filter(p => !p.isFinished());
-        }
-
-        drawAngrySkull(angerLevel) {
-            fill(0); noStroke();
-            let jawDrop = map(angerLevel, 0, 1, 0, 140);
-            let eyeSlant = map(angerLevel, 0, 1, 0, 40);
-            let browDrop = map(angerLevel, 0, 1, 0, 30);
-            let noseFlare = map(angerLevel, 0, 1, 0, 15);
-            let cheekFlareX = map(angerLevel, 0, 1, 0, 30);
-            let cheekFlareY = map(angerLevel, 0, 1, 0, 20);
-            let crownSpike = map(angerLevel, 0, 1, 0, 40);
-            let eyePinch = map(angerLevel, 0.5, 1, 0, 20, true);
-
-            beginShape();
-            vertex(0, -165 - crownSpike);
-            bezierVertex(-80, -170 - crownSpike, -130, -120, -140 - cheekFlareX, -60);
-            bezierVertex(-150 - cheekFlareX, 0, -125 - cheekFlareX, 70 + cheekFlareY, -100, 80 + cheekFlareY);
-            bezierVertex(-90, 85 + cheekFlareY, -80, 100, -70, 110);
-            vertex(70, 110);
-            bezierVertex(80, 100, 90, 85 + cheekFlareY, 100, 80 + cheekFlareY);
-            bezierVertex(125 + cheekFlareX, 70 + cheekFlareY, 150 + cheekFlareX, 0, 140 + cheekFlareX, -60);
-            bezierVertex(130, -120, 80, -170 - crownSpike, 0, -165 - crownSpike);
-            endShape(CLOSE);
-            
-            this.drawLowerJaw(jawDrop, angerLevel);
-
-            fill(255); this.carveTopTeeth(angerLevel);
-            
-            // Occhi migliorati
-            fill(255);
-            ellipse(-60, -20, 40, 25); // Occhio sinistro
-            ellipse(60, -20, 40, 25);  // Occhio destro
-            
-            // Pupille che reagiscono al volume
-            let pupilSize = map(angerLevel, 0, 1, 10, 20);
-            fill(0);
-            ellipse(-60, -20 + map(angerLevel, 0, 1, 0, 5), pupilSize, pupilSize);
-            ellipse(60, -20 + map(angerLevel, 0, 1, 0, 5), pupilSize, pupilSize);
-            
-            fill(0);
-            beginShape(); vertex(-40, -80 + browDrop); bezierVertex(-80, -70 - eyeSlant, -95 - cheekFlareX, -20 + eyePinch, -75, 10 + eyePinch); bezierVertex(-60, 15 + eyePinch, -45, 0, -40, -20); endShape(CLOSE);
-            beginShape(); vertex(40, -80 + browDrop); bezierVertex(80, -70 - eyeSlant, 95 + cheekFlareX, -20 + eyePinch, 75, 10 + eyePinch); bezierVertex(60, 15 + eyePinch, 45, 0, 40, -20); endShape(CLOSE);
-            
-            // Naso
-            beginShape(); vertex(0, 40); vertex(-12 - noseFlare, 75); vertex(12 + noseFlare, 75); endShape(CLOSE);
-            
-            if (angerLevel > 0.6) {
-                let baseSize = map(angerLevel, 0.6, 1, 10, 45, true);
-                noStroke();
-                for (let i = 5; i > 0; i--) {
-                    let t = i / 5;
-                    fill(0, map(t, 1, 0, 10, 80));
-                    ellipse(-60, -20, baseSize * t, baseSize * t);
-                    ellipse(60, -20, baseSize * t, baseSize * t);
-                }
-            }
-        }
-        drawLowerJaw(yOffset, angerLevel) {
             push();
-            translate(0, yOffset);
-            if (angerLevel < 0.98) {
-                rotate(map(yOffset, 0, 140, 0, 0.05));
-            }
-            
-            let cheekFlareX = map(angerLevel, 0, 1, 0, 15);
-            fill(0); noStroke();
-            beginShape();
-            vertex(-75 - cheekFlareX, 100);
-            bezierVertex(-85 - cheekFlareX, 105, -105 - cheekFlareX, 140, -90, 190);
-            bezierVertex(-60, 205, 60, 205, 90, 190);
-            bezierVertex(105 + cheekFlareX, 140, 85 + cheekFlareX, 105, 75 + cheekFlareX, 100);
-            vertex(70, 100); vertex(-70, 100);
-            endShape(CLOSE);
-            fill(255); this.carveLowerTeeth(angerLevel);
+            translate(random(-shake, shake), random(-shake, shake));
+            this.drawAngrySkull(anger);
             pop();
         }
-        carveTopTeeth() { /*...*/ }
-        carveLowerTeeth() { /*...*/ }
+        drawAngrySkull(anger) {
+            let jawDrop = map(anger, 0.3, 1, 0, 80, true);
+            let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
+            let crownSpike = map(anger, 0.4, 1, 0, 40, true);
+            
+            noStroke(); fill(255);
+            
+            beginShape();
+            vertex(0, -185 - crownSpike);
+            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
+            bezierVertex(-170,-20, -145,50, -120,60);
+            vertex(120, 60);
+            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
+            bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
+            endShape(CLOSE);
+            
+            push(); translate(0, jawDrop);
+            beginShape();
+            vertex(115,70); bezierVertex(125,75, 145+cheekFlare,110, 130,160);
+            vertex(-130,160); bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
+            endShape(CLOSE);
+            this.carveLowerTeeth();
+            pop();
+
+            fill(255); // Cavità bianche
+            let eyePinch = map(anger, 0.5, 1, 0, 20, true);
+            beginShape(); vertex(-40,-100); bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); bezierVertex(-70,-5, -45,-20, -40,-40); endShape(CLOSE);
+            beginShape(); vertex(40,-100); bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10); bezierVertex(70,-5, 45,-20, 40,-40); endShape(CLOSE);
+            
+            fill(0); // Occhi neri
+            ellipse(-65, -60, 20, 20);
+            ellipse(65, -60, 20, 20);
+
+            let noseFlare = map(anger, 0, 1, 0, 10);
+            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
+        }
+        carveLowerTeeth(){ fill(0); rectMode(CENTER); for(let i=0; i<5; i++){ let x=lerp(-50,50,i/4); rect(x, 85, 14, 20, 3); } }
     }
 
-    // --- CELESTIAL GUARDIAN (INALTERATO) ---
+    // --- CELESTIAL GUARDIAN ---
     class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -285,6 +215,7 @@
 
             let rotation = frameCount * 0.01;
             let haloRadius = lerp(200, 250, energy);
+
             stroke(255, 150); strokeWeight(2); noFill();
             for(let i=0; i<10; i++) {
                 let angle = i * TWO_PI / 10 + rotation;
@@ -294,58 +225,26 @@
                 triangle(-15,0, 15,0, 0, -30);
                 pop();
             }
-            strokeWeight(1); stroke(255, 200);
-            let innerRadius = lerp(150, 180, energy);
-            for(let i=0; i<20; i++) {
-                let angle = i * TWO_PI / 20 - rotation;
-                let x = cos(angle) * innerRadius;
-                let y = sin(angle) * innerRadius;
-                point(x, y);
-            }
+
             noFill(); strokeWeight(5); stroke(255); rectMode(CENTER);
             rect(0,0, 250, 350, 20);
             
-            push();
-            rotate(frameCount * 0.02);
-            stroke(255, 150 + energy * 105); strokeWeight(3);
-            let symbolSize = 60 + energy * 20;
-            line(-symbolSize/2, 0, symbolSize/2, 0);
-            line(0, -symbolSize/2, 0, symbolSize/2);
-            ellipse(0, 0, symbolSize, symbolSize);
-            pop();
-            
-            if (energy > 0.5) {
-                for(let i = 0; i < 8; i++) {
-                    let angle = i * TWO_PI / 8 + frameCount * 0.05;
-                    let distance = 100 + energy * 50;
-                    let x = cos(angle) * distance;
-                    let y = sin(angle) * distance;
-                    fill(255, 150); noStroke();
-                    ellipse(x, y, 5 + energy * 10, 5 + energy * 10);
-                }
-            }
             let mouthSize = lerp(10, 80, energy);
             fill(255); noStroke();
             ellipse(0, 100, mouthSize, mouthSize);
+
             let eyeOpen = lerp(5, 50, energy);
             fill(0); stroke(255); strokeWeight(5);
             ellipse(-80, -30, 70, eyeOpen);
             ellipse(80, -30, 70, eyeOpen);
-            
-            if (energy > 0.6) {
-                fill(255, 200); noStroke();
-                ellipse(-80, -30, 20, 20);
-                ellipse(80, -30, 20, 20);
-            }
         }
     }
     
-    // --- JESTER CON CAMPANELLI POSIZIONATI MEGLIO ---
+    // --- JESTER ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(255);
-            translate(width/2, height/2); angleMode(DEGREES);
+            background(24, 24, 24); translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
             push();
@@ -358,7 +257,23 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            fill(0);
+            let bellWobble = energy * 25;
+            noStroke(); fill(0);
+            
+            rectMode(CENTER);
+            rect(0, -145, 280, 40, 10);
+
+            noFill(); stroke(0); strokeWeight(40);
+            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
+            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
+            
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
+            
+            fill(0); noStroke();
             let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
@@ -368,71 +283,15 @@
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
+
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
-            
-            let bellWobble = energy * 25;
-            noStroke(); fill(0);
-            
-            rectMode(CENTER);
-            rect(0, -145, 280, 40, 10);
-
-            // Linee del cappello con campanelli
-            noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250, -180); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250, -180); endShape();
-            beginShape(); vertex(-20, -165); vertex(20, -165); vertex(0, -280); endShape();
-            
-            // Campanelli posizionati meglio
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(0 + random(-bellWobble, bellWobble), -280 + random(-bellWobble/2, bellWobble/2), 40, 40); // Centrale più in alto
-            ellipse(-250 + random(-bellWobble, bellWobble), -180 + random(-bellWobble/2, bellWobble/2), 40, 40); // Sinistro
-            ellipse(250 + random(-bellWobble, bellWobble), -180 + random(-bellWobble/2, bellWobble/2), 40, 40); // Destro
-            
-            // Linguette dei campanelli
-            fill(0);
-            triangle(0 + random(-bellWobble/2, bellWobble/2), -260, 
-                    0 + random(-bellWobble/2, bellWobble/2), -270, 
-                    5 + random(-bellWobble/2, bellWobble/2), -265);
-            
-            triangle(-250 + random(-bellWobble/2, bellWobble/2), -160, 
-                    -250 + random(-bellWobble/2, bellWobble/2), -170, 
-                    -245 + random(-bellWobble/2, bellWobble/2), -165);
-            
-            triangle(250 + random(-bellWobble/2, bellWobble/2), -160, 
-                    250 + random(-bellWobble/2, bellWobble/2), -170, 
-                    255 + random(-bellWobble/2, bellWobble/2), -165);
 
             pop();
-        }
-    }
-    
-    // Helper per il teschio
-    class FlameParticle {
-        constructor(x, y, pColor) {
-            this.pos = createVector(x, y);
-            this.vel = p5.Vector.random2D().mult(random(2, 5));
-            this.lifespan = 1.0;
-            this.decay = random(0.015, 0.04);
-            this.size = random(10, 25);
-            this.pColor = pColor;
-        }
-        isFinished() { return this.lifespan <= 0; }
-        update() {
-            this.pos.add(this.vel);
-            this.vel.y *= 0.98;
-            this.lifespan -= this.decay;
-            this.size -= 0.3;
-        }
-        show() {
-            noStroke();
-            this.pColor.setAlpha(this.lifespan * 220);
-            fill(this.pColor);
-            ellipse(this.pos.x, this.pos.y, max(0, this.size));
         }
     }
     
