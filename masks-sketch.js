@@ -18,7 +18,6 @@
         
         mic = new p5.AudioIn();
         mic.start();
-        // FFT per l'oscilloscopio del Robot
         fft = new p5.FFT(0.9, 1024);
         fft.setInput(mic);
 
@@ -56,19 +55,16 @@
             let sensitivity = sensitivitySlider.value();
             let micVolume = mic.getLevel() * sensitivity;
             let mouseVolume = 0;
-            // Controlla che il mouse sia all'interno del canvas
             if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
                 mouseVolume = map(mouseX, 0, width, 0, 1.0);
             }
-            // Usa il valore più alto tra i due come input finale
             let finalInput = max(micVolume, mouseVolume);
-            
             this.smoothedVolume = lerp(this.smoothedVolume, constrain(finalInput, 0, 1.0), 0.1);
             return this.smoothedVolume;
         }
     }
     
-    // --- ROBOT (con oscilloscopio) ---
+    // --- ROBOT ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -108,7 +104,6 @@
             strokeWeight(3);
             for (let i = 0; i < waveform.length; i++) {
                 let x = map(i, 0, waveform.length, -mouthWidth/2 + 5, mouthWidth/2 - 5);
-                // Se non c'è suono, usa il valore del mouse per creare un'onda finta
                 let waveValue = (mic.getLevel() > 0.01) ? waveform[i] : sin(frameCount * 0.5 + i * 0.1) * vol;
                 let y = map(waveValue, -1, 1, -mouthHeight/2 + 10, mouthHeight/2 - 10);
                 vertex(x, y);
@@ -118,7 +113,7 @@
         }
     }
 
-    // --- DRAGO (CENTRATO) ---
+    // --- DRAGO ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -128,7 +123,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-270, -270);
+            translate(-190, -240);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -158,7 +153,7 @@
         }
     }
     
-    // --- TESCHIO (corretto e simmetrico) ---
+    // --- TESCHIO ---
     class SkullScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -293,47 +288,41 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            // Cappello disegnato sopra la faccia
-            let bellWobble = energy * 25;
-            noStroke(); fill(0);
-            
-            // Base del cappello
-            rectMode(CENTER);
-            rect(0, -145, 280, 40, 10);
-
-            // Punte del cappello spesse
-            noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
-            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
-            
-            // Campanelle
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
-            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
-            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
-            
-            // Dettagli del viso
-            fill(0); noStroke();
+            // Dettagli Neri
+            fill(0);
             let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
             
-            // Occhi
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
-            // Lacrime
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
-            // Bocca a sorriso
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
+            
+            // Cappello
+            let bellWobble = energy * 25;
+            noStroke(); fill(0);
+            
+            rectMode(CENTER);
+            rect(0, -145, 280, 40, 10);
+
+            noFill(); stroke(0); strokeWeight(40);
+            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
+            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
+            
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
 
             pop();
         }
