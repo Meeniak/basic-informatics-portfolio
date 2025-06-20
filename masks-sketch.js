@@ -344,4 +344,3 @@
         if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
-
