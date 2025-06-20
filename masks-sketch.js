@@ -59,6 +59,7 @@
                 mouseVolume = map(mouseX, 0, width, 0, 1.0);
             }
             let finalInput = max(micVolume, mouseVolume);
+            
             this.smoothedVolume = lerp(this.smoothedVolume, constrain(finalInput, 0, 1.0), 0.1);
             return this.smoothedVolume;
         }
@@ -274,7 +275,7 @@
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(24, 24, 24); translate(width/2, height/2); angleMode(DEGREES);
+            background(255); translate(width/2, height/2); angleMode(DEGREES);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
             push();
@@ -288,41 +289,47 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
-            // Dettagli Neri
-            fill(0);
+            // Cappello disegnato sopra la faccia
+            let bellWobble = energy * 25;
+            noStroke(); fill(0);
+            
+            // Base del cappello
+            rectMode(CENTER);
+            rect(0, -145, 280, 40, 10);
+
+            // Punte del cappello spesse
+            noFill(); stroke(0); strokeWeight(40);
+            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
+            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
+            
+            // Campanelle
+            stroke(0); strokeWeight(3); fill(255);
+            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
+            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
+            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
+            
+            // Dettagli del viso
+            fill(0); noStroke();
             let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
             let tearLength = lerp(40, 100, energy);
             
+            // Occhi
             arc(-80, -30, 80, 100, 180, 360);
             arc(80, -30, 80, 100, 180, 360);
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
+            // Lacrime
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
             
+            // Bocca a sorriso
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
-            
-            // Cappello
-            let bellWobble = energy * 25;
-            noStroke(); fill(0);
-            
-            rectMode(CENTER);
-            rect(0, -145, 280, 40, 10);
-
-            noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
-            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
-            
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
-            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
-            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
 
             pop();
         }
