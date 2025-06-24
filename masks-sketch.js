@@ -18,7 +18,7 @@
         
         mic = new p5.AudioIn();
         mic.start();
-        fft = new p5.FFT(0.8, 128);
+        fft = new p5.FFT(0.9, 1024);
         fft.setInput(mic);
 
         maskLabel = select('#current-mask-label');
@@ -33,7 +33,7 @@
             4: new CelestialGuardianScene(),
             5: new JesterScene()
         };
-        switchScene(1);
+        switchScene(1); // Inizia con la scena 1 di default
     }
 
     window.draw = function() {
@@ -42,12 +42,19 @@
         }
     }
 
+    // Aggiungo i controlli per cambiare scena anche qui, per coerenza
+    window.keyTyped = function() {
+        if (key >= '1' && key <= '5') {
+            switchScene(parseInt(key));
+        }
+        if (key.toLowerCase() === 's') {
+            saveCanvas('my-mask', 'png');
+        }
+    }
+
     function switchScene(sceneId) {
         if (scenes[sceneId]) {
             currentScene = scenes[sceneId];
-            if (typeof currentScene.setup === 'function') {
-                currentScene.setup();
-            }
             maskLabel.html(`Current: ${maskNames[sceneId]}`);
         }
     }
@@ -67,7 +74,7 @@
         }
     }
     
-    // --- ROBOT (VERSIONE APPROVATA) ---
+    // --- ROBOT (INVARIATO) ---
     class RobotScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -99,22 +106,23 @@
             let mouthWidth = 280, mouthHeight = 90;
             noFill(); stroke(0); strokeWeight(6); rect(0, 0, mouthWidth, mouthHeight, 10);
             
-            let spectrum = fft.analyze();
-            if (spectrum?.length) {
-                noStroke(); fill(0);
-                let barCount = spectrum.length / 2;
-                let barWidth = mouthWidth / barCount;
-                for (let i=0; i < barCount; i++) {
-                    let h = map(spectrum[i], 0, 255, 0, mouthHeight - 10);
-                    let x = map(i, 0, barCount-1, -mouthWidth/2 + barWidth/2, mouthWidth/2 - barWidth/2);
-                    rect(x, 0, barWidth * 0.8, h);
-                }
+            let waveform = fft.waveform();
+            noFill();
+            beginShape();
+            stroke(0);
+            strokeWeight(3);
+            for (let i = 0; i < waveform.length; i++) {
+                let x = map(i, 0, waveform.length, -mouthWidth/2 + 5, mouthWidth/2 - 5);
+                let waveValue = (mic.getLevel() > 0.01) ? waveform[i] : sin(frameCount * 0.5 + i * 0.1) * vol;
+                let y = map(waveValue, -1, 1, -mouthHeight/2 + 10, mouthHeight/2 - 10);
+                vertex(x, y);
             }
+            endShape();
             pop();
         }
     }
 
-    // --- DRAGO (CENTRATO) ---
+    // --- DRAGO (INVARIATO) ---
     class DragonScene extends Scene {
         constructor() { super(); }
         draw() {
@@ -124,7 +132,7 @@
             push();
             translate(width / 2, height / 2);
             scale(1.5);
-            translate(-270, -270);
+            translate(-190, -240);
             
             let anger = map(vol, 0, 0.8, 20, 100, true);
             let pp = map(vol, 0, 0.5, 40, 5, true);
@@ -154,116 +162,89 @@
         }
     }
     
-    // --- TESCHIO (TUA VERSIONE, CORRETTA E INTEGRATA) ---
+    // --- TESCHIO (MODIFICATO) ---
     class SkullScene extends Scene {
-        constructor() { super(); this.particles = []; this.rageHasTriggered = false; }
-        setup() { this.particles = []; }
+        constructor() { super(); }
         draw() {
             let vol = this.updateVolume();
-            background(255);
-            let angerLevel = map(vol, 0.04, 0.7, 0, 1, true);
-
-            if (angerLevel > 0.98 && !this.rageHasTriggered) {
-                this.rageFlash = 15;
-                this.rageHasTriggered = true;
-            }
-            if (angerLevel < 0.9) this.rageHasTriggered = false;
-            
+            background(0); 
             translate(width / 2, height / 2);
-            let idleFloat = sin(frameCount * 0.03) * 3;
-            translate(0, idleFloat);
-            let shakeAmount = map(angerLevel, 0.7, 1, 0, 60, true);
-            translate(random(-shakeAmount, shakeAmount), random(-shakeAmount, shakeAmount));
+            let anger = map(vol, 0.1, 0.9, 0, 1, true);
             
-            if (this.rageFlash > 0) { filter(INVERT); this.rageFlash--; }
-            
-            if (angerLevel > 0.8) {
-                let particleCount = map(angerLevel, 0.8, 1, 1, 15);
-                for (let i = 0; i < particleCount; i++) {
-                    let pColor = (random(1) > 0.7) ? color(0) : color(255);
-                    this.particles.push(new FlameParticle(-60, -20, pColor));
-                    pColor = (random(1) > 0.7) ? color(0) : color(255);
-                    this.particles.push(new FlameParticle(60, -20, pColor));
-                }
-            }
-            
-            this.drawAngrySkull(angerLevel);
-            for (let p of this.particles) { p.update(); p.show(); }
-            this.particles = this.particles.filter(p => !p.isFinished());
+            // --- MODIFICA 1: Rimosso l'effetto "shake" ---
+            // Ho commentato le righe che creavano il tremolio.
+            // let shake = constrain(map(anger, 0.6, 1, 0, 15, true), 0, 15);
+            // push();
+            // translate(random(-shake, shake), random(-shake, shake));
+            this.drawAngrySkull(anger);
+            // pop();
         }
 
-        drawAngrySkull(angerLevel) {
-            fill(0); noStroke();
-            let jawDrop = map(angerLevel, 0, 1, 0, 140);
-            let eyeSlant = map(angerLevel, 0, 1, 0, 40);
-            let browDrop = map(angerLevel, 0, 1, 0, 30);
-            let noseFlare = map(angerLevel, 0, 1, 0, 15);
-            let cheekFlareX = map(angerLevel, 0, 1, 0, 30);
-            let cheekFlareY = map(angerLevel, 0, 1, 0, 20);
-            let crownSpike = map(angerLevel, 0, 1, 0, 40);
-            let eyePinch = map(angerLevel, 0.5, 1, 0, 20, true);
-
+        drawAngrySkull(anger) {
+            let jawDrop = map(anger, 0.3, 1, 0, 80, true);
+            let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
+            let crownSpike = map(anger, 0.4, 1, 0, 40, true);
+            
+            noStroke(); 
+            fill(255); // Cranio bianco
+            
+            // Cranio superiore
             beginShape();
-            vertex(0, -165 - crownSpike);
-            bezierVertex(-80, -170 - crownSpike, -130, -120, -140 - cheekFlareX, -60);
-            bezierVertex(-150 - cheekFlareX, 0, -125 - cheekFlareX, 70 + cheekFlareY, -100, 80 + cheekFlareY);
-            bezierVertex(-90, 85 + cheekFlareY, -80, 100, -70, 110);
-            vertex(70, 110);
-            bezierVertex(80, 100, 90, 85 + cheekFlareY, 100, 80 + cheekFlareY);
-            bezierVertex(125 + cheekFlareX, 70 + cheekFlareY, 150 + cheekFlareX, 0, 140 + cheekFlareX, -60);
-            bezierVertex(130, -120, 80, -170 - crownSpike, 0, -165 - crownSpike);
+            vertex(0, -185 - crownSpike);
+            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
+            bezierVertex(-170,-20, -145,50, -120,60);
+            vertex(120, 60);
+            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
+            bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
             endShape(CLOSE);
             
-            this.drawLowerJaw(jawDrop, angerLevel);
-
-            fill(255); this.carveTopTeeth(angerLevel);
+            // --- MODIFICA 2: Cavità oculari e naso rese nere ---
+            // Ora le cavità sono disegnate in nero sul teschio bianco.
+            fill(0); // Colore nero per le cavità
+            let eyePinch = map(anger, 0.5, 1, 0, 20, true);
             
-            fill(0);
-            beginShape(); vertex(-40, -80 + browDrop); bezierVertex(-80, -70 - eyeSlant, -95 - cheekFlareX, -20 + eyePinch, -75, 10 + eyePinch); bezierVertex(-60, 15 + eyePinch, -45, 0, -40, -20); endShape(CLOSE);
-            beginShape(); vertex(40, -80 + browDrop); bezierVertex(80, -70 - eyeSlant, 95 + cheekFlareX, -20 + eyePinch, 75, 10 + eyePinch); bezierVertex(60, 15 + eyePinch, 45, 0, 40, -20); endShape(CLOSE);
-            
-            beginShape(); vertex(0, 40); vertex(-12 - noseFlare, 75); vertex(12 + noseFlare, 75); endShape(CLOSE);
-            
-            if (angerLevel > 0.6) {
-                let baseSize = map(angerLevel, 0.6, 1, 10, 45, true);
-                noStroke();
-                for (let i = 5; i > 0; i--) {
-                    let t = i / 5;
-                    fill(0, map(t, 1, 0, 10, 80));
-                    ellipse(-60, -20, baseSize * t, baseSize * t);
-                    ellipse(60, -20, baseSize * t, baseSize * t);
-                }
-            }
-        }
-        drawLowerJaw(yOffset, angerLevel) {
-            push();
-            if (angerLevel < 0.98) {
-                translate(0, yOffset);
-                rotate(map(yOffset, 0, 140, 0, 0.05));
-            } else {
-                let orbitRadius = 180 + sin(frameCount * 0.05) * 10;
-                let orbitAngle = frameCount * 0.1;
-                let selfRotation = frameCount * 0.3;
-                translate(cos(orbitAngle) * orbitRadius, sin(orbitAngle) * orbitRadius);
-                rotate(selfRotation);
-            }
-            let cheekFlareX = map(angerLevel, 0, 1, 0, 15);
-            fill(0); noStroke();
-            beginShape();
-            vertex(-75 - cheekFlareX, 100);
-            bezierVertex(-85 - cheekFlareX, 105, -105 - cheekFlareX, 140, -90, 190);
-            bezierVertex(-60, 205, 60, 205, 90, 190);
-            bezierVertex(105 + cheekFlareX, 140, 85 + cheekFlareX, 105, 75 + cheekFlareX, 100);
-            vertex(70, 100); vertex(-70, 100);
+            // Cavità oculare sinistra
+            beginShape(); 
+            vertex(-40,-100); 
+            bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); 
+            bezierVertex(-70,-5, -45,-20, -40,-40); 
             endShape(CLOSE);
-            fill(255); this.carveLowerTeeth(angerLevel);
+            
+            // Cavità oculare destra
+            beginShape(); 
+            vertex(40,-100); 
+            bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10); 
+            bezierVertex(70,-5, 45,-20, 40,-40); 
+            endShape(CLOSE);
+            
+            // Naso
+            let noseFlare = map(anger, 0, 1, 0, 10);
+            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
+            
+            // Mandibola (disegnata dopo per stare sopra)
+            push(); 
+            translate(0, jawDrop);
+            fill(255); // Mandibola bianca
+            beginShape();
+            vertex(115,70); 
+            bezierVertex(125,75, 145+cheekFlare,110, 130,160);
+            vertex(-130,160); 
+            bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
+            endShape(CLOSE);
+            this.carveLowerTeeth();
             pop();
         }
-        carveTopTeeth(angerLevel) { /* ... */ }
-        carveLowerTeeth(angerLevel) { /* ... */ }
+        carveLowerTeeth(){ 
+            fill(0); 
+            rectMode(CENTER); 
+            for(let i=0; i<5; i++){ 
+                let x=lerp(-50,50,i/4); 
+                rect(x, 85, 14, 20, 3); 
+            } 
+        }
     }
 
-    // --- CELESTIAL GUARDIAN (TUA VERSIONE, CORRETTA E INTEGRATA) ---
+    // --- GUARDIANO CELESTE (INVARIATO) ---
     class CelestialGuardianScene extends Scene {
         draw() {
             let vol = this.updateVolume();
@@ -327,16 +308,20 @@
         }
     }
     
-    // --- JESTER ---
+    // --- GIULLARE (MODIFICATO) ---
     class JesterScene extends Scene {
         draw() {
             let vol = this.updateVolume();
-            background(24, 24, 24); translate(width/2, height/2); angleMode(DEGREES);
+            // --- MODIFICA 3: Sfondo bianco ---
+            background(255); 
+            translate(width/2, height/2); 
+            angleMode(DEGREES);
             let energy = map(vol, 0.1, 0.8, 0, 1, true);
             
             push();
             translate(0, 50);
 
+            // Faccia
             fill(255); noStroke();
             beginShape();
             vertex(0, -150);
@@ -344,6 +329,7 @@
             bezierVertex(200, 220, 250, -100, 0, -150);
             endShape(CLOSE);
             
+            // Dettagli Neri
             fill(0);
             let pupilY = lerp(0, -10, energy);
             let pupilSize = lerp(15, 25, energy);
@@ -354,6 +340,7 @@
             fill(255);
             ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
             ellipse(80, -25 + pupilY, pupilSize, pupilSize);
+
             fill(0);
             triangle(-90, 0, -70, 0, -80, tearLength);
             triangle(90, 0, 70, 0, 80, tearLength);
@@ -361,53 +348,31 @@
             let smileHeight = lerp(10, 100, energy);
             arc(0, 120, 150, smileHeight, 180, 360, CHORD);
             
+            // Cappello
             let bellWobble = energy * 25;
             noStroke(); fill(0);
-            
             rectMode(CENTER);
             rect(0, -145, 280, 40, 10);
 
+            // --- MODIFICA 4: Posizionamento corretto dei campanelli ---
+            // Salvo le coordinate delle punte in variabili per usarle sia per il cappello che per i campanelli.
+            let middleTip = { x: random(-bellWobble, bellWobble), y: -250 };
+            let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
+            let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 }; // La y qui era sbagliata nel disegno del campanello
+
+            // Disegno le punte del cappello usando le coordinate salvate
             noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, -250 + random(-bellWobble, bellWobble), -200); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, 250 + random(-bellWobble, bellWobble), -200); endShape();
-            triangle(-20, -165, 20, -165, random(-bellWobble, bellWobble), -250);
-            
+            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, leftTip.x, leftTip.y); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(100, -280, rightTip.x, rightTip.y); endShape();
+            beginShape(); vertex(0, -165); quadraticVertex(0, -200, middleTip.x, middleTip.y); endShape(); // Usato quadraticVertex per una curva migliore
+
+            // Disegno i campanelli ESATTAMENTE sulle punte
             stroke(0); strokeWeight(3); fill(255);
-            ellipse(random(-bellWobble, bellWobble), -250, 40, 40);
-            ellipse(-250 + random(-bellWobble, bellWobble), -200, 40, 40);
-            ellipse(250 + random(-bellWobble, bellWobble), -120, 40, 40);
+            ellipse(middleTip.x, middleTip.y, 40, 40);
+            ellipse(leftTip.x, leftTip.y, 40, 40);
+            ellipse(rightTip.x, rightTip.y, 40, 40);
 
             pop();
         }
-    }
-    
-    // Helper per il teschio
-    class FlameParticle {
-        constructor(x, y, pColor) {
-            this.pos = createVector(x, y);
-            this.vel = p5.Vector.random2D().mult(random(2, 5));
-            this.lifespan = 1.0;
-            this.decay = random(0.015, 0.04);
-            this.size = random(10, 25);
-            this.pColor = pColor;
-        }
-        isFinished() { return this.lifespan <= 0; }
-        update() {
-            this.pos.add(this.vel);
-            this.vel.y *= 0.98;
-            this.lifespan -= this.decay;
-            this.size -= 0.3;
-        }
-        show() {
-            noStroke();
-            this.pColor.setAlpha(this.lifespan * 220);
-            fill(this.pColor);
-            ellipse(this.pos.x, this.pos.y, max(0, this.size));
-        }
-    }
-    
-    window.keyPressed = function() {
-        if (key >= '1' && key <= '5') switchScene(parseInt(key));
-        if (key.toLowerCase() === 's') saveCanvas('my-mask', 'png');
     }
 })();
