@@ -1,34 +1,37 @@
 (function() {
     let webcam;
-    let slider;
+    let mainSlider, paramSlider;
     let filterLabel;
     let currentFilter = 1;
 
-    // Variabili per i filtri specifici
-    const asciiChars = '       .:-i|=+*#%@'; // Da scuro a chiaro
-    let slitScanX = 0; // Posizione per lo slit-scan
+    // Stringa di caratteri più dettagliata per l'effetto ASCII
+    const asciiChars = "`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
-        3: 'Slit-Scan'
+        3: 'Pointillism'
     };
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        const canvas = createCanvas(640, 480); // Dimensioni classiche per webcam
+        const canvas = createCanvas(640, 480);
         canvas.parent(canvasWrapper);
         
-        // Inizializza la webcam
-        webcam = createCapture(VIDEO);
+        webcam = createCapture(VIDEO, () => {
+            console.log("Webcam ready.");
+        });
         webcam.size(width, height);
         webcam.hide();
 
-        // UI
         filterLabel = select('#current-filter-label');
-        slider = createSlider(10, 80, 40, 2);
-        slider.parent('slider-container');
-        slider.style('width', '100%');
+        mainSlider = createSlider(10, 80, 40, 2);
+        mainSlider.parent('slider-main-container');
+        mainSlider.style('width', '100%');
+
+        paramSlider = createSlider(0, 360, 0, 1);
+        paramSlider.parent('slider-param-container');
+        paramSlider.style('width', '100%');
         
         angleMode(DEGREES);
         textAlign(CENTER, CENTER);
@@ -38,112 +41,87 @@
     window.draw = function() {
         background(0);
         
+        let mainValue = mainSlider.value();
+        let paramValue = paramSlider.value();
+        
         // Specchia l'immagine orizzontalmente
+        push();
         translate(width, 0);
         scale(-1, 1);
 
         switch (currentFilter) {
             case 1:
-                drawMosaicFilter(slider.value());
+                drawMosaicFilter(mainValue, paramValue);
                 break;
             case 2:
-                drawAsciiFilter(slider.value());
+                drawAsciiFilter(mainValue);
                 break;
             case 3:
-                drawSlitScanFilter(slider.value());
+                drawPointillismFilter(mainValue, paramValue);
                 break;
         }
+        pop();
     }
 
-    // FILTRO 1: Il tuo mosaico rotante (leggermente ottimizzato)
-    function drawMosaicFilter(cellSize) {
+    // FILTRO 1: Mosaico con rotazione controllata da slider
+    function drawMosaicFilter(cellSize, angle) {
         webcam.loadPixels();
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
-                let angle = map(mouseX, 0, width, 0, 360);
-                
                 push();
                 translate(x + cellSize / 2, y + cellSize / 2);
                 rotate(angle);
-                // Usa get() per ottenere una porzione dell'immagine, è più stabile
-                let imgPortion = webcam.get(x, y, cellSize, cellSize);
-                image(imgPortion, -cellSize / 2, -cellSize / 2);
+                image(webcam, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
                 pop();
             }
         }
     }
 
-    // FILTRO 2: ASCII Art
+    // FILTRO 2: ASCII Art con più dettaglio
     function drawAsciiFilter(cellSize) {
         webcam.loadPixels();
         fill(255);
         noStroke();
-        textSize(cellSize * 1.2);
+        textSize(cellSize * 1.4);
 
         for (let y = 0; y < height; y += cellSize) {
             for (let x = 0; x < width; x += cellSize) {
-                let totalBrightness = 0;
-                // Calcola la luminosità media della cella
-                for (let i = 0; i < cellSize; i++) {
-                    for (let j = 0; j < cellSize; j++) {
-                        let index = ((x + i) + (y + j) * width) * 4;
-                        let r = webcam.pixels[index];
-                        let g = webcam.pixels[index + 1];
-                        let b = webcam.pixels[index + 2];
-                        totalBrightness += (r + g + b) / 3;
-                    }
+                if (x < width && y < height) {
+                    let c = webcam.get(x, y);
+                    let brightness = (red(c) + green(c) + blue(c)) / 3;
+                    let charIndex = floor(map(brightness, 0, 255, asciiChars.length - 1, 0));
+                    let char = asciiChars.charAt(charIndex);
+                    text(char, x + cellSize / 2, y + cellSize / 2);
                 }
-                let avgBrightness = totalBrightness / (cellSize * cellSize);
-                
-                // Mappa la luminosità a un carattere ASCII
-                let charIndex = floor(map(avgBrightness, 0, 255, 0, asciiChars.length -1));
-                let char = asciiChars.charAt(charIndex);
-                
-                text(char, x + cellSize / 2, y + cellSize / 2);
             }
         }
     }
 
-    // FILTRO 3: Slit-Scan (distorsione temporale)
-    function drawSlitScanFilter(sliceWidth) {
-        // Copia una fetta verticale di video dal centro della webcam
-        let slice = webcam.get(webcam.width / 2 - sliceWidth / 2, 0, sliceWidth, webcam.height);
-        
-        // Disegna la fetta nella posizione corrente del canvas
-        image(slice, slitScanX, 0);
-
-        // Avanza la posizione di disegno
-        slitScanX += sliceWidth;
-
-        // Se abbiamo riempito il canvas, ricomincia da capo
-        if (slitScanX >= width) {
-            slitScanX = 0;
+    // FILTRO 3: Nuovo effetto Pointillism
+    function drawPointillismFilter(pointSize, pointDensity) {
+        let density = map(pointDensity, 0, 360, 100, 5000);
+        noStroke();
+        for (let i = 0; i < density; i++) {
+            let x = floor(random(width));
+            let y = floor(random(height));
+            let col = webcam.get(x, y);
+            fill(col);
+            ellipse(x, y, pointSize / 3, pointSize / 3);
         }
     }
-
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '3') {
             currentFilter = parseInt(key);
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
-            if(currentFilter === 3) {
-                // Pulisce il canvas quando si attiva lo slit-scan
-                background(0);
-                slitScanX = 0;
+            if(currentFilter === 1) {
+                paramSlider.value(0);
             }
         }
         
         if (key.toLowerCase() === 's') {
-            // Per salvare correttamente l'immagine, la ridisegno senza la specchiatura
-            push();
-            resetMatrix(); // Rimuove tutte le trasformazioni (translate, scale)
-            switch (currentFilter) {
-                case 1: drawMosaicFilter(slider.value()); break;
-                case 2: drawAsciiFilter(slider.value()); break;
-                case 3: image(get(), 0, 0); break; // Salva lo stato attuale dello slit-scan
-            }
             saveCanvas('my-filter', 'png');
-            pop();
         }
     }
 })();
+
