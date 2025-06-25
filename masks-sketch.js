@@ -162,7 +162,7 @@
         }
     }
     
- // --- TESCHIO (VERSIONE "FURIOUS") ---
+// --- TESCHIO (VERSIONE "FURIOUS" RIFINITA) ---
 class SkullScene extends Scene {
     constructor() {
         super();
@@ -175,20 +175,16 @@ class SkullScene extends Scene {
         translate(width / 2, height / 2);
         let anger = map(vol, 0.1, 0.9, 0, 1, true);
 
-        // --- MODIFICA 2: Effetto Shake reintrodotto e potenziato ---
-        // Calcola l'intensità del tremolio in base alla "rabbia"
-        let shake = constrain(map(anger, 0.6, 1, 0, 20, true), 0, 20); // Reso più forte (max 20)
+        let shake = constrain(map(anger, 0.6, 1, 0, 20, true), 0, 20);
 
-        push(); // Isola l'effetto di traslazione/shake
-        // Applica il tremolio a tutto il teschio e alle fiamme
+        push();
         translate(random(-shake, shake), random(-shake, shake));
 
-        // Disegna prima le fiamme, così stanno "dietro" al teschio
+        // MODIFICA 2: Avvicinamento Occhi - Aggiornato punto di emissione
         this.manageEyeFlames(anger);
-        // Disegna il teschio
         this.drawAngrySkull(anger);
         
-        pop(); // Fine dell'effetto shake
+        pop();
     }
 
     manageEyeFlames(anger) {
@@ -201,26 +197,25 @@ class SkullScene extends Scene {
             }
         }
 
-        // Emetti nuove particelle se il volume è alto
         if (anger > 0.7) {
             for (let i = 0; i < 2; i++) {
-                this.particles.push(new Particle(-80, -40));
-                this.particles.push(new Particle(80, -40));
+                // MODIFICA 2: Avvicinamento Occhi - Spostato punto di emissione particelle
+                this.particles.push(new Particle(-70, -45)); // da -80 a -70
+                this.particles.push(new Particle(70, -45));  // da 80 a 70
             }
         }
     }
 
     drawAngrySkull(anger) {
-        // --- MODIFICA 1: Deformazioni Estremizzate ---
-        // Ho aumentato i valori massimi di tutte le mappature per un effetto più esagerato.
-        let jawDrop = map(anger, 0.3, 1, 0, 110, true);      // da 80 a 110
-        let cheekFlare = map(anger, 0.2, 1, 0, 40, true);     // da 25 a 40
-        let crownSpike = map(anger, 0.4, 1, 0, 70, true);     // da 40 a 70
-        let eyePinch = map(anger, 0.5, 1, 0, 30, true);       // da 20 a 30
-        let noseFlare = map(anger, 0, 1, 0, 15, true);        // da 10 a 15
+        let jawDrop = map(anger, 0.3, 1, 0, 110, true);
+        let cheekFlare = map(anger, 0.2, 1, 0, 40, true);
+        let crownSpike = map(anger, 0.4, 1, 0, 70, true);
+        // MODIFICA 1: Deformazione Occhi Aumentata
+        let eyePinch = map(anger, 0.5, 1, 0, 60, true); // da 30 a 60 per più deformazione
+        let noseFlare = map(anger, 0, 1, 0, 15, true);
 
         noStroke();
-        fill(255); // Cranio bianco
+        fill(255);
 
         // Cranio superiore
         beginShape();
@@ -234,42 +229,43 @@ class SkullScene extends Scene {
 
         // Cavità nere
         fill(0);
+        // MODIFICA 2: Avvicinamento Occhi - Modificate coordinate cavità
+        // Cavità sinistra
         beginShape();
-        vertex(-40, -100);
-        bezierVertex(-100, -90 - eyePinch, -115, -40, -85, -10);
-        bezierVertex(-70, -5, -45, -20, -40, -40);
+        vertex(-30, -100);
+        bezierVertex(-90, -90 - eyePinch, -105, -40, -75, -10);
+        bezierVertex(-60, -5, -35, -20, -30, -40);
         endShape(CLOSE);
+        // Cavità destra
         beginShape();
-        vertex(40, -100);
-        bezierVertex(100, -90 - eyePinch, 115, -40, 85, -10);
-        bezierVertex(70, -5, 45, -20, 40, -40);
+        vertex(30, -100);
+        bezierVertex(90, -90 - eyePinch, 105, -40, 75, -10);
+        bezierVertex(60, -5, 35, -20, 30, -40);
         endShape(CLOSE);
 
-        // --- MODIFICA 3: Pupille Spettrali ---
-        // Appaiono e si intensificano con la "rabbia"
+        // Pupille Spettrali
         if (anger > 0.5) {
-            let pupilAlpha = map(anger, 0.5, 1, 0, 220); // Diventano più opache
-            let pupilWobble = map(anger, 0.5, 1, 0, 4); // Vibrano di più
+            let pupilAlpha = map(anger, 0.5, 1, 0, 220);
+            let pupilWobble = map(anger, 0.5, 1, 0, 4);
             
-            let pupilX1 = -80 + random(-pupilWobble, pupilWobble);
+            // MODIFICA 2: Avvicinamento Occhi - Spostato centro pupille
+            let pupilX1 = -70 + random(-pupilWobble, pupilWobble); // da -80 a -70
             let pupilY1 = -45 + random(-pupilWobble, pupilWobble);
-            let pupilX2 = 80 + random(-pupilWobble, pupilWobble);
+            let pupilX2 = 70 + random(-pupilWobble, pupilWobble);  // da 80 a 70
             let pupilY2 = -45 + random(-pupilWobble, pupilWobble);
             
-            // Disegno un alone esterno più trasparente per l'effetto "glow"
             fill(255, pupilAlpha / 4);
             noStroke();
             ellipse(pupilX1, pupilY1, 25, 25);
             ellipse(pupilX2, pupilY2, 25, 25);
             
-            // Disegno la pupilla interna più definita
             fill(255, pupilAlpha);
             ellipse(pupilX1, pupilY1, 10, 10);
             ellipse(pupilX2, pupilY2, 10, 10);
         }
 
         // Naso
-        fill(0); // Assicuriamoci che il naso sia nero
+        fill(0);
         triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
 
         // Mandibola
@@ -290,7 +286,8 @@ class SkullScene extends Scene {
         rectMode(CENTER);
         for (let i = 0; i < 5; i++) {
             let x = lerp(-50, 50, i / 4);
-            rect(x, 85, 14, 20, 3);
+            // MODIFICA 3: Denti più in alto
+            rect(x, 75, 14, 18, 3); // y da 85 a 75, altezza leggermente ridotta
         }
     }
 }
