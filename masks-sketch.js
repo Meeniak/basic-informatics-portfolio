@@ -385,71 +385,101 @@ class Particle {
         }
     }
     
-    // --- GIULLARE (MODIFICATO) ---
-    class JesterScene extends Scene {
-        draw() {
-            let vol = this.updateVolume();
-            // --- MODIFICA 3: Sfondo bianco ---
-            background(255); 
-            translate(width/2, height/2); 
-            angleMode(DEGREES);
-            let energy = map(vol, 0.1, 0.8, 0, 1, true);
-            
-            push();
-            translate(0, 50);
+   // --- GIULLARE (VERSIONE "ESAGERATA") ---
+class JesterScene extends Scene {
+    draw() {
+        let vol = this.updateVolume();
+        background(255);
+        translate(width / 2, height / 2);
+        angleMode(DEGREES);
+        let energy = map(vol, 0.1, 0.8, 0, 1, true);
 
-            // Faccia
-            fill(255); noStroke();
-            beginShape();
-            vertex(0, -150);
-            bezierVertex(-250, -100, -200, 220, 0, 250);
-            bezierVertex(200, 220, 250, -100, 0, -150);
-            endShape(CLOSE);
-            
-            // Dettagli Neri
-            fill(0);
-            let pupilY = lerp(0, -10, energy);
-            let pupilSize = lerp(15, 25, energy);
-            let tearLength = lerp(40, 100, energy);
-            
-            arc(-80, -30, 80, 100, 180, 360);
-            arc(80, -30, 80, 100, 180, 360);
-            fill(255);
-            ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
-            ellipse(80, -25 + pupilY, pupilSize, pupilSize);
+        push();
+        translate(0, 50);
 
-            fill(0);
-            triangle(-90, 0, -70, 0, -80, tearLength);
-            triangle(90, 0, 70, 0, 80, tearLength);
-            
-            let smileHeight = lerp(10, 100, energy);
-            arc(0, 120, 150, smileHeight, 180, 360, CHORD);
-            
-            // Cappello
-            let bellWobble = energy * 25;
-            noStroke(); fill(0);
-            rectMode(CENTER);
-            rect(0, -145, 280, 40, 10);
+        // Faccia
+        fill(255);
+        noStroke();
+        beginShape();
+        vertex(0, -150);
+        bezierVertex(-250, -100, -200, 220, 0, 250);
+        bezierVertex(200, 220, 250, -100, 0, -150);
+        endShape(CLOSE);
 
-            // --- MODIFICA 4: Posizionamento corretto dei campanelli ---
-            // Salvo le coordinate delle punte in variabili per usarle sia per il cappello che per i campanelli.
-            let middleTip = { x: random(-bellWobble, bellWobble), y: -250 };
-            let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
-            let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 }; // La y qui era sbagliata nel disegno del campanello
+        // --- MODIFICA 1: Esagerazione delle reazioni ---
+        // Ho aumentato i valori massimi di tutte le animazioni.
+        fill(0);
+        let pupilY = lerp(0, -20, energy); // Movimento verticale pupille più ampio
+        let pupilSize = lerp(15, 35, energy); // Dimensione pupille più variabile
+        let tearLength = lerp(40, 150, energy); // Lacrime molto più lunghe
+        let smileHeight = lerp(20, 140, energy); // Sorriso più largo e profondo
 
-            // Disegno le punte del cappello usando le coordinate salvate
-            noFill(); stroke(0); strokeWeight(40);
-            beginShape(); vertex(0, -165); quadraticVertex(-100, -280, leftTip.x, leftTip.y); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(100, -280, rightTip.x, rightTip.y); endShape();
-            beginShape(); vertex(0, -165); quadraticVertex(0, -200, middleTip.x, middleTip.y); endShape(); // Usato quadraticVertex per una curva migliore
+        // Occhi e pupille
+        arc(-80, -30, 80, 100, 180, 360);
+        arc(80, -30, 80, 100, 180, 360);
+        fill(255);
+        ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
+        ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
-            // Disegno i campanelli ESATTAMENTE sulle punte
-            stroke(0); strokeWeight(3); fill(255);
-            ellipse(middleTip.x, middleTip.y, 40, 40);
-            ellipse(leftTip.x, leftTip.y, 40, 40);
-            ellipse(rightTip.x, rightTip.y, 40, 40);
+        // Lacrime
+        fill(0);
+        triangle(-90, 0, -70, 0, -80, tearLength);
+        triangle(90, 0, 70, 0, 80, tearLength);
 
-            pop();
-        }
+        // Sorriso
+        noStroke();
+        arc(0, 120, 180, smileHeight, 180, 360, CHORD);
+
+        // --- MODIFICA 2: Ridisegno completo del Cappello ---
+        let bellWobble = energy * 45; // Oscillazione molto più ampia
+        
+        // Fascia del cappello
+        noStroke();
+        fill(0);
+        rectMode(CENTER);
+        rect(0, -145, 280, 40, 10);
+
+        // Salvo le coordinate delle punte come prima
+        let middleTip = { x: random(-bellWobble, bellWobble), y: -250 + (energy * -30) }; // La punta centrale si alza anche un po'
+        let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
+        let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 };
+
+        // Disegno le punte del cappello con una forma migliore
+        noFill();
+        stroke(0);
+        strokeWeight(45); // Spessore aumentato
+        strokeCap(ROUND); // TRUCCO: Arrotonda le estremità per un look più organico
+
+        // Punta sinistra: parte dal lato della fascia e usa una curva di Bezier per più "flop"
+        beginShape();
+        vertex(-100, -150);
+        bezierVertex(-150, -250, -220, -240, leftTip.x, leftTip.y);
+        endShape();
+
+        // Punta destra: speculare alla sinistra
+        beginShape();
+        vertex(100, -150);
+        bezierVertex(150, -250, 220, -240, rightTip.x, rightTip.y);
+        endShape();
+
+        // Punta centrale: più semplice, parte dall'alto
+        beginShape();
+        vertex(0, -165);
+        quadraticVertex(0, -220, middleTip.x, middleTip.y);
+        endShape();
+        
+        // Ripristino lo strokeCap per non influenzare altri disegni
+        strokeCap(SQUARE); 
+
+        // Disegno i campanelli ESATTAMENTE sulle punte
+        stroke(0);
+        strokeWeight(3);
+        fill(255);
+        ellipse(middleTip.x, middleTip.y, 40, 40);
+        ellipse(leftTip.x, leftTip.y, 40, 40);
+        ellipse(rightTip.x, rightTip.y, 40, 40);
+
+        pop();
     }
+}
 })();
