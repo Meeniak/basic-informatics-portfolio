@@ -249,9 +249,9 @@ class SkullScene extends Scene {
             let pupilWobble = map(anger, 0.5, 1, 0, 4);
             
             // MODIFICA 2: Avvicinamento Occhi - Spostato centro pupille
-            let pupilX1 = -70 + random(-pupilWobble, pupilWobble); // da -80 a -70
+            let pupilX1 = -60 + random(-pupilWobble, pupilWobble); // da -80 a -70
             let pupilY1 = -45 + random(-pupilWobble, pupilWobble);
-            let pupilX2 = 70 + random(-pupilWobble, pupilWobble);  // da 80 a 70
+            let pupilX2 = 60 + random(-pupilWobble, pupilWobble);  // da 80 a 70
             let pupilY2 = -45 + random(-pupilWobble, pupilWobble);
             
             fill(255, pupilAlpha / 4);
