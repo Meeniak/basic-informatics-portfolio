@@ -162,88 +162,140 @@
         }
     }
     
-    // --- TESCHIO (MODIFICATO) ---
-    class SkullScene extends Scene {
-        constructor() { super(); }
-        draw() {
-            let vol = this.updateVolume();
-            background(0); 
-            translate(width / 2, height / 2);
-            let anger = map(vol, 0.1, 0.9, 0, 1, true);
-            
-            // --- MODIFICA 1: Rimosso l'effetto "shake" ---
-            // Ho commentato le righe che creavano il tremolio.
-            // let shake = constrain(map(anger, 0.6, 1, 0, 15, true), 0, 15);
-            // push();
-            // translate(random(-shake, shake), random(-shake, shake));
-            this.drawAngrySkull(anger);
-            // pop();
+  // --- TESCHIO (MODIFICATO E POTENZIATO) ---
+class SkullScene extends Scene {
+    constructor() {
+        super();
+        // --- MODIFICA 1: Aggiunto l'array per le particelle ---
+        this.particles = []; 
+    }
+
+    draw() {
+        let vol = this.updateVolume();
+        background(0);
+        translate(width / 2, height / 2);
+        let anger = map(vol, 0.1, 0.9, 0, 1, true);
+
+        // Disegna prima le fiamme, così stanno "dietro" al teschio
+        this.manageEyeFlames(anger);
+
+        this.drawAngrySkull(anger);
+    }
+
+    // --- NUOVA FUNZIONE per gestire le fiamme dagli occhi ---
+    manageEyeFlames(anger) {
+        // Aggiorna e disegna le particelle esistenti
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.update();
+            p.draw();
+            if (p.isFinished()) {
+                this.particles.splice(i, 1);
+            }
         }
 
-        drawAngrySkull(anger) {
-            let jawDrop = map(anger, 0.3, 1, 0, 80, true);
-            let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
-            let crownSpike = map(anger, 0.4, 1, 0, 40, true);
-            
-            noStroke(); 
-            fill(255); // Cranio bianco
-            
-            // Cranio superiore
-            beginShape();
-            vertex(0, -185 - crownSpike);
-            bezierVertex(-80,-190-crownSpike, -150,-140, -160,-80-cheekFlare);
-            bezierVertex(-170,-20, -145,50, -120,60);
-            vertex(120, 60);
-            bezierVertex(145,50, 170,-20, 160,-80-cheekFlare);
-            bezierVertex(150,-140, 80,-190, 0,-185-crownSpike);
-            endShape(CLOSE);
-            
-            // --- MODIFICA 2: Cavità oculari e naso rese nere ---
-            // Ora le cavità sono disegnate in nero sul teschio bianco.
-            fill(0); // Colore nero per le cavità
-            let eyePinch = map(anger, 0.5, 1, 0, 20, true);
-            
-            // Cavità oculare sinistra
-            beginShape(); 
-            vertex(-40,-100); 
-            bezierVertex(-100,-90 - eyePinch, -115,-40, -85,-10); 
-            bezierVertex(-70,-5, -45,-20, -40,-40); 
-            endShape(CLOSE);
-            
-            // Cavità oculare destra
-            beginShape(); 
-            vertex(40,-100); 
-            bezierVertex(100,-90 - eyePinch, 115,-40, 85,-10); 
-            bezierVertex(70,-5, 45,-20, 40,-40); 
-            endShape(CLOSE);
-            
-            // Naso
-            let noseFlare = map(anger, 0, 1, 0, 10);
-            triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
-            
-            // Mandibola (disegnata dopo per stare sopra)
-            push(); 
-            translate(0, jawDrop);
-            fill(255); // Mandibola bianca
-            beginShape();
-            vertex(115,70); 
-            bezierVertex(125,75, 145+cheekFlare,110, 130,160);
-            vertex(-130,160); 
-            bezierVertex(-145-cheekFlare,110, -125,75, -115,70);
-            endShape(CLOSE);
-            this.carveLowerTeeth();
-            pop();
-        }
-        carveLowerTeeth(){ 
-            fill(0); 
-            rectMode(CENTER); 
-            for(let i=0; i<5; i++){ 
-                let x=lerp(-50,50,i/4); 
-                rect(x, 85, 14, 20, 3); 
-            } 
+        // Emetti nuove particelle se il volume è alto
+        if (anger > 0.7) {
+            // Emetti 2 nuove particelle per frame (per occhio) quando attivo
+            for(let i=0; i<2; i++) {
+                // Occhio sinistro (coordinate approssimative del centro della cavità)
+                this.particles.push(new Particle(-80, -40));
+                // Occhio destro
+                this.particles.push(new Particle(80, -40));
+            }
         }
     }
 
+    drawAngrySkull(anger) {
+        let jawDrop = map(anger, 0.3, 1, 0, 80, true);
+        let cheekFlare = map(anger, 0.2, 1, 0, 25, true);
+        let crownSpike = map(anger, 0.4, 1, 0, 40, true);
+
+        noStroke();
+        fill(255); // Cranio bianco
+
+        // Cranio superiore
+        beginShape();
+        vertex(0, -185 - crownSpike);
+        bezierVertex(-80, -190 - crownSpike, -150, -140, -160, -80 - cheekFlare);
+        bezierVertex(-170, -20, -145, 50, -120, 60);
+        vertex(120, 60);
+        bezierVertex(145, 50, 170, -20, 160, -80 - cheekFlare);
+        // --- MODIFICA 2: Corretta l'asimmetria ---
+        // Aggiunto "- crownSpike" per rendere la deformazione speculare.
+        bezierVertex(150, -140, 80, -190 - crownSpike, 0, -185 - crownSpike);
+        endShape(CLOSE);
+
+        // Cavità nere (disegnate sopra il cranio ma sotto la mandibola)
+        fill(0);
+        let eyePinch = map(anger, 0.5, 1, 0, 20, true);
+        beginShape();
+        vertex(-40, -100);
+        bezierVertex(-100, -90 - eyePinch, -115, -40, -85, -10);
+        bezierVertex(-70, -5, -45, -20, -40, -40);
+        endShape(CLOSE);
+        beginShape();
+        vertex(40, -100);
+        bezierVertex(100, -90 - eyePinch, 115, -40, 85, -10);
+        bezierVertex(70, -5, 45, -20, 40, -40);
+        endShape(CLOSE);
+        
+        // Naso
+        let noseFlare = map(anger, 0, 1, 0, 10);
+        triangle(0, 20, -15 - noseFlare, 45, 15 + noseFlare, 45);
+
+        // Mandibola (disegnata per ultima per stare sopra a tutto)
+        push();
+        translate(0, jawDrop);
+        fill(255); // Mandibola bianca
+        beginShape();
+        vertex(115, 70);
+        bezierVertex(125, 75, 145 + cheekFlare, 110, 130, 160);
+        vertex(-130, 160);
+        bezierVertex(-145 - cheekFlare, 110, -125, 75, -115, 70);
+        endShape(CLOSE);
+        this.carveLowerTeeth();
+        pop();
+    }
+    carveLowerTeeth() {
+        fill(0);
+        rectMode(CENTER);
+        for (let i = 0; i < 5; i++) {
+            let x = lerp(-50, 50, i / 4);
+            rect(x, 85, 14, 20, 3);
+        }
+    }
+}
+
+// --- NUOVA CLASSE per definire una singola particella ---
+// Puoi mettere questa classe fuori dalla classe SkullScene, ma sempre dentro
+// la funzione auto-eseguibile principale.
+class Particle {
+    constructor(x, y) {
+        this.pos = createVector(x, y);
+        // Velocità: verso l'alto (negativo in Y), con piccola variazione orizzontale
+        this.vel = createVector(random(-1.5, 1.5), random(-3, -6));
+        this.lifespan = 255; // Durata (svanirà gradualmente)
+        this.color = random([0, 255]); // Colore casuale bianco o nero
+        this.size = random(5, 12);
+    }
+
+    update() {
+        this.pos.add(this.vel);
+        this.lifespan -= 5; // Svanisce
+    }
+
+    draw() {
+        noStroke();
+        // L'alpha (trasparenza) è legato alla durata
+        fill(this.color, this.lifespan);
+        ellipse(this.pos.x, this.pos.y, this.size, this.size);
+    }
+
+    isFinished() {
+        return this.lifespan < 0;
+    }
+}
     // --- GUARDIANO CELESTE (INVARIATO) ---
     class CelestialGuardianScene extends Scene {
         draw() {
