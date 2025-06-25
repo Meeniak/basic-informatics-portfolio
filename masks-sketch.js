@@ -385,7 +385,7 @@ class Particle {
         }
     }
     
-   // --- GIULLARE (VERSIONE "ESAGERATA") ---
+ // --- GIULLARE (VERSIONE FINALE RIFINITA) ---
 class JesterScene extends Scene {
     draw() {
         let vol = this.updateVolume();
@@ -406,14 +406,14 @@ class JesterScene extends Scene {
         bezierVertex(200, 220, 250, -100, 0, -150);
         endShape(CLOSE);
 
-        // --- MODIFICA 1: Esagerazione delle reazioni ---
-        // Ho aumentato i valori massimi di tutte le animazioni.
+        // Dettagli Neri
         fill(0);
-        let pupilY = lerp(0, -20, energy); // Movimento verticale pupille più ampio
-        let pupilSize = lerp(15, 35, energy); // Dimensione pupille più variabile
-        let tearLength = lerp(40, 150, energy); // Lacrime molto più lunghe
-        let smileHeight = lerp(20, 140, energy); // Sorriso più largo e profondo
-
+        let pupilY = lerp(0, -20, energy);
+        let pupilSize = lerp(15, 35, energy);
+        
+        // MODIFICA 2: Lacrime più corte e con base più larga
+        let tearLength = lerp(30, 85, energy); // Lunghezza massima ridotta a 85
+        
         // Occhi e pupille
         arc(-80, -30, 80, 100, 180, 360);
         arc(80, -30, 80, 100, 180, 360);
@@ -423,15 +423,17 @@ class JesterScene extends Scene {
 
         // Lacrime
         fill(0);
-        triangle(-90, 0, -70, 0, -80, tearLength);
-        triangle(90, 0, 70, 0, 80, tearLength);
+        triangle(-95, 0, -65, 0, -80, tearLength); // Base allargata (da -90,-70 a -95,-65)
+        triangle(95, 0, 65, 0, 80, tearLength);   // Base allargata (da 90,70 a 95,65)
 
         // Sorriso
+        let smileHeight = lerp(20, 140, energy);
         noStroke();
         arc(0, 120, 180, smileHeight, 180, 360, CHORD);
 
-        // --- MODIFICA 2: Ridisegno completo del Cappello ---
-        let bellWobble = energy * 45; // Oscillazione molto più ampia
+        // Cappello
+        // MODIFICA 1: Tremolio del cappello diminuito
+        let bellWobble = energy * 20; // Oscillazione ridotta (da 45 a 20)
         
         // Fascia del cappello
         noStroke();
@@ -439,39 +441,45 @@ class JesterScene extends Scene {
         rectMode(CENTER);
         rect(0, -145, 280, 40, 10);
 
-        // Salvo le coordinate delle punte come prima
-        let middleTip = { x: random(-bellWobble, bellWobble), y: -250 + (energy * -30) }; // La punta centrale si alza anche un po'
+        // Salvo le coordinate delle punte
+        let middleTip = { x: random(-bellWobble, bellWobble), y: -250 + (energy * -30) };
         let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
         let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 };
 
-        // Disegno le punte del cappello con una forma migliore
+        // Disegno le punte del cappello
         noFill();
         stroke(0);
-        strokeWeight(45); // Spessore aumentato
-        strokeCap(ROUND); // TRUCCO: Arrotonda le estremità per un look più organico
+        strokeWeight(45);
+        strokeCap(ROUND);
 
-        // Punta sinistra: parte dal lato della fascia e usa una curva di Bezier per più "flop"
         beginShape();
         vertex(-100, -150);
         bezierVertex(-150, -250, -220, -240, leftTip.x, leftTip.y);
         endShape();
 
-        // Punta destra: speculare alla sinistra
         beginShape();
         vertex(100, -150);
         bezierVertex(150, -250, 220, -240, rightTip.x, rightTip.y);
         endShape();
 
-        // Punta centrale: più semplice, parte dall'alto
         beginShape();
         vertex(0, -165);
         quadraticVertex(0, -220, middleTip.x, middleTip.y);
         endShape();
         
-        // Ripristino lo strokeCap per non influenzare altri disegni
-        strokeCap(SQUARE); 
+        strokeCap(SQUARE);
 
-        // Disegno i campanelli ESATTAMENTE sulle punte
+        // MODIFICA 3: Aggiunto triangolo decorativo sul cappello
+        fill(0);
+        noStroke();
+        // Disegnato in relazione alla punta centrale, così la segue
+        triangle(
+            middleTip.x - 18, middleTip.y - 15, // vertice alto-sinistra
+            middleTip.x + 18, middleTip.y - 15, // vertice alto-destra
+            middleTip.x, middleTip.y + 15       // vertice basso
+        );
+
+        // Disegno i campanelli (dopo il triangolo, così stanno sopra)
         stroke(0);
         strokeWeight(3);
         fill(255);
