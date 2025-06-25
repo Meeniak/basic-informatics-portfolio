@@ -73,24 +73,20 @@ body.home { min-height: 100vh; display: flex; flex-direction: column; justify-co
     width: 100%; align-items: flex-start; justify-content: center;
 }
 
-/* FIX: Stile specifico per il canvas dei filtri */
-.filters-page #canvas-wrapper {
-    flex: 1 1 600px;
-    max-width: 800px;
-    aspect-ratio: 4 / 3; 
-    border: 1px solid #444;
-    display: flex; justify-content: center; align-items: center;
-    background-color: #000;
-}
-
-/* FIX: Stile specifico per Brushes e Masks */
+/* FIX: Stili specifici per ogni pagina di sketch */
 .brushes-page #canvas-wrapper,
 .masks-page #canvas-wrapper {
     flex: 1 1 600px;
     max-width: 700px;
     aspect-ratio: 1 / 1;
     border: 1px solid #444;
-    display: flex; justify-content: center; align-items: center;
+}
+
+.filters-page #canvas-wrapper {
+    flex: 1 1 600px;
+    max-width: 800px;
+    aspect-ratio: 4 / 3; 
+    border: 1px solid #444;
     background-color: #000;
 }
 
@@ -104,9 +100,12 @@ body.home { min-height: 100vh; display: flex; flex-direction: column; justify-co
 .control-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 15px; }
 .control-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 #controls-panel h3 { font-size: 1.2em; font-weight: 400; margin: 0 0 15px 0; color: #fff; }
-#sliders { display: flex; flex-direction: column; gap: 15px; }
-.slider-wrapper { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+#sliders, #color-pickers { display: flex; flex-direction: column; gap: 15px; }
+.slider-wrapper, .picker-wrapper { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 #controls-panel label { font-size: 1em; font-weight: 300; }
+.picker-wrapper { flex-direction: row; justify-content: space-between; align-items: center; }
+.color-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; border: 1px solid #555; flex-shrink: 0; }
+input[type="color"] { border: 1px solid #555; border-radius: 4px; width: 60px; height: 30px; padding: 2px; box-sizing: border-box; background: none; }
 input[type="range"] {
     -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
     background: #444; outline: none; opacity: 0.9; transition: opacity .2s;
