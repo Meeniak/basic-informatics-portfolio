@@ -385,7 +385,7 @@ class Particle {
         }
     }
     
- // --- GIULLARE (VERSIONE FINALE RIFINITA) ---
+// --- GIULLARE (VERSIONE FINALE CON SORRISO) ---
 class JesterScene extends Scene {
     draw() {
         let vol = this.updateVolume();
@@ -410,9 +410,7 @@ class JesterScene extends Scene {
         fill(0);
         let pupilY = lerp(0, -20, energy);
         let pupilSize = lerp(15, 35, energy);
-        
-        // MODIFICA 2: Lacrime più corte e con base più larga
-        let tearLength = lerp(30, 85, energy); // Lunghezza massima ridotta a 85
+        let tearLength = lerp(30, 85, energy);
         
         // Occhi e pupille
         arc(-80, -30, 80, 100, 180, 360);
@@ -421,32 +419,32 @@ class JesterScene extends Scene {
         ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
         ellipse(80, -25 + pupilY, pupilSize, pupilSize);
 
-        // Lacrime
+        // Lacrime (più corte e larghe)
         fill(0);
-        triangle(-95, 0, -65, 0, -80, tearLength); // Base allargata (da -90,-70 a -95,-65)
-        triangle(95, 0, 65, 0, 80, tearLength);   // Base allargata (da 90,70 a 95,65)
+        triangle(-95, 0, -65, 0, -80, tearLength);
+        triangle(95, 0, 65, 0, 80, tearLength);
 
         // Sorriso
         let smileHeight = lerp(20, 140, energy);
         noStroke();
-        arc(0, 120, 180, smileHeight, 180, 360, CHORD);
+        // --- MODIFICA 1: Bocca girata a sorriso ---
+        // Ho cambiato gli angoli da (180, 360) a (0, 180) per disegnare la parte superiore dell'arco.
+        arc(0, 120, 180, smileHeight, 0, 180, CHORD);
 
         // Cappello
-        // MODIFICA 1: Tremolio del cappello diminuito
-        let bellWobble = energy * 20; // Oscillazione ridotta (da 45 a 20)
+        let bellWobble = energy * 20; // Oscillazione controllata
         
-        // Fascia del cappello
         noStroke();
         fill(0);
         rectMode(CENTER);
         rect(0, -145, 280, 40, 10);
 
-        // Salvo le coordinate delle punte
+        // Coordinate delle punte
         let middleTip = { x: random(-bellWobble, bellWobble), y: -250 + (energy * -30) };
         let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
         let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 };
 
-        // Disegno le punte del cappello
+        // Disegno delle punte
         noFill();
         stroke(0);
         strokeWeight(45);
@@ -469,17 +467,16 @@ class JesterScene extends Scene {
         
         strokeCap(SQUARE);
 
-        // MODIFICA 3: Aggiunto triangolo decorativo sul cappello
+        // --- MODIFICA 2: Triangolo decorativo (già presente) ---
         fill(0);
         noStroke();
-        // Disegnato in relazione alla punta centrale, così la segue
         triangle(
-            middleTip.x - 18, middleTip.y - 15, // vertice alto-sinistra
-            middleTip.x + 18, middleTip.y - 15, // vertice alto-destra
-            middleTip.x, middleTip.y + 15       // vertice basso
+            middleTip.x - 18, middleTip.y - 15,
+            middleTip.x + 18, middleTip.y - 15,
+            middleTip.x, middleTip.y + 15
         );
 
-        // Disegno i campanelli (dopo il triangolo, così stanno sopra)
+        // Campanelli (disegnati per ultimi)
         stroke(0);
         strokeWeight(3);
         fill(255);
