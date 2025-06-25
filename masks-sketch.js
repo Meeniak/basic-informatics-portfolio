@@ -385,106 +385,25 @@ class Particle {
         }
     }
     
-// --- GIULLARE (VERSIONE FINALE CON SORRISO) ---
-class JesterScene extends Scene {
-    draw() {
-        let vol = this.updateVolume();
-        background(255);
-        translate(width / 2, height / 2);
-        angleMode(DEGREES);
-        let energy = map(vol, 0.1, 0.8, 0, 1, true);
-
-        push();
-        translate(0, 50);
-
-        // Faccia
-        fill(255);
-        noStroke();
-        beginShape();
-        vertex(0, -150);
-        bezierVertex(-250, -100, -200, 220, 0, 250);
-        bezierVertex(200, 220, 250, -100, 0, -150);
-        endShape(CLOSE);
-
-        // Dettagli Neri
-        fill(0);
-        let pupilY = lerp(0, -20, energy);
-        let pupilSize = lerp(15, 35, energy);
-        let tearLength = lerp(30, 85, energy);
+// ... [codice che disegna le punte del cappello] ...
         
-        // Occhi e pupille
-        arc(-80, -30, 80, 100, 180, 360);
-        arc(80, -30, 80, 100, 180, 360);
-        fill(255);
-        ellipse(-80, -25 + pupilY, pupilSize, pupilSize);
-        ellipse(80, -25 + pupilY, pupilSize, pupilSize);
+strokeCap(SQUARE);
 
-        // Lacrime (più corte e larghe)
-        fill(0);
-        triangle(-95, 0, -65, 0, -80, tearLength);
-        triangle(95, 0, 65, 0, 80, tearLength);
+// --- ECCO IL CODICE PER IL TRIANGOLO NERO ---
+fill(0);      // Colore nero
+noStroke();   // Nessun bordo
+// Le coordinate sono calcolate in base alla posizione della punta centrale (middleTip)
+// in modo che si muova e oscilli insieme al resto del cappello.
+triangle(
+    middleTip.x - 18, middleTip.y - 15, // vertice in alto a sinistra
+    middleTip.x + 18, middleTip.y - 15, // vertice in alto a destra
+    middleTip.x, middleTip.y + 15       // vertice in basso
+);
 
-        // Sorriso
-        let smileHeight = lerp(20, 140, energy);
-        noStroke();
-        // --- MODIFICA 1: Bocca girata a sorriso ---
-        // Ho cambiato gli angoli da (180, 360) a (0, 180) per disegnare la parte superiore dell'arco.
-        arc(0, 120, 180, smileHeight, 0, 180, CHORD);
+// Ora disegniamo i campanelli, che si sovrapporranno al triangolo
+stroke(0);
+strokeWeight(3);
+fill(255);
+ellipse(middleTip.x, middleTip.y, 40, 40);
 
-        // Cappello
-        let bellWobble = energy * 20; // Oscillazione controllata
-        
-        noStroke();
-        fill(0);
-        rectMode(CENTER);
-        rect(0, -145, 280, 40, 10);
-
-        // Coordinate delle punte
-        let middleTip = { x: random(-bellWobble, bellWobble), y: -250 + (energy * -30) };
-        let leftTip   = { x: -250 + random(-bellWobble, bellWobble), y: -200 };
-        let rightTip  = { x: 250 + random(-bellWobble, bellWobble), y: -200 };
-
-        // Disegno delle punte
-        noFill();
-        stroke(0);
-        strokeWeight(45);
-        strokeCap(ROUND);
-
-        beginShape();
-        vertex(-100, -150);
-        bezierVertex(-150, -250, -220, -240, leftTip.x, leftTip.y);
-        endShape();
-
-        beginShape();
-        vertex(100, -150);
-        bezierVertex(150, -250, 220, -240, rightTip.x, rightTip.y);
-        endShape();
-
-        beginShape();
-        vertex(0, -165);
-        quadraticVertex(0, -220, middleTip.x, middleTip.y);
-        endShape();
-        
-        strokeCap(SQUARE);
-
-        // --- MODIFICA 2: Triangolo decorativo (già presente) ---
-        fill(0);
-        noStroke();
-        triangle(
-            middleTip.x - 18, middleTip.y - 15,
-            middleTip.x + 18, middleTip.y - 15,
-            middleTip.x, middleTip.y + 15
-        );
-
-        // Campanelli (disegnati per ultimi)
-        stroke(0);
-        strokeWeight(3);
-        fill(255);
-        ellipse(middleTip.x, middleTip.y, 40, 40);
-        ellipse(leftTip.x, leftTip.y, 40, 40);
-        ellipse(rightTip.x, rightTip.y, 40, 40);
-
-        pop();
-    }
-}
 })();
