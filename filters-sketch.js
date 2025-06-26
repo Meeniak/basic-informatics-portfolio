@@ -1,37 +1,17 @@
 (function() {
     let webcam;
-    let mainSlider, paramSlider;
+    let slider;
     let filterLabel;
     let currentFilter = 1;
 
-    // Buffer grafico per ottimizzazione e centratura
-    let webcamBuffer;
-    let asciiGraphics;
+    const asciiChars = '    .:-i|=+*#%@';
 
-    const asciiChars = " .:-=+*#%@";
-
+    // Aggiornato il nome del filtro 3
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
-        3: 'Threshold'
+        3: 'Kaleidoscope'
     };
-
-    function updateSliders() {
-        switch(currentFilter) {
-            case 1: // Mosaic
-                mainSlider.elt.min = 10; mainSlider.elt.max = 100; mainSlider.value(40); mainSlider.elt.step = 2;
-                paramSlider.elt.min = 0; paramSlider.elt.max = 360; paramSlider.value(0); paramSlider.elt.step = 1;
-                break;
-            case 2: // ASCII Art
-                mainSlider.elt.min = 8; mainSlider.elt.max = 24; mainSlider.value(12); mainSlider.elt.step = 1;
-                paramSlider.elt.min = 0; paramSlider.elt.max = 5; paramSlider.value(0); paramSlider.elt.step = 0.1;
-                break;
-            case 3: // Threshold
-                mainSlider.elt.min = 0; mainSlider.elt.max = 1; mainSlider.value(0.5); mainSlider.elt.step = 0.01;
-                paramSlider.elt.min = 0; paramSlider.elt.max = 1; paramSlider.value(0); paramSlider.elt.step = 1;
-                break;
-        }
-    }
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
@@ -41,104 +21,143 @@
         webcam = createCapture(VIDEO);
         webcam.size(width, height);
         webcam.hide();
-        
-        webcamBuffer = createGraphics(width, height);
-        asciiGraphics = createGraphics(80, 60);
 
         filterLabel = select('#current-filter-label');
-        mainSlider = createSlider(0,0,0,0);
-        mainSlider.parent('slider-main-container');
-        mainSlider.style('width', '100%');
-
-        paramSlider = createSlider(0,0,0,0);
-        paramSlider.parent('slider-param-container');
-        paramSlider.style('width', '100%');
+        slider = createSlider(10, 80, 40, 2); // Impostazione iniziale per il filtro 1
+        slider.parent('slider-container');
+        slider.style('width', '100%');
         
-        updateSliders();
-
         angleMode(DEGREES);
         textAlign(CENTER, CENTER);
         textFont('monospace');
+        
+        filterLabel.html(`Current: ${filterNames[currentFilter]}`);
     }
 
     window.draw = function() {
-        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
-        webcamBuffer.push();
-        webcamBuffer.translate(width, 0);
-        webcamBuffer.scale(-1, 1);
-        webcamBuffer.image(webcam, 0, 0, width, height);
-        webcamBuffer.pop();
-
-        // 2. Applica il filtro scelto
-        let mainValue = mainSlider.value();
-        let paramValue = paramSlider.value();
+        background(0);
         
+        translate(width, 0);
+        scale(-1, 1);
+
         switch (currentFilter) {
             case 1:
-                drawMosaicFilter(mainValue, paramValue);
+                drawMosaicFilter(slider.value());
                 break;
             case 2:
-                drawAsciiFilter(mainValue, paramValue);
+                drawAsciiFilter(slider.value());
                 break;
             case 3:
-                drawThresholdFilter(mainValue);
+                // Chiama la nuova funzione filtro
+                drawKaleidoscopeFilter(slider.value());
                 break;
         }
     }
 
-    // FILTRO 1: Mosaico Rotante
-    function drawMosaicFilter(cellSize, angle) {
-        background(0);
+    // FILTRO 1: Rotating Mosaic (invariato)
+    function drawMosaicFilter(cellSize) {
+        webcam.loadPixels();
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
+                let angle = map(mouseX, 0, width, 0, 360);
                 push();
                 translate(x + cellSize / 2, y + cellSize / 2);
                 rotate(angle);
-                // Usa il buffer invece della webcam per performance
-                image(webcamBuffer, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
+                let imgPortion = webcam.get(x, y, cellSize, cellSize);
+                image(imgPortion, -cellSize / 2, -cellSize / 2);
                 pop();
             }
         }
     }
 
-    // FILTRO 2: ASCII Art (versione leggera e stabile)
-    function drawAsciiFilter(cellSize, distortion) {
-        background(0);
-        
-        // Usa un buffer a bassa risoluzione per ottimizzare
-        asciiGraphics.image(webcamBuffer, 0, 0, asciiGraphics.width, asciiGraphics.height);
-        
-        let w = width / asciiGraphics.width;
-        let h = height / asciiGraphics.height;
-        
-        fill(255); noStroke(); textSize(w * 1.5);
-        
-        for (let j = 0; j < asciiGraphics.height; j++) {
-            for (let i = 0; i < asciiGraphics.width; i++) {
-                const c = asciiGraphics.get(i, j);
-                const brightness = (red(c) + green(c) + blue(c)) / 3;
-                const charIndex = floor(map(brightness, 0, 255, 0, asciiChars.length - 1));
-                text(asciiChars.charAt(charIndex), i * w + w / 2 + random(-distortion, distortion), j * h + h / 2 + random(-distortion, distortion));
+    // FILTRO 2: ASCII Art (invariato)
+    function drawAsciiFilter(cellSize) {
+        webcam.loadPixels();
+        fill(255);
+        noStroke();
+        textSize(cellSize * 1.2);
+
+        for (let y = 0; y < height; y += cellSize) {
+            for (let x = 0; x < width; x += cellSize) {
+                let totalBrightness = 0;
+                for (let i = 0; i < cellSize; i++) {
+                    for (let j = 0; j < cellSize; j++) {
+                        let index = ((x + i) + (y + j) * width) * 4;
+                        let r = webcam.pixels[index];
+                        let g = webcam.pixels[index + 1];
+                        let b = webcam.pixels[index + 2];
+                        totalBrightness += (r + g + b) / 3;
+                    }
+                }
+                let avgBrightness = totalBrightness / (cellSize * cellSize);
+                let charIndex = floor(map(avgBrightness, 0, 255, 0, asciiChars.length - 1));
+                let char = asciiChars.charAt(charIndex);
+                text(char, x + cellSize / 2, y + cellSize / 2);
             }
         }
     }
 
-    // FILTRO 3: Threshold
-    function drawThresholdFilter(thresholdValue) {
-        // Disegna prima l'immagine della webcam e poi applica il filtro
-        image(webcamBuffer, 0, 0, width, height); 
-        filter(THRESHOLD, thresholdValue);
-    }
+    // NUOVO FILTRO 3: Kaleidoscope
+    function drawKaleidoscopeFilter(segments) {
+        translate(width / 2, height / 2);
+        
+        let angle = 360 / segments;
+        let piece = webcam.get(0, 0, 150, 150); // Prende un pezzo di immagine
 
+        for (let i = 0; i < segments; i++) {
+            push();
+            rotate(i * angle);
+            
+            // Ogni segmento alternato viene specchiato per creare simmetria
+            if (i % 2 === 0) {
+                scale(1, -1);
+            }
+
+            // Disegna il pezzo di immagine
+            image(piece, 0, 0, 200, 200);
+            pop();
+        }
+    }
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '3') {
             currentFilter = parseInt(key);
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
-            updateSliders();
+
+            // Aggiorna dinamicamente i parametri dello slider in base al filtro
+            switch (currentFilter) {
+                case 1: // Mosaico
+                    slider.attribute('min', 10);
+                    slider.attribute('max', 80);
+                    slider.attribute('step', 2);
+                    slider.value(40);
+                    break;
+                case 2: // ASCII
+                    slider.attribute('min', 8);
+                    slider.attribute('max', 40);
+                    slider.attribute('step', 1);
+                    slider.value(12);
+                    break;
+                case 3: // Caleidoscopio
+                    slider.attribute('min', 4);
+                    slider.attribute('max', 30);
+                    slider.attribute('step', 2);
+                    slider.value(8);
+                    break;
+            }
         }
+        
         if (key.toLowerCase() === 's') {
+            push();
+            resetMatrix();
+            background(0); // Pulisce lo sfondo per il salvataggio
+            switch (currentFilter) {
+                case 1: drawMosaicFilter(slider.value()); break;
+                case 2: drawAsciiFilter(slider.value()); break;
+                case 3: drawKaleidoscopeFilter(slider.value()); break;
+            }
             saveCanvas('my-filter', 'png');
+            pop();
         }
     }
 })();
