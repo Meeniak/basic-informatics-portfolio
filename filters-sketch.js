@@ -13,7 +13,7 @@
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
         3: 'RGB Shift',
-        4: 'Scanlines' // Nuovo Filtro
+        4: 'Pixelate' // Nuovo Filtro
     };
 
     window.setup = function() {
@@ -25,7 +25,6 @@
         webcam.size(width, height);
         webcam.hide();
         
-        // Crea un buffer grafico delle stesse dimensioni del canvas
         webcamBuffer = createGraphics(width, height);
 
         filterLabel = select('#current-filter-label');
@@ -43,19 +42,16 @@
     }
 
     window.draw = function() {
-        background(0);
-        
-        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA per frame
+        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
         webcamBuffer.push();
         webcamBuffer.translate(width, 0);
         webcamBuffer.scale(-1, 1);
         webcamBuffer.image(webcam, 0, 0, width, height);
         webcamBuffer.pop();
 
-        // 2. Disegna il buffer centrato sul canvas principale
-        image(webcamBuffer, 0, 0);
-
-        // 3. Applica il filtro selezionato sull'immagine già disegnata
+        // 2. Pulisce il canvas principale e applica il filtro
+        background(0);
+        
         let mainValue = mainSlider.value();
         let paramValue = paramSlider.value();
         
@@ -70,19 +66,19 @@
                 drawRgbShiftFilter(paramValue);
                 break;
             case 4:
-                drawScanlinesFilter(mainValue);
+                drawPixelateFilter(mainValue);
                 break;
         }
     }
 
     // FILTRO 1: Mosaico Rotante
     function drawMosaicFilter(cellSize, angle) {
+        // Applica il filtro direttamente sul buffer
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
                 push();
                 translate(x + cellSize / 2, y + cellSize / 2);
                 rotate(angle);
-                // Usa il buffer invece della webcam per performance
                 image(webcamBuffer, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
                 pop();
             }
@@ -91,7 +87,6 @@
 
     // FILTRO 2: ASCII Art (versione leggera)
     function drawAsciiFilter(cellSize) {
-        background(0); // Pulisce l'immagine della webcam per mostrare solo i caratteri
         webcamBuffer.loadPixels();
         fill(255);
         noStroke();
@@ -112,27 +107,41 @@
         }
     }
 
-    // FILTRO 3: RGB Shift
+    // FILTRO 3: RGB Shift (corretto)
     function drawRgbShiftFilter(offsetAmount) {
         let offset = map(offsetAmount, 0, 360, 0, 30);
         
-        blendMode(ADD);
-        tint(255, 0, 0);
+        // Usa una modalità di fusione più morbida per evitare il bianco totale
+        blendMode(LIGHTEST);
+        
+        tint(255, 0, 0, 200); // Rosso con trasparenza
         image(webcamBuffer, offset, 0);
-        tint(0, 255, 0);
+        
+        tint(0, 255, 0, 200); // Verde con trasparenza
         image(webcamBuffer, 0, 0);
-        tint(0, 0, 255);
+        
+        tint(0, 0, 255, 200); // Blu con trasparenza
         image(webcamBuffer, -offset, 0);
-        blendMode(BLEND);
+        
+        blendMode(BLEND); // Ripristina la modalità di fusione normale
         noTint();
     }
 
-    // FILTRO 4: Scanlines
-    function drawScanlinesFilter(lineSize) {
-        stroke(0, 150); // Linee nere semitrasparenti
-        strokeWeight(lineSize / 10);
-        for(let y = 0; y < height; y += 4) {
-            line(0, y, width, y);
+    // FILTRO 4: Pixelate (Nuovo)
+    function drawPixelateFilter(pixelSize) {
+        webcamBuffer.loadPixels();
+        noStroke();
+        for (let x = 0; x < width; x += pixelSize) {
+            for (let y = 0; y < height; y += pixelSize) {
+                // Prende il colore del pixel in alto a sinistra della cella
+                let pixelIndex = (x + y * width) * 4;
+                let r = webcamBuffer.pixels[pixelIndex];
+                let g = webcamBuffer.pixels[pixelIndex + 1];
+                let b = webcamBuffer.pixels[pixelIndex + 2];
+                
+                fill(r, g, b);
+                rect(x, y, pixelSize, pixelSize);
+            }
         }
     }
 
@@ -142,10 +151,12 @@
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
         }
         if (key.toLowerCase() === 's') {
+            // Salva l'output corrente del canvas principale
             saveCanvas('my-filter', 'png');
         }
     }
 })();
+
 
 
 
