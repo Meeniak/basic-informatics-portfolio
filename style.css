@@ -127,17 +127,25 @@ input[type="range"]::-webkit-slider-thumb {
 .letter-page #controls-panel {
     width: 600px;
     max-width: 90%;
+    flex-grow: 1;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px 25px;
+    flex-direction: column;
+    gap: 15px;
     padding: 20px;
     background-color: #ffffff;
     border-radius: 8px;
     color: #333;
 }
 
-/* Stile per ogni gruppo di controllo */
+/* Griglia per i controlli principali */
+.letter-page #controls .control-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+/* Stile per ogni singolo gruppo di controllo */
+.letter-page .control-item, 
 .letter-page .control-group {
     display: flex;
     flex-direction: column;
@@ -149,7 +157,7 @@ input[type="range"]::-webkit-slider-thumb {
     box-sizing: border-box;
 }
 
-.letter-page .control-group label {
+.letter-page #controls-panel label {
     font-size: 12px;
     color: #555;
     text-align: left;
@@ -158,18 +166,20 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Stile per i controlli della traccia */
 .letter-page #group-stroke-options {
-    width: 100%;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
 }
 .letter-page .stroke-controls-wrapper {
     display: flex;
     align-items: center;
     gap: 15px;
+    flex-wrap: wrap;
 }
 .letter-page #strokeToggle-container {
     padding-top: 15px; /* Allinea la checkbox */
 }
 
-/* Stile per gli slider e i color picker generati da p5.js */
+/* Stile per gli elementi p5.js */
 .letter-page input[type="range"] {
     background: #e0e0e0;
 }
@@ -184,4 +194,12 @@ input[type="range"]::-webkit-slider-thumb {
 .letter-page input[type="color"] {
     width: 100%;
     height: 30px;
+}
+
+/* Aggiungi questa regola per assicurare che il canvas di questa pagina sia quadrato */
+.letter-page #canvas-wrapper {
+    flex: 1 1 600px;
+    max-width: 700px;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #444;
 }
