@@ -4,19 +4,17 @@
     let filterLabel;
     let currentFilter = 1;
 
-    // Buffer grafico per centrare la webcam e per le ottimizzazioni
     let webcamBuffer;
 
-    const asciiChars = " .'`^,:;Il!i><~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    const asciiChars = " .:-=+*#%@";
 
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
         3: 'RGB Shift',
-        4: 'Posterize & Edge' // Nuovo Filtro
+        4: 'Threshold' // Nuovo Filtro
     };
 
-    // Funzione per aggiornare i parametri degli slider in base al filtro
     function updateSliders() {
         switch(currentFilter) {
             case 1: // Mosaic
@@ -29,11 +27,11 @@
                 break;
             case 3: // RGB Shift
                 mainSlider.min = 0; mainSlider.max = 50; mainSlider.value(10); mainSlider.step = 1;
-                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0); paramSlider.step = 1; // Inutilizzato
+                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0); paramSlider.step = 1;
                 break;
-            case 4: // Posterize & Edge
-                mainSlider.min = 2; mainSlider.max = 10; mainSlider.value(4); mainSlider.step = 1;
-                paramSlider.min = 10; paramSlider.max = 100; paramSlider.value(30); paramSlider.step = 1;
+            case 4: // Threshold
+                mainSlider.min = 0; mainSlider.max = 1; mainSlider.value(0.5); mainSlider.step = 0.01;
+                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0); paramSlider.step = 1; // Inutilizzato
                 break;
         }
     }
@@ -50,15 +48,15 @@
         webcamBuffer = createGraphics(width, height);
 
         filterLabel = select('#current-filter-label');
-        mainSlider = createSlider(0,0,0,0); // Inizializzazione temporanea
+        mainSlider = createSlider(0,0,0,0);
         mainSlider.parent('slider-main-container');
         mainSlider.style('width', '100%');
 
-        paramSlider = createSlider(0,0,0,0); // Inizializzazione temporanea
+        paramSlider = createSlider(0,0,0,0);
         paramSlider.parent('slider-param-container');
         paramSlider.style('width', '100%');
         
-        updateSliders(); // Imposta i valori corretti per il filtro iniziale
+        updateSliders();
 
         angleMode(DEGREES);
         textAlign(CENTER, CENTER);
@@ -66,17 +64,14 @@
     }
 
     window.draw = function() {
-        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
+        // Disegna la webcam specchiata nel buffer una sola volta
         webcamBuffer.push();
         webcamBuffer.translate(width, 0);
         webcamBuffer.scale(-1, 1);
         webcamBuffer.image(webcam, 0, 0, width, height);
         webcamBuffer.pop();
 
-        // 2. Disegna il buffer sul canvas principale per averlo come sfondo
-        image(webcamBuffer, 0, 0, width, height);
-        
-        // 3. Applica il filtro selezionato
+        // Applica il filtro
         let mainValue = mainSlider.value();
         let paramValue = paramSlider.value();
         
@@ -91,13 +86,13 @@
                 drawRgbShiftFilter(mainValue);
                 break;
             case 4:
-                drawPosterizeAndEdgeFilter(mainValue, paramValue);
+                drawThresholdFilter(mainValue);
                 break;
         }
     }
 
     function drawMosaicFilter(cellSize, angle) {
-        // Applica il filtro direttamente sul buffer
+        background(0);
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
                 push();
@@ -125,60 +120,46 @@
                 let brightness = (r + g + b) / 3;
                 
                 let charIndex = floor(map(brightness, 0, 255, 0, asciiChars.length - 1));
-                text(asciiChars.charAt(charIndex), x + cellSize / 2 + random(-distortion, distortion), y + cellSize / 2 + random(-distortion, distortion));
+                text(asciiChars.charAt(charIndex), x + cellSize/2 + random(-distortion, distortion), y + cellSize/2 + random(-distortion, distortion));
             }
         }
     }
 
     function drawRgbShiftFilter(offset) {
-        blendMode(LIGHTEST);
-        tint(255, 0, 0, 200);
+        background(0);
+        blendMode(ADD); // ADD è più d'impatto ma più chiaro, SCREEN è un'alternativa
+        
+        tint(255, 0, 0);
         image(webcamBuffer, offset, 0);
-        tint(0, 255, 0, 200);
+        
+        tint(0, 255, 0);
         image(webcamBuffer, 0, 0);
-        tint(0, 0, 255, 200);
+        
+        tint(0, 0, 255);
         image(webcamBuffer, -offset, 0);
+        
         blendMode(BLEND);
         noTint();
     }
 
-    function drawPosterizeAndEdgeFilter(levels, threshold) {
-        let posterized = webcamBuffer.get();
-        posterized.filter(POSTERIZE, levels);
-        
-        image(posterized, 0, 0); // Mostra l'immagine posterizzata
-
-        // Rilevamento dei bordi
-        loadPixels(); // Carica i pixel del canvas principale
-        posterized.loadPixels(); // Carica i pixel dell'immagine posterizzata
-        
-        for (let x = 0; x < width - 1; x++) {
-            for (let y = 0; y < height - 1; y++) {
-                let index = (x + y * width) * 4;
-                let c1 = color(posterized.pixels[index], posterized.pixels[index+1], posterized.pixels[index+2]);
-                
-                let rightIndex = ((x+1) + y * width) * 4;
-                let c2 = color(posterized.pixels[rightIndex], posterized.pixels[rightIndex+1], posterized.pixels[rightIndex+2]);
-                
-                if (dist(red(c1), green(c1), blue(c1), red(c2), green(c2), blue(c2)) > threshold) {
-                    pixels[index] = 0; pixels[index+1] = 0; pixels[index+2] = 0; pixels[index+3] = 255;
-                }
-            }
-        }
-        updatePixels();
+    function drawThresholdFilter(thresholdValue) {
+        image(webcamBuffer, 0, 0); // Mostra l'immagine di base
+        filter(THRESHOLD, thresholdValue); // Applica il filtro soglia (molto veloce)
     }
+
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '4') {
             currentFilter = parseInt(key);
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
-            updateSliders(); // Aggiorna gli slider quando cambia il filtro
+            updateSliders();
         }
         if (key.toLowerCase() === 's') {
             saveCanvas('my-filter', 'png');
         }
     }
 })();
+
 
 
 
