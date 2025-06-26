@@ -6,12 +6,12 @@
 
     // Stringa di caratteri più semplice per l'effetto ASCII
     const asciiChars = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
-    let asciiGraphics; // Buffer grafico per l'ottimizzazione dell'ASCII art
+    let asciiGraphics;
 
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
-        3: 'Glitch Blocks' // Nuovo Filtro
+        3: 'Glitch Blocks'
     };
 
     window.setup = function() {
@@ -64,7 +64,7 @@
         pop();
     }
 
-    // FILTRO 1: Mosaico (leggero)
+    // FILTRO 1: Invariato
     function drawMosaicFilter(cellSize, angle) {
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
@@ -77,10 +77,12 @@
         }
     }
 
-    // FILTRO 2: ASCII Art (ottimizzato)
+    // FILTRO 2: ASCII Art ottimizzato e meno frenetico
     function drawAsciiFilter(detail) {
-        // Disegna una versione più piccola della webcam nel buffer grafico
-        asciiGraphics.image(webcam, 0, 0, asciiGraphics.width, asciiGraphics.height);
+        // Aggiorna il buffer solo ogni 3 frame per alleggerire
+        if (frameCount % 3 === 0) {
+            asciiGraphics.image(webcam, 0, 0, asciiGraphics.width, asciiGraphics.height);
+        }
         
         let cellSize = width / asciiGraphics.width;
         fill(255); noStroke(); textSize(cellSize * 1.5);
@@ -97,33 +99,34 @@
 
     // FILTRO 3: Nuovo effetto Glitch Blocks (leggero)
     function drawGlitchBlocksFilter(cellSize, param) {
-        let maxOffset = map(param, 0, 360, 0, width / 2);
+        let maxOffset = map(param, 0, 360, 0, width / 4); // Ridotto l'offset per performance
         
-        for (let x = 0; x < width; x += cellSize) {
-            for (let y = 0; y < height; y += cellSize) {
-                // Scegli una porzione casuale di video da campionare
-                let randomX = x + floor(random(-maxOffset, maxOffset));
-                let randomY = y + floor(random(-maxOffset, maxOffset));
-                
-                // Assicurati che le coordinate siano valide
-                randomX = constrain(randomX, 0, width - cellSize);
-                randomY = constrain(randomY, 0, height - cellSize);
+        // Aggiorna solo una parte dei blocchi ad ogni frame
+        let updatesPerFrame = 50;
+        for(let i = 0; i < updatesPerFrame; i++) {
+            let x = floor(random(width / cellSize)) * cellSize;
+            let y = floor(random(height / cellSize)) * cellSize;
 
-                let imgPortion = webcam.get(randomX, randomY, cellSize, cellSize);
-                image(imgPortion, x, y);
-            }
+            let randomX = x + floor(random(-maxOffset, maxOffset));
+            let randomY = y + floor(random(-maxOffset, maxOffset));
+            
+            randomX = constrain(randomX, 0, width - cellSize);
+            randomY = constrain(randomY, 0, height - cellSize);
+
+            let imgPortion = webcam.get(randomX, randomY, cellSize, cellSize);
+            image(imgPortion, x, y);
         }
     }
-
 
     window.keyPressed = function() {
         if (key >= '1' && key <= '3') {
             currentFilter = parseInt(key);
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
+            background(0); // Pulisce il canvas al cambio di filtro
         }
-        
         if (key.toLowerCase() === 's') {
-            // ... (logica di salvataggio invariata)
+            saveCanvas('my-filter', 'png');
         }
     }
 })();
+
