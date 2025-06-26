@@ -4,8 +4,7 @@
     let filterLabel;
     let currentFilter = 1;
 
-    // Buffer grafico per centrare l'immagine
-    let webcamBuffer; 
+    let webcamBuffer;
 
     const asciiChars = '       .:-i|=+*#%@';
 
@@ -15,7 +14,6 @@
         3: 'Thermal Vision'
     };
 
-    // Funzione per aggiornare gli slider quando si cambia filtro
     function updateSliders() {
         switch(currentFilter) {
             case 1: // Mosaic
@@ -36,13 +34,16 @@
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        const canvas = createCanvas(640, 480);
+        // FIX: Crea il canvas con le dimensioni del contenitore
+        const canvas = createCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
         canvas.parent(canvasWrapper);
         
         webcam = createCapture(VIDEO);
+        // Adatta la webcam alle dimensioni del canvas
         webcam.size(width, height);
         webcam.hide();
 
+        // Anche il buffer deve avere le stesse dimensioni
         webcamBuffer = createGraphics(width, height);
 
         filterLabel = select('#current-filter-label');
@@ -50,7 +51,7 @@
         mainSlider.parent('slider-main-container');
         mainSlider.style('width', '100%');
 
-        paramLabel = select('#param-label'); // Seleziona l'etichetta tramite ID
+        paramLabel = select('#param-label');
         paramSlider = createSlider(0,0,0,0);
         paramSlider.parent('slider-param-container');
         paramSlider.style('width', '100%');
@@ -63,14 +64,13 @@
     }
 
     window.draw = function() {
-        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
+        // Disegna la webcam specchiata nel buffer una sola volta per frame
         webcamBuffer.push();
         webcamBuffer.translate(width, 0);
         webcamBuffer.scale(-1, 1);
         webcamBuffer.image(webcam, 0, 0, width, height);
         webcamBuffer.pop();
 
-        // 2. Applica il filtro scelto
         let mainValue = mainSlider.value();
         let paramValue = paramSlider.value();
         
@@ -88,9 +88,9 @@
     }
 
     function drawMosaicFilter(cellSize, angle) {
-        // Disegna prima il video di base per vederlo
+        // Disegna prima il video di base
         image(webcamBuffer, 0, 0, width, height);
-        // Poi applica i tasselli ruotati sopra
+        // Poi applica i tasselli sopra
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
                 push();
@@ -152,6 +152,14 @@
         }
     }
 
+    // Funzione che adatta il canvas se la finestra del browser viene ridimensionata
+    window.windowResized = function() {
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        resizeCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
+        // Adatta anche il buffer
+        webcamBuffer.resize(width, height);
+    }
+
     window.keyPressed = function() {
         if (key >= '1' && key <= '3') {
             currentFilter = parseInt(key);
@@ -163,3 +171,4 @@
         }
     }
 })();
+
