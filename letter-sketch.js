@@ -11,9 +11,8 @@ function setup() {
     canvas.parent(canvasWrapper);
     
     angleMode(DEGREES);
-    pixelDensity(1); // Ottimizzazione per performance
-    imageMode(CENTER);
-
+    pixelDensity(1);
+    
     // Controlli Generali
     sW = createSlider(10, 150, 80, 1).parent('sW-container');
     sH = createSlider(10, 150, 40, 1).parent('sH-container');
@@ -26,7 +25,7 @@ function setup() {
     fillCol2 = createColorPicker(color(40, 150, 255)).parent('fillCol2-container');
     strokeCol = createColorPicker(color(0)).parent('strokeCol-container');
     sStrokeWeight = createSlider(0.5, 15, 2, 0.1).parent('strokeWeight-container');
-    cStrokeToggle = createCheckbox('On', true).parent('strokeToggle-container');
+    cStrokeToggle = createCheckbox('Show Stroke', true).parent('strokeToggle-container');
 
     // Controlli Specifici per Stile
     s2Complex = createSlider(1, 25, 5, 1).parent('s2-complex-container');
@@ -184,3 +183,5 @@ function updateControlsVisibility() {
             break;
     }
 }
+})();
+
