@@ -121,3 +121,67 @@ input[type="range"]::-webkit-slider-thumb {
     padding: 2px 8px; border-radius: 4px; font-family: monospace;
     margin-right: 10px;
 }
+/* --- STILI SPECIFICI PER LA PAGINA LETTER --- */
+
+/* Applica uno stile unico al pannello di controllo della pagina Letter */
+.letter-page #controls-panel {
+    width: 600px;
+    max-width: 90%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px 25px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    color: #333;
+}
+
+/* Stile per ogni gruppo di controllo */
+.letter-page .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+.letter-page .control-group label {
+    font-size: 12px;
+    color: #555;
+    text-align: left;
+    font-weight: bold;
+}
+
+/* Stile per i controlli della traccia */
+.letter-page #group-stroke-options {
+    width: 100%;
+}
+.letter-page .stroke-controls-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.letter-page #strokeToggle-container {
+    padding-top: 15px; /* Allinea la checkbox */
+}
+
+/* Stile per gli slider e i color picker generati da p5.js */
+.letter-page input[type="range"] {
+    background: #e0e0e0;
+}
+.letter-page input[type="range"]::-webkit-slider-thumb {
+    background: #4CAF50;
+    border: none;
+}
+.letter-page input[type="range"]::-moz-range-thumb {
+    background: #4CAF50;
+    border: none;
+}
+.letter-page input[type="color"] {
+    width: 100%;
+    height: 30px;
+}
