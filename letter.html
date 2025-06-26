@@ -22,36 +22,34 @@
         <div id="canvas-wrapper"></div>
 
         <!-- Pannello di controllo che conterrà i tuoi elementi UI -->
-        <div id="controls-panel">
+        <div id="controls-panel" class="letter-controls">
             
-            <!-- Qui ho inserito tutti i tuoi div di controllo -->
-            <div id="controls">
-                <div id="group-w" class="control-group"><label>Width / Radius</label><div id="sW-container"></div></div>
-                <div id="group-h" class="control-group"><label>Height / Amplitude</label><div id="sH-container"></div></div>
-                <div id="group-rot" class="control-group"><label>Global Rotation</label><div id="r-container"></div></div>
-                <div id="group-anim" class="control-group"><label>Animation Speed</label><div id="sAnim-container"></div></div>
-                
-                <div id="group-s2-complex" class="control-group"><label>Needle Count</label><div id="s2-complex-container"></div></div>
-                <div id="group-s3-complex" class="control-group"><label>Crystal Count</label><div id="s3-complex-container"></div></div>
-                <div id="group-s4-complex" class="control-group"><label>Wave Detail</label><div id="s4-complex-container"></div></div>
-                <div id="group-s5-complex" class="control-group"><label>Trail Length</label><div id="s5-complex-container"></div></div>
+            <div id="group-w" class="control-group"><label>Width/Radius</label><div id="sW-container"></div></div>
+            <div id="group-h" class="control-group"><label>Height/Amplitude</label><div id="sH-container"></div></div>
+            <div id="group-rot" class="control-group"><label>Global Rotation</label><div id="r-container"></div></div>
+            <div id="group-anim" class="control-group"><label>Animation Speed</label><div id="sAnim-container"></div></div>
+            
+            <div id="group-s2-complex" class="control-group"><label>Needle Count</label><div id="s2-complex-container"></div></div>
+            <div id="group-s3-complex" class="control-group"><label>Crystal Count</label><div id="s3-complex-container"></div></div>
+            <div id="group-s4-complex" class="control-group"><label>Wave Detail</label><div id="s4-complex-container"></div></div>
+            <div id="group-s5-complex" class="control-group"><label>Trail Length</label><div id="s5-complex-container"></div></div>
 
-                <div id="group-opacity" class="control-group"><label>Opacity</label><div id="sOpacity-container"></div></div>
-                <div id="group-c1" class="control-group"><label>Primary Color (Fill)</label><div id="fillCol-container"></div></div>
-                <div id="group-c2" class="control-group"><label>Secondary Color (Fill)</label><div id="fillCol2-container"></div></div>
-                
-                <div id="group-stroke-options">
-                    <div class="control-group"><label>Stroke Color</label><div id="strokeCol-container"></div></div>
-                    <div class="control-group"><label>Stroke Weight</label><div id="strokeWeight-container"></div></div>
-                    <div class="control-group-checkbox" id="strokeToggle-container"></div>
+            <div id="group-opacity" class="control-group"><label>Opacity</label><div id="sOpacity-container"></div></div>
+            <div id="group-c1" class="control-group"><label>Primary Color</label><div id="fillCol-container"></div></div>
+            <div id="group-c2" class="control-group"><label>Secondary Color</label><div id="fillCol2-container"></div></div>
+            
+            <div id="group-stroke-options" class="control-group">
+                <label>Stroke</label>
+                <div class="stroke-controls-wrapper">
+                    <div id="strokeCol-container"></div>
+                    <div id="strokeWeight-container"></div>
+                    <div id="strokeToggle-container"></div>
                 </div>
-                
-                <!-- Ho rimosso il bottone SAVE per ora, useremo il tasto 'S' come nelle altre sezioni per coerenza -->
             </div>
-
-            <!-- Legenda standard -->
+            
             <div id="legend" class="control-group">
                 <h3>Shortcuts</h3>
+                <p><span>[1-5]</span> &rarr; Change Style</p>
                 <p><span>[S]</span> &rarr; Save Image</p>
             </div>
 
