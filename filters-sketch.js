@@ -1,59 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filters - Basic Informatics</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
-</head>
-<body class="filters-page">
+(function() {
+    let webcam;
+    let mainSlider, paramSlider;
+    let filterLabel;
+    let currentFilter = 1;
 
-    <header class="sub-page-header">
-        <h1>Filters</h1>
-        <a href="index.html">Back to home</a>
-    </header>
+    // Buffer grafico per ottimizzazione e centratura
+    let webcamBuffer;
+    let asciiGraphics;
 
-    <div id="sketch-container">
+    const asciiChars = " .:-=+*#%@";
+
+    const filterNames = {
+        1: 'Rotating Mosaic',
+        2: 'ASCII Art',
+        3: 'Threshold'
+    };
+
+    function updateSliders() {
+        switch(currentFilter) {
+            case 1: // Mosaic
+                mainSlider.elt.min = 10; mainSlider.elt.max = 100; mainSlider.value(40); mainSlider.elt.step = 2;
+                paramSlider.elt.min = 0; paramSlider.elt.max = 360; paramSlider.value(0); paramSlider.elt.step = 1;
+                break;
+            case 2: // ASCII Art
+                mainSlider.elt.min = 8; mainSlider.elt.max = 24; mainSlider.value(12); mainSlider.elt.step = 1;
+                paramSlider.elt.min = 0; paramSlider.elt.max = 5; paramSlider.value(0); paramSlider.elt.step = 0.1;
+                break;
+            case 3: // Threshold
+                mainSlider.elt.min = 0; mainSlider.elt.max = 1; mainSlider.value(0.5); mainSlider.elt.step = 0.01;
+                paramSlider.elt.min = 0; paramSlider.elt.max = 1; paramSlider.value(0); paramSlider.elt.step = 1;
+                break;
+        }
+    }
+
+    window.setup = function() {
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const canvas = createCanvas(640, 480);
+        canvas.parent(canvasWrapper);
         
-        <div id="canvas-wrapper">
-            <!-- p5.js Canvas will be inserted here -->
-        </div>
+        webcam = createCapture(VIDEO);
+        webcam.size(width, height);
+        webcam.hide();
+        
+        webcamBuffer = createGraphics(width, height);
+        asciiGraphics = createGraphics(80, 60);
 
-        <div id="controls-panel">
-            
-            <div class="control-group">
-                <h3 id="current-filter-label">Current: Rotating Mosaic</h3>
-            </div>
-            
-            <div class="control-group">
-                <h3>Parameters</h3>
-                <div id="sliders">
-                    <div class="slider-wrapper">
-                        <label>Size / Detail</label>
-                        <div id="slider-main-container"></div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Parameter</label>
-                        <div id="slider-param-container"></div>
-                    </div>
-                </div>
-            </div>
+        filterLabel = select('#current-filter-label');
+        mainSlider = createSlider(0,0,0,0);
+        mainSlider.parent('slider-main-container');
+        mainSlider.style('width', '100%');
 
-            <div id="legend" class="control-group">
-                <h3>Shortcuts</h3>
-                <p><span>[1-3]</span> &rarr; Select Filter</p>
-                <p><span>[S]</span> &rarr; Save Image</p>
-                <p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">Per un corretto funzionamento, è necessario autorizzare l'accesso alla webcam.</p>
-            </div>
+        paramSlider = createSlider(0,0,0,0);
+        paramSlider.parent('slider-param-container');
+        paramSlider.style('width', '100%');
+        
+        updateSliders();
 
-        </div>
-    </div>
+        angleMode(DEGREES);
+        textAlign(CENTER, CENTER);
+        textFont('monospace');
+    }
 
-    <script src="script.js"></script>
-    <script src="filters-sketch.js"></script>
-</body>
-</html>
+    window.draw = function() {
+        // 1. Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
+        webcamBuffer.push();
+        webcamBuffer.translate(width, 0);
+        webcamBuffer.scale(-1, 1);
+        webcamBuffer.image(webcam, 0, 0, width, height);
+        webcamBuffer.pop();
+
+        // 2. Applica il filtro scelto
+        let mainValue = mainSlider.value();
+        let paramValue = paramSlider.value();
+        
+        switch (currentFilter) {
+            case 1:
+                drawMosaicFilter(mainValue, paramValue);
+                break;
+            case 2:
+                drawAsciiFilter(mainValue, paramValue);
+                break;
+            case 3:
+                drawThresholdFilter(mainValue);
+                break;
+        }
+    }
+
+    // FILTRO 1: Mosaico Rotante
+    function drawMosaicFilter(cellSize, angle) {
+        background(0);
+        for (let x = 0; x < width; x += cellSize) {
+            for (let y = 0; y < height; y += cellSize) {
+                push();
+                translate(x + cellSize / 2, y + cellSize / 2);
+                rotate(angle);
+                // Usa il buffer invece della webcam per performance
+                image(webcamBuffer, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
+                pop();
+            }
+        }
+    }
+
+    // FILTRO 2: ASCII Art (versione leggera e stabile)
+    function drawAsciiFilter(cellSize, distortion) {
+        background(0);
+        
+        // Usa un buffer a bassa risoluzione per ottimizzare
+        asciiGraphics.image(webcamBuffer, 0, 0, asciiGraphics.width, asciiGraphics.height);
+        
+        let w = width / asciiGraphics.width;
+        let h = height / asciiGraphics.height;
+        
+        fill(255); noStroke(); textSize(w * 1.5);
+        
+        for (let j = 0; j < asciiGraphics.height; j++) {
+            for (let i = 0; i < asciiGraphics.width; i++) {
+                const c = asciiGraphics.get(i, j);
+                const brightness = (red(c) + green(c) + blue(c)) / 3;
+                const charIndex = floor(map(brightness, 0, 255, 0, asciiChars.length - 1));
+                text(asciiChars.charAt(charIndex), i * w + w / 2 + random(-distortion, distortion), j * h + h / 2 + random(-distortion, distortion));
+            }
+        }
+    }
+
+    // FILTRO 3: Threshold
+    function drawThresholdFilter(thresholdValue) {
+        // Disegna prima l'immagine della webcam e poi applica il filtro
+        image(webcamBuffer, 0, 0, width, height); 
+        filter(THRESHOLD, thresholdValue);
+    }
+
+
+    window.keyPressed = function() {
+        if (key >= '1' && key <= '3') {
+            currentFilter = parseInt(key);
+            filterLabel.html(`Current: ${filterNames[currentFilter]}`);
+            updateSliders();
+        }
+        if (key.toLowerCase() === 's') {
+            saveCanvas('my-filter', 'png');
+        }
+    }
+})();
 
 
 
