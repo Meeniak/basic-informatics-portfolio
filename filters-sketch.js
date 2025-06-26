@@ -7,7 +7,7 @@
     // Buffer grafico per ottimizzazione
     let webcamBuffer;
 
-    const asciiChars = " .:-=+*#%@";
+    const asciiChars = " .:-=+/*#%@";
 
     const filterNames = {
         1: 'Rotating Mosaic',
@@ -156,6 +156,7 @@
         }
     }
 })();
+
 
 
 
