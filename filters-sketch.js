@@ -4,40 +4,15 @@
     let filterLabel;
     let currentFilter = 1;
 
-    // Buffer grafico per ottimizzazione
-    let webcamBuffer;
-
-    const asciiChars = "`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
-    let asciiGrid = []; // Array per memorizzare i caratteri e ridurre il carico
+    // Stringa di caratteri più semplice per l'effetto ASCII
+    const asciiChars = " .:-=+*#%@";
+    let asciiGraphics; // Buffer grafico per l'ottimizzazione
 
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
-        3: 'Halftone', // Nuovo Filtro
-        4: 'Edge Detection'  // Nuovo Filtro
+        3: 'Glitch Blocks'
     };
-
-    // Funzione per aggiornare i parametri degli slider in base al filtro
-    function updateSliders() {
-        switch(currentFilter) {
-            case 1: // Mosaic
-                mainSlider.min = 10; mainSlider.max = 100; mainSlider.value(40); mainSlider.step = 2;
-                paramSlider.min = 0; paramSlider.max = 360; paramSlider.value(0); paramSlider.step = 1;
-                break;
-            case 2: // ASCII Art
-                mainSlider.min = 8; mainSlider.max = 32; mainSlider.value(12); mainSlider.step = 1;
-                paramSlider.min = 0; paramSlider.max = 10; paramSlider.value(0); paramSlider.step = 0.5;
-                break;
-            case 3: // Halftone
-                mainSlider.min = 5; mainSlider.max = 30; mainSlider.value(10); mainSlider.step = 1;
-                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0.5); paramSlider.step = 0.01;
-                break;
-            case 4: // Edge Detection
-                mainSlider.min = 0; mainSlider.max = 1; mainSlider.value(0); mainSlider.step = 0; // Inutilizzato
-                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0); paramSlider.step = 1; // Inutilizzato
-                break;
-        }
-    }
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
@@ -47,137 +22,99 @@
         webcam = createCapture(VIDEO);
         webcam.size(width, height);
         webcam.hide();
-        
-        webcamBuffer = createGraphics(width, height);
+
+        // Buffer per l'ottimizzazione dell'ASCII art
+        asciiGraphics = createGraphics(80, 60);
 
         filterLabel = select('#current-filter-label');
-        mainSlider = createSlider(0,0,0,0);
+        mainSlider = createSlider(10, 80, 40, 2);
         mainSlider.parent('slider-main-container');
         mainSlider.style('width', '100%');
 
-        paramSlider = createSlider(0,0,0,0);
+        paramSlider = createSlider(0, 360, 0, 1);
         paramSlider.parent('slider-param-container');
         paramSlider.style('width', '100%');
         
-        updateSliders();
-
         angleMode(DEGREES);
         textAlign(CENTER, CENTER);
         textFont('monospace');
     }
 
     window.draw = function() {
-        // Disegna la webcam specchiata nel buffer UNA SOLA VOLTA
-        webcamBuffer.push();
-        webcamBuffer.translate(width, 0);
-        webcamBuffer.scale(-1, 1);
-        webcamBuffer.image(webcam, 0, 0, width, height);
-        webcamBuffer.pop();
-
-        // Applica il filtro
+        background(0);
+        
         let mainValue = mainSlider.value();
         let paramValue = paramSlider.value();
         
+        push();
+        translate(width, 0);
+        scale(-1, 1);
+
         switch (currentFilter) {
             case 1:
                 drawMosaicFilter(mainValue, paramValue);
                 break;
             case 2:
-                drawAsciiFilter(mainValue, paramValue);
+                drawAsciiFilter(mainValue);
                 break;
             case 3:
-                drawHalftoneFilter(mainValue, paramValue);
-                break;
-            case 4:
-                drawEdgeDetectionFilter();
+                drawGlitchBlocksFilter(mainValue, paramValue);
                 break;
         }
+        pop();
     }
 
     function drawMosaicFilter(cellSize, angle) {
-        // Disegna il buffer come sfondo
-        image(webcamBuffer, 0, 0);
-        // Applica il filtro sopra
         for (let x = 0; x < width; x += cellSize) {
             for (let y = 0; y < height; y += cellSize) {
                 push();
                 translate(x + cellSize / 2, y + cellSize / 2);
                 rotate(angle);
-                image(webcamBuffer, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
+                image(webcam, -cellSize / 2, -cellSize / 2, cellSize, cellSize, x, y, cellSize, cellSize);
                 pop();
             }
         }
     }
 
-    function drawAsciiFilter(cellSize, distortion) {
-        background(0);
+    function drawAsciiFilter(detail) {
+        // Disegna una versione più piccola della webcam nel buffer grafico per ottimizzare
+        asciiGraphics.image(webcam, 0, 0, asciiGraphics.width, asciiGraphics.height);
         
-        // Aggiorna la griglia di caratteri solo ogni 3 frame per performance
-        if (frameCount % 3 === 0) {
-            asciiGrid = []; // Svuota la griglia
-            webcamBuffer.loadPixels();
-            for (let y = 0; y < height; y += cellSize) {
-                let row = [];
-                for (let x = 0; x < width; x += cellSize) {
-                    let pixelIndex = (x + y * width) * 4;
-                    let r = webcamBuffer.pixels[pixelIndex];
-                    let g = webcamBuffer.pixels[pixelIndex + 1];
-                    let b = webcamBuffer.pixels[pixelIndex + 2];
-                    let brightness = (r + g + b) / 3;
-                    let charIndex = floor(map(brightness, 0, 255, 0, asciiChars.length - 1));
-                    row.push(asciiChars.charAt(charIndex));
-                }
-                asciiGrid.push(row);
+        let cellSize = width / asciiGraphics.width;
+        fill(255); noStroke(); textSize(cellSize * 1.5);
+
+        for (let y = 0; y < asciiGraphics.height; y++) {
+            for (let x = 0; x < asciiGraphics.width; x++) {
+                let c = asciiGraphics.get(x, y);
+                let brightness = (red(c) + green(c) + blue(c)) / 3;
+                let charIndex = floor(map(brightness, 0, 255, asciiChars.length - 1, 0));
+                text(asciiChars.charAt(charIndex), x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
             }
         }
+    }
+
+    function drawGlitchBlocksFilter(cellSize, param) {
+        let maxOffset = map(param, 0, 360, 0, width / 4);
         
-        // Disegna la griglia memorizzata
-        fill(255);
-        noStroke();
-        textSize(cellSize * 1.4);
-        for(let y = 0; y < asciiGrid.length; y++) {
-            for (let x = 0; x < asciiGrid[y].length; x++) {
-                text(asciiGrid[y][x], x * cellSize + cellSize / 2 + random(-distortion, distortion), y * cellSize + cellSize / 2 + random(-distortion, distortion));
-            }
+        // Aggiorna solo una parte dei blocchi ad ogni frame per non laggare
+        let updatesPerFrame = 50;
+        for(let i = 0; i < updatesPerFrame; i++) {
+            let x = floor(random(width / cellSize)) * cellSize;
+            let y = floor(random(height / cellSize)) * cellSize;
+
+            let randomX = constrain(x + floor(random(-maxOffset, maxOffset)), 0, width - cellSize);
+            let randomY = constrain(y + floor(random(-maxOffset, maxOffset)), 0, height - cellSize);
+
+            let imgPortion = webcam.get(randomX, randomY, cellSize, cellSize);
+            image(imgPortion, x, y);
         }
     }
-
-    function drawHalftoneFilter(dotSize, threshold) {
-        background(255); // Sfondo bianco per l'effetto di stampa
-        webcamBuffer.loadPixels();
-        noStroke();
-        for (let x = 0; x < width; x += dotSize) {
-            for (let y = 0; y < height; y += dotSize) {
-                let pixelIndex = (x + y * width) * 4;
-                let r = webcamBuffer.pixels[pixelIndex];
-                let g = webcamBuffer.pixels[pixelIndex + 1];
-                let b = webcamBuffer.pixels[pixelIndex + 2];
-                let brightness = (r + g + b) / 3;
-
-                if (brightness < 255 * threshold) {
-                    fill(0);
-                    let size = map(brightness, 0, 255 * threshold, dotSize, 2);
-                    ellipse(x + dotSize / 2, y + dotSize / 2, size, size);
-                }
-            }
-        }
-    }
-
-    function drawEdgeDetectionFilter() {
-        image(webcamBuffer, 0, 0);
-        filter(GRAY);
-        filter(INVERT);
-        filter(DILATE);
-        filter(ERODE);
-        filter(THRESHOLD, 0.3);
-    }
-
 
     window.keyPressed = function() {
-        if (key >= '1' && key <= '4') {
+        if (key >= '1' && key <= '3') {
             currentFilter = parseInt(key);
             filterLabel.html(`Current: ${filterNames[currentFilter]}`);
-            updateSliders();
+            background(0); // Pulisce il canvas al cambio di filtro
         }
         if (key.toLowerCase() === 's') {
             saveCanvas('my-filter', 'png');
