@@ -4,19 +4,20 @@
     let filterLabel;
     let currentFilter = 1;
 
+    // Buffer grafico per ottimizzazione
     let webcamBuffer;
 
-    // Stringa di caratteri più semplice per l'effetto ASCII
     const asciiChars = "`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
     let asciiGrid = []; // Array per memorizzare i caratteri e ridurre il carico
 
     const filterNames = {
         1: 'Rotating Mosaic',
         2: 'ASCII Art',
-        3: 'Colorize', // Nuovo Filtro
-        4: 'Threshold'  // Nuovo Filtro
+        3: 'Halftone', // Nuovo Filtro
+        4: 'Edge Detection'  // Nuovo Filtro
     };
 
+    // Funzione per aggiornare i parametri degli slider in base al filtro
     function updateSliders() {
         switch(currentFilter) {
             case 1: // Mosaic
@@ -27,12 +28,12 @@
                 mainSlider.min = 8; mainSlider.max = 32; mainSlider.value(12); mainSlider.step = 1;
                 paramSlider.min = 0; paramSlider.max = 10; paramSlider.value(0); paramSlider.step = 0.5;
                 break;
-            case 3: // Colorize
-                mainSlider.min = 0; mainSlider.max = 1; mainSlider.value(0); mainSlider.step = 0; // Inutilizzato
-                paramSlider.min = 0; paramSlider.max = 360; paramSlider.value(180); paramSlider.step = 1;
+            case 3: // Halftone
+                mainSlider.min = 5; mainSlider.max = 30; mainSlider.value(10); mainSlider.step = 1;
+                paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0.5); paramSlider.step = 0.01;
                 break;
-            case 4: // Threshold
-                mainSlider.min = 0; mainSlider.max = 1; mainSlider.value(0.5); mainSlider.step = 0.01;
+            case 4: // Edge Detection
+                mainSlider.min = 0; mainSlider.max = 1; mainSlider.value(0); mainSlider.step = 0; // Inutilizzato
                 paramSlider.min = 0; paramSlider.max = 1; paramSlider.value(0); paramSlider.step = 1; // Inutilizzato
                 break;
         }
@@ -85,10 +86,10 @@
                 drawAsciiFilter(mainValue, paramValue);
                 break;
             case 3:
-                drawColorizeFilter(paramValue);
+                drawHalftoneFilter(mainValue, paramValue);
                 break;
             case 4:
-                drawThresholdFilter(mainValue);
+                drawEdgeDetectionFilter();
                 break;
         }
     }
@@ -141,19 +142,34 @@
         }
     }
 
-    function drawColorizeFilter(hueValue) {
-        image(webcamBuffer, 0, 0);
-        // Applica una tinta colorata che cambia con lo slider
-        push();
-        colorMode(HSB, 360, 100, 100, 1);
-        fill(hueValue, 80, 100, 0.4);
-        rect(0, 0, width, height);
-        pop();
+    function drawHalftoneFilter(dotSize, threshold) {
+        background(255); // Sfondo bianco per l'effetto di stampa
+        webcamBuffer.loadPixels();
+        noStroke();
+        for (let x = 0; x < width; x += dotSize) {
+            for (let y = 0; y < height; y += dotSize) {
+                let pixelIndex = (x + y * width) * 4;
+                let r = webcamBuffer.pixels[pixelIndex];
+                let g = webcamBuffer.pixels[pixelIndex + 1];
+                let b = webcamBuffer.pixels[pixelIndex + 2];
+                let brightness = (r + g + b) / 3;
+
+                if (brightness < 255 * threshold) {
+                    fill(0);
+                    let size = map(brightness, 0, 255 * threshold, dotSize, 2);
+                    ellipse(x + dotSize / 2, y + dotSize / 2, size, size);
+                }
+            }
+        }
     }
 
-    function drawThresholdFilter(thresholdValue) {
+    function drawEdgeDetectionFilter() {
         image(webcamBuffer, 0, 0);
-        filter(THRESHOLD, thresholdValue);
+        filter(GRAY);
+        filter(INVERT);
+        filter(DILATE);
+        filter(ERODE);
+        filter(THRESHOLD, 0.3);
     }
 
 
@@ -168,6 +184,7 @@
         }
     }
 })();
+
 
 
 
