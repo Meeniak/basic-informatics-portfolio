@@ -369,19 +369,22 @@ input[type="color"] {
 /* --- LETTER PAGE SPECIFIC --- */
 .letter-page #sketch-container {
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 30px;
 }
 
 .letter-page #canvas-wrapper {
     flex: 0 0 auto;
-    width: min(100%, 540px);
-    height: min(calc(100vh - 200px), 540px);
-    aspect-ratio: 1 / 1;
+    width: 540px;
+    height: 540px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .letter-page #controls-panel {
     max-width: 400px;
-    flex: 1;
+    flex: 0 0 auto;
     min-width: 300px;
 }
 
