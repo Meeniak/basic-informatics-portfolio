@@ -34,16 +34,15 @@
 
     window.setup = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        // FIX: Crea il canvas con le dimensioni del contenitore
-        const canvas = createCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
+        // Crea un canvas quadrato
+        const size = min(700, canvasWrapper.offsetWidth, canvasWrapper.offsetHeight - 40);
+        const canvas = createCanvas(size, size);
         canvas.parent(canvasWrapper);
         
         webcam = createCapture(VIDEO);
-        // Adatta la webcam alle dimensioni del canvas
-        webcam.size(width, height);
         webcam.hide();
 
-        // Anche il buffer deve avere le stesse dimensioni
+        // Il buffer mantiene le dimensioni del canvas
         webcamBuffer = createGraphics(width, height);
 
         filterLabel = select('#current-filter-label');
@@ -64,12 +63,31 @@
     }
 
     window.draw = function() {
-        // Disegna la webcam specchiata nel buffer una sola volta per frame
-        webcamBuffer.push();
-        webcamBuffer.translate(width, 0);
-        webcamBuffer.scale(-1, 1);
-        webcamBuffer.image(webcam, 0, 0, width, height);
-        webcamBuffer.pop();
+        // Calcola le dimensioni per mantenere l'aspect ratio della webcam
+        if (webcam.width > 0 && webcam.height > 0) {
+            let aspectRatio = webcam.width / webcam.height;
+            let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+            
+            if (aspectRatio > 1) {
+                // Webcam più larga che alta
+                drawWidth = width;
+                drawHeight = width / aspectRatio;
+                offsetY = (height - drawHeight) / 2;
+            } else {
+                // Webcam più alta che larga
+                drawHeight = height;
+                drawWidth = height * aspectRatio;
+                offsetX = (width - drawWidth) / 2;
+            }
+            
+            // Disegna la webcam specchiata nel buffer con le dimensioni corrette
+            webcamBuffer.push();
+            webcamBuffer.clear();
+            webcamBuffer.translate(width, 0);
+            webcamBuffer.scale(-1, 1);
+            webcamBuffer.image(webcam, width - drawWidth - offsetX, offsetY, drawWidth, drawHeight);
+            webcamBuffer.pop();
+        }
 
         let mainValue = mainSlider.value();
         let paramValue = paramSlider.value();
@@ -152,12 +170,11 @@
         }
     }
 
-    // Funzione che adatta il canvas se la finestra del browser viene ridimensionata
     window.windowResized = function() {
         const canvasWrapper = document.getElementById('canvas-wrapper');
-        resizeCanvas(canvasWrapper.offsetWidth, canvasWrapper.offsetHeight);
-        // Adatta anche il buffer
-        webcamBuffer.resize(width, height);
+        const size = min(700, canvasWrapper.offsetWidth, canvasWrapper.offsetHeight - 40);
+        resizeCanvas(size, size);
+        webcamBuffer = createGraphics(width, height);
     }
 
     window.keyPressed = function() {
