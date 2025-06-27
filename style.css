@@ -41,13 +41,14 @@ body.home {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 20px;
-    overflow: hidden;
+    /* MODIFICA: Allinea il contenuto in alto invece che in basso */
+    justify-content: flex-start;
+    padding: 40px; /* Aggiunge padding per spaziatura */
+    overflow: auto; /* Permette lo scorrimento se necessario */
 }
 
 body.home header { 
-    margin-bottom: 30px; 
+    margin-bottom: 50px; 
 }
 
 body.home h1 {
@@ -85,10 +86,11 @@ body.home h2 {
 /* --- GALLERY STYLES --- */
 .gallery { 
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* MODIFICA: Aumentata la dimensione minima per immagini più grandi */
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 20px;
-    margin-bottom: 20px;
-    max-width: 1400px;
+    width: 100%;
+    max-width: 1800px;
     margin-left: auto;
     margin-right: auto;
 }
