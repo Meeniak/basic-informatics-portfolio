@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Letter - Basic Informatics</title>
-    <!-- Stile generale del sito -->
     <link rel="stylesheet" href="style.css">
-    <!-- Libreria p5.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
 </head>
 <body class="letter-page">
@@ -18,12 +16,10 @@
 
     <div id="sketch-container">
         
-        <!-- Il tuo sketch p5.js verrà inserito qui -->
-        <div id="canvas-wrapper"></div>
+        <div id="canvas-wrapper">
+            </div>
 
-        <!-- Pannello di controllo che conterrà i tuoi elementi UI -->
         <div id="controls-panel" class="letter-controls">
-            
             <div id="controls">
                 <div class="control-group-grid">
                     <div id="group-w" class="control-item"><label>Width/Radius</label><div id="sW-container"></div></div>
@@ -57,13 +53,10 @@
                 <p><span>[1-5]</span> &rarr; Change Style</p>
                 <p><span>[S]</span> &rarr; Save Image</p>
             </div>
-
         </div>
     </div>
 
-    <!-- Script del sito (per il cursore) -->
     <script src="script.js"></script>
-    <!-- I tuoi script, caricati nell'ordine corretto -->
     <script src="lettere.js"></script>
     <script src="sketch.js"></script>
 </body>
