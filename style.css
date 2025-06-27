@@ -3,181 +3,475 @@ html, body, a, input, label {
     cursor: none;
 }
 .custom-cursor {
-    position: fixed; top: 0; left: 0; width: 20px; height: 23px;
-    background-size: contain; background-repeat: no-repeat;
-    pointer-events: none; transform: translate(-50%, -50%);
-    z-index: 9999; transition: opacity 0.2s ease-in-out;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 20px; 
+    height: 23px;
+    background-size: contain; 
+    background-repeat: no-repeat;
+    pointer-events: none; 
+    transform: translate(-50%, -50%);
+    z-index: 9999; 
+    transition: opacity 0.2s ease-in-out;
 }
 
 /* --- GENERAL BODY AND HEADER STYLES --- */
-body {
-    background-color: #1a1a1a; color: #ffffff;
-    font-family: 'Roboto', sans-serif;
-    margin: 0; padding: 20px;
-    text-align: left; box-sizing: border-box; 
+* {
+    box-sizing: border-box;
 }
-a, a:visited { color: #ffffff; text-decoration: none; }
-header { margin-bottom: 30px; }
-h1 {
-    font-size: 8em; font-weight: 400; margin: 0; padding: 15px 0;
-    border-top: 1px solid #444; border-bottom: 1px solid #444;
+
+body {
+    background-color: #1a1a1a; 
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    margin: 0; 
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+a, a:visited { 
+    color: #ffffff; 
+    text-decoration: none; 
+}
+
+/* --- HOME PAGE SPECIFIC --- */
+body.home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    overflow: hidden;
+}
+
+body.home header { 
+    margin-bottom: 30px; 
+}
+
+body.home h1 {
+    font-size: clamp(3rem, 8vw, 8rem);
+    font-weight: 400; 
+    margin: 0; 
+    padding: 15px 0;
+    border-top: 1px solid #444; 
+    border-bottom: 1px solid #444;
     position: relative;
 }
-h1 span { position: relative; padding-right: 40px; }
-h1 span::after {
-    content: ''; position: absolute; background-color: #444;
-    width: 1px; top: -30px; bottom: -30px; right: 0;
+
+body.home h1 span { 
+    position: relative; 
+    padding-right: 40px; 
 }
-h2 {
-    font-size: 1.2em; font-weight: 300; margin-top: 15px;
-    max-width: 100%; white-space: nowrap;
+
+body.home h1 span::after {
+    content: ''; 
+    position: absolute; 
+    background-color: #444;
+    width: 1px; 
+    top: -30px; 
+    bottom: -30px; 
+    right: 0;
+}
+
+body.home h2 {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    font-weight: 300; 
+    margin-top: 15px;
+    max-width: 100%;
 }
 
 /* --- GALLERY STYLES --- */
-.gallery { display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 20px; }
-.gallery-item { position: relative; width: 420px; height: 420px; overflow: hidden; }
+.gallery { 
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gallery-item { 
+    position: relative; 
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    cursor: pointer;
+}
+
 .gallery-item img {
-    width: 100%; height: 100%; object-fit: cover;
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover;
     transition: filter 0.4s ease, transform 0.3s ease;
     filter: blur(5px);
 }
-.gallery-item:hover img { filter: blur(0); transform: scale(1.05); }
+
+.gallery-item:hover img { 
+    filter: blur(0); 
+    transform: scale(1.05); 
+}
+
 .overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center;
-    opacity: 1; transition: background-color 0.4s ease;
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    opacity: 1; 
+    transition: background-color 0.4s ease;
 }
-.gallery-item:hover .overlay { background-color: rgba(0, 0, 0, 0.4); }
+
+.gallery-item:hover .overlay { 
+    background-color: rgba(0, 0, 0, 0.4); 
+}
+
 .text {
-    font-size: 2.2em; font-weight: bold; opacity: 0;
-    transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: bold; 
+    opacity: 0;
+    transform: translateY(20px); 
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.gallery-item:hover .text { opacity: 1; transform: translateY(0); }
+
+.gallery-item:hover .text { 
+    opacity: 1; 
+    transform: translateY(0); 
+}
+
+/* --- SUB-PAGES LAYOUT --- */
+body:not(.home) {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
 
 /* --- SUB-PAGE HEADER STYLES --- */
 .sub-page-header {
-    display: flex; justify-content: space-between; align-items: baseline;
-    border-bottom: 1px solid #444; margin-bottom: 20px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: baseline;
+    border-bottom: 1px solid #444; 
+    padding: 20px 40px;
+    flex-shrink: 0;
 }
-.sub-page-header h1 { font-size: 4em; border: none; padding: 0; }
-.sub-page-header h1::after { display: none; }
-.sub-page-header a, .sub-page-header a:visited { color: #ccc; text-decoration: none; font-size: 1.1em; font-weight: 300; transition: color 0.3s ease; }
-.sub-page-header a:hover { color: white; }
 
-/* --- REGOLA PER L'ALLINEAMENTO DELLA HOME PAGE --- */
-body.home { min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; }
+.sub-page-header h1 { 
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 400;
+    margin: 0;
+}
 
-/* --- STYLES FOR SKETCH PAGES --- */
+.sub-page-header a, .sub-page-header a:visited { 
+    color: #ccc; 
+    text-decoration: none; 
+    font-size: 1.1em; 
+    font-weight: 300; 
+    transition: color 0.3s ease; 
+}
+
+.sub-page-header a:hover { 
+    color: white; 
+}
+
+/* --- SKETCH CONTAINER --- */
 #sketch-container {
-    display: flex; flex-wrap: wrap; gap: 20px;
-    width: 100%; align-items: flex-start; justify-content: center;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+    overflow: hidden;
+    align-items: stretch;
 }
 
-/* FIX: Stili specifici per ogni pagina di sketch */
-.brushes-page #canvas-wrapper,
-.masks-page #canvas-wrapper {
-    flex: 1 1 600px;
-    max-width: 700px;
-    aspect-ratio: 1 / 1;
+/* --- CANVAS WRAPPER --- */
+#canvas-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
     border: 1px solid #444;
+    background-color: #0a0a0a;
 }
 
-.filters-page #canvas-wrapper {
-    flex: 1 1 600px;
-    max-width: 800px;
-    aspect-ratio: 4 / 3; 
-    border: 1px solid #444;
-    background-color: #000;
+#canvas-wrapper canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain;
 }
 
-/* --- STILI SPECIFICI PER LA PAGINA LETTER --- */
-
-/* Applica uno stile unico al pannello di controllo della pagina Letter */
-.letter-page #controls-panel {
-    width: 100%;
-    max-width: 900px;
-    flex-grow: 1;
+/* --- CONTROLS PANEL --- */
+#controls-panel {
+    width: 300px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 15px;
     padding: 20px;
-    background-color: #1f1f1f; /* Sfondo scuro */
+    background-color: #1f1f1f;
     border: 1px solid #444;
-    color: #ccc; /* Testo chiaro */
+    overflow-y: auto;
+    max-height: 100%;
 }
 
-/* Griglia per i controlli principali */
-.letter-page #controls .control-group-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
+#controls-panel::-webkit-scrollbar {
+    width: 8px;
 }
 
-/* Stile per ogni singolo gruppo di controllo */
-.letter-page .control-item, 
-.letter-page .control-group {
+#controls-panel::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+#controls-panel::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+#controls-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* --- CONTROL GROUPS --- */
+.control-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 6px;
-    min-width: 150px;
-    box-sizing: border-box;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
 }
 
-.letter-page #controls-panel label {
+.control-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.control-group h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+    color: #fff;
+}
+
+#controls-panel label {
     font-size: 12px;
     color: #aaa;
     text-align: left;
-    font-weight: bold;
+    font-weight: 500;
+    margin-bottom: 5px;
 }
 
-/* Stile per i controlli della traccia */
-.letter-page #group-stroke-options {
-    border-top: 1px solid #333;
-    padding-top: 15px;
+/* --- SLIDERS --- */
+.slider-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
-.letter-page .stroke-controls-wrapper {
+
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: #333;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+}
+
+/* --- COLOR PICKERS --- */
+#color-pickers, #sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.picker-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.picker-wrapper label {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
+}
+
+.color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid #666;
+    display: inline-block;
+}
+
+input[type="color"] {
+    width: 100%;
+    height: 35px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #2a2a2a;
+    cursor: pointer;
+}
+
+/* --- LEGEND --- */
+#legend {
+    border: none;
+}
+
+#legend p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+}
+
+#legend span {
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    margin-right: 10px;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* --- LETTER PAGE SPECIFIC --- */
+.letter-page #sketch-container {
+    justify-content: center;
     flex-wrap: wrap;
 }
-.letter-page #strokeToggle-container {
-    padding-top: 15px;
-}
-.letter-page #strokeToggle-container label {
-    color: #ccc;
-}
 
-/* Stile per gli elementi p5.js */
-.letter-page input[type="range"] {
-    background: #444;
-}
-.letter-page input[type="range"]::-webkit-slider-thumb {
-    background: #fff;
-    border: none;
-}
-.letter-page input[type="range"]::-moz-range-thumb {
-    background: #fff;
-    border: none;
-}
-.letter-page input[type="color"] {
-    width: 100%;
-    height: 30px;
-    border-radius: 4px;
-    border-color: #555;
-}
-
-.letter-page #legend {
-    border: none;
-}
-
-/* Assicura che il canvas di questa pagina sia quadrato */
 .letter-page #canvas-wrapper {
-    flex: 1 1 600px;
-    max-width: 700px;
+    flex: 0 0 auto;
+    width: min(100%, 540px);
+    height: min(calc(100vh - 200px), 540px);
     aspect-ratio: 1 / 1;
-    border: 1px solid #444;
+}
+
+.letter-page #controls-panel {
+    max-width: 400px;
+    flex: 1;
+    min-width: 300px;
+}
+
+/* --- CHECKBOX STYLING --- */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 1024px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    #sketch-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    
+    #canvas-wrapper {
+        width: 100%;
+        height: 60vh;
+        min-height: 400px;
+    }
+    
+    #controls-panel {
+        width: 100%;
+        max-width: none;
+        max-height: none;
+    }
+    
+    .letter-page #canvas-wrapper {
+        width: 100%;
+        height: min(60vh, 540px);
+    }
+    
+    .letter-page #controls-panel {
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body.home h1 {
+        font-size: clamp(2.5rem, 10vw, 5rem);
+    }
+    
+    .sub-page-header {
+        padding: 15px 20px;
+    }
+    
+    .sub-page-header h1 {
+        font-size: clamp(1.8rem, 8vw, 3rem);
+    }
+    
+    .sub-page-header a {
+        font-size: 1rem;
+    }
+    
+    #sketch-container {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    #canvas-wrapper {
+        height: 50vh;
+        min-height: 350px;
+    }
+    
+    #controls-panel {
+        padding: 15px;
+    }
+    
+    .gallery {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .control-group h3 {
+        font-size: 1em;
+    }
+    
+    #legend span {
+        min-width: 40px;
+        padding: 2px 4px;
+        font-size: 0.8em;
+    }
 }
