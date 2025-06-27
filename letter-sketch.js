@@ -11,7 +11,7 @@ function setup() {
     canvas.parent(canvasWrapper);
     
     angleMode(DEGREES);
-    pixelDensity(1);
+    pixelDensity(1); // Ottimizzazione per performance
     
     // Controlli Generali
     sW = createSlider(10, 150, 80, 1).parent('sW-container');
@@ -184,4 +184,5 @@ function updateControlsVisibility() {
     }
 }
 })();
+
 
